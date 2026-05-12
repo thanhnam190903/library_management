@@ -47,8 +47,14 @@ function openBookDetail(title, author, icon, bg, genre, isbn, avail, total, year
 }
 
 function openAddBook() {
-    document.querySelector("input[name='id']").value = "";
-  document.getElementById('add-book-modal').classList.add('bl-open');
+    document.getElementById('add-book-modal')
+        .classList.add('bl-open');
+    document.getElementById("edit-id").value = "";
+
+    document.getElementById("modalTitle").innerText =
+        "Thêm sách mới";
+
+    document.querySelector("form").reset();
 }
 
 function openAddMember() {

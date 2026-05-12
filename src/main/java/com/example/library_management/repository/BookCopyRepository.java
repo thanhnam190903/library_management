@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface BookCopyRepository extends JpaRepository<BookCopy,String> {
     List<BookCopy> findByBookTitleId(String bookTitleId);
+    long countByBookTitleId(String bookTitleId);
     List<BookCopy> findByBookTitleIdAndCirculationStatus(String bookTitleId,
                                                          String circulationStatus);
 }

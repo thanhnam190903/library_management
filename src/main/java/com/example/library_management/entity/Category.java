@@ -1,5 +1,6 @@
 package com.example.library_management.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,7 @@ public class Category {
     String categoryName;
     String parent;
     @OneToMany(mappedBy = "category")
+    @JsonIgnore
     List<BookTitle> bookTitles;
     boolean status;
     boolean deleted;

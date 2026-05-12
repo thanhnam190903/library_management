@@ -76,10 +76,19 @@
                             <td>
                                 <a class="action-btn" th:href="@{/books-management(id=${b.id})}">Xem</a>
                                 <button class="action-btn" th:data-id="${b.id}"
-                                        th:data-author="${b.author.id}"
-                                        th:data-isbn="${b.isbn}" th:data-language="${b.language}"
+                                        th:data-title="${b.title}"
+                                        th:data-author="${b.author.authorName}"
+                                        th:data-isbn="${b.isbn}"
+                                        th:data-language="${b.language}"
                                         th:data-publisher="${b.publisher.publisherName}"
-                                        th:data-publishYear="${b.publishYear}" >Sửa</button>
+                                        th:data-publishyear="${b.publishYear}"
+                                        th:data-quantity="${b.quantity}"
+                                        th:data-price="${b.price}"
+                                        th:data-note="${b.note}"
+                                        th:data-topic="${b.category.parent}"
+                                        th:data-category="${b.category.id}"
+                                        th:data-categoryname="${b.category.categoryName}"
+                                        onclick="openEditBook(this)">Sửa</button>
                                 <a class="action-btn" th:data-id="${b.id}" onclick="confirmDelete(this)">Xóa</a>
                             </td>
                         </tr>
@@ -137,7 +146,7 @@
         <div class="bl-modal-header">
             <div class="bl-modal-book-icon" style="background:#e6f2ec;font-size:28px;">➕</div>
             <div>
-                <div class="bl-modal-book-title">Thêm sách mới</div>
+                <div class="bl-modal-book-title" id="modalTitle">Thêm sách mới</div>
                 <div class="bl-modal-book-author">Nhập thông tin đầu sách mới vào hệ thống</div></div>
             <button class="bl-modal-close" onclick="closeModal('add-book-modal')">✕</button>
         </div>
@@ -145,23 +154,23 @@
             <form th:action="@{/books}" method="post" th:object="${book}">
                 <div class="bl-form-row">
                     <div class="bl-form-group">
-                        <input type="hidden" th:field="*{id}">
+                        <input type="hidden" id="edit-id" name="id">
                         <div class="bl-form-label">Tên sách *</div>
-                        <input th:field="*{title}" required class="bl-form-input" placeholder="Nhập tên sách...">
+                        <input name="title" id="edit-title" required class="bl-form-input" placeholder="Nhập tên sách...">
                     </div>
                     <div class="bl-form-group">
                         <div class="bl-form-label">Tác giả *</div>
-                        <input type="text" name="author" required class="bl-form-input" placeholder="Tên tác giả...">
+                        <input type="text" name="author" id="edit-author" required class="bl-form-input" placeholder="Tên tác giả...">
                     </div>
                 </div>
                 <div class="bl-form-row">
                     <div class="bl-form-group">
                         <div class="bl-form-label">ISBN</div>
-                        <input id="isbnInput" th:field="*{isbn}" class="bl-form-input" placeholder="978-...">
+                        <input name="isbn" id="edit-isbn" class="bl-form-input" placeholder="978-...">
                     </div>
                     <div class="bl-form-group">
                         <div class="bl-form-label">Ngôn ngữ</div>
-                        <select class="bl-form-input" required th:field="*{language}">
+                        <select class="bl-form-input"  required name="language" id="edit-language">
                             <option value="vn">Tiếng Việt</option>
                             <option value="us">Tiếng Anh</option>
                             <option value="phap">Tiếng Pháp</option>
@@ -173,11 +182,11 @@
                 <div class="bl-form-row">
                     <div class="bl-form-group">
                         <div class="bl-form-label" >Nhà xuất bản</div>
-                        <input type="text" name="nxb" required class="bl-form-input" placeholder="Tên NXB...">
+                        <input type="text" name="nxb" id="edit-nxb" required class="bl-form-input" placeholder="Tên NXB...">
                     </div>
                     <div class="bl-form-group">
                         <div class="bl-form-label">Năm xuất bản</div>
-                        <input class="bl-form-input" required th:field="*{publishYear}" type="text" placeholder="2024">
+                        <input class="bl-form-input" required name="publishyear" id="edit-publishyear" type="text" placeholder="2024">
                     </div>
                 </div>
                 <div class="bl-form-row">
@@ -207,20 +216,20 @@
                 </div>
                 <div class="bl-form-row"><div class="bl-form-group">
                     <div class="bl-form-label">Số lượng nhập *</div>
-                    <input class="bl-form-input" required th:field="*{quantity}" type="number" placeholder="0" min="1">
+                    <input class="bl-form-input" required id="edit-quantity" name="quantity" type="number" placeholder="0" min="1">
                 </div>
                     <div class="bl-form-group">
                         <div class="bl-form-label">Giá bìa (VNĐ)</div>
-                        <input class="bl-form-input" required th:field="*{price}" placeholder="0" style="font-family:'DM Mono',monospace;">
+                        <input class="bl-form-input" required id="edit-price" name="price" placeholder="0" style="font-family:'DM Mono',monospace;">
                     </div>
                 </div>
                 <div class="bl-form-group">
                     <div class="bl-form-label">Mô tả / Tóm tắt</div>
-                    <textarea class="bl-form-input" th:field="*{note}" rows="3" placeholder="Nội dung tóm tắt của sách..."></textarea>
+                    <textarea class="bl-form-input" name="note" id="edit-note" rows="3" placeholder="Nội dung tóm tắt của sách..."></textarea>
                 </div>
                 <div style="display:flex;gap:10px;">
-                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Thêm vào kho</button>
-                    <button class="bl-btn bl-btn-secondary" onclick="closeModal('add-book-modal')">Hủy</button>
+                    <button class="bl-btn bl-btn-primary" id="up-btn" style="flex:1;justify-content:center;padding:12px;">✓ Thêm vào kho</button>
+                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('add-book-modal')">Hủy</button>
                 </div>
             </form>
 
@@ -230,39 +239,8 @@
 
 
 <script th:replace="layout/script :: script"></script>
-<script src=""></script><script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 <script>
-<!--    function startScanner() {-->
-<!--    Quagga.init({-->
-<!--        inputStream: {-->
-<!--            name: "Live",-->
-<!--            type: "LiveStream",-->
-<!--            target: document.querySelector('#reader'),-->
-<!--            constraints: {-->
-<!--                facingMode: "environment" // laptop sẽ tự fallback-->
-<!--            }-->
-<!--        },-->
-<!--        decoder: {-->
-<!--            readers: ["ean_reader"] // 👉 ISBN = EAN-13-->
-<!--        }-->
-<!--    }, function(err) {-->
-<!--        if (err) {-->
-<!--            console.log(err);-->
-<!--            return;-->
-<!--        }-->
-<!--        Quagga.start();-->
-<!--    });-->
-
-<!--    Quagga.onDetected(function(result) {-->
-<!--        let code = result.codeResult.code;-->
-<!--        console.log("ISBN:", code);-->
-
-<!--        document.getElementById("isbnInput").value = code;-->
-
-<!--        Quagga.stop();-->
-<!--        document.getElementById("reader").innerHTML = "";-->
-<!--    });-->
-<!--}-->
 function confirmDelete(element) {
     const cId = element.dataset.id;
     if (confirm("Bạn có chắc chắn muốn xóa đầu sách " + cId + " này?")) {
@@ -270,16 +248,15 @@ function confirmDelete(element) {
     }
 }
 
-document.getElementById("topicSelect")
-.addEventListener("change", function () {
-
-    let parent = this.value;
+function loadCategory(parent, selectedCategory = null) {
 
     fetch("/qltv/get-category?parent=" + parent)
 
         .then(response => response.json())
 
         .then(data => {
+
+            console.log(data);
 
             let categorySelect =
                 document.getElementById("categorySelect");
@@ -289,17 +266,78 @@ document.getElementById("topicSelect")
 
             data.forEach(item => {
 
-                categorySelect.innerHTML += `
-                    <option value="${item.id}">
-                        ${item.categoryName}
-                    </option>
-                `;
+                console.log(item);
 
+                let option =
+                    "<option value='" + item.id + "'";
+
+                if (selectedCategory &&
+                    selectedCategory == item.id) {
+
+                    option += " selected";
+                }
+
+                option += ">" +
+                    item.categoryName +
+                    "</option>";
+
+                categorySelect.innerHTML += option;
             });
+        })
 
+        .catch(error => {
+            console.log(error);
         });
+}
+document.getElementById("topicSelect")
+.addEventListener("change", function () {
+
+    loadCategory(this.value);
 
 });
+function openEditBook(btn) {
+document.getElementById('add-book-modal').classList.add('bl-open');
+        document.getElementById("modalTitle").innerText ="Cập nhật thông tin sách";
+        document.getElementById("up-btn").innerText ="Cập nhật";
+console.log("quantity:", btn.dataset.quantity);
+console.log("price:", btn.dataset.price);
+        document.getElementById("edit-id").value = btn.dataset.id;
+        document.getElementById("edit-title").value = btn.dataset.title;
+        document.getElementById("edit-author").value = btn.dataset.author;
+        document.getElementById("edit-isbn").value = btn.dataset.isbn;
+        document.getElementById("edit-language").value = btn.dataset.language;
+        document.getElementById("edit-nxb").value = btn.dataset.publisher;
+        document.getElementById("edit-publishyear").value = btn.dataset.publishyear;
+        document.getElementById("edit-quantity").value = btn.dataset.quantity;
+        document.getElementById("edit-price").value = btn.dataset.price;
+        document.getElementById("edit-note").value = btn.dataset.note;
+        let topic = btn.dataset.topic;
+
+if (!topic || topic === "null") {
+
+    document.getElementById("topicSelect").value =
+        "";
+
+    let categorySelect =
+        document.getElementById("categorySelect");
+
+    categorySelect.innerHTML = `
+        <option value="${btn.dataset.category}" selected>
+            ${btn.dataset.categoryname}
+        </option>
+    `;
+
+} else {
+
+    document.getElementById("topicSelect").value =
+        topic;
+
+    loadCategory(
+        topic,
+        btn.dataset.category
+    );
+}
+        }
 
 </script>
 </body>
