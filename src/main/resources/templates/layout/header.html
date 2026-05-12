@@ -1,0 +1,15 @@
+<header class="topbar" th:fragment="header">
+    <div>
+        <div class="bl-page-title" id="topbar-title" th:text="${sub}">Bảng điều khiển</div>
+        <div class="bl-breadcrumb" id="topbar-sub" th:text="${title}">Thứ Tư, 25 tháng 3 năm 2026</div>
+    </div>
+    <div class="topbar-search">
+        <span style="color:var(--mist);font-size:14px;">🔍</span>
+        <input type="text" placeholder="Tìm sách, độc giả, mã thẻ...">
+    </div>
+    <div class="topbar-actions">
+        <div class="icon-btn">🔔<div class="notif-dot"></div></div>
+        <div class="icon-btn">📥</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rust));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;cursor:pointer;">NV</div>
+    </div>
+</header>

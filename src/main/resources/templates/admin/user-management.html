@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/head :: head">
+</head>
+<body>
+
+<!-- ════════ SIDEBAR ════════ -->
+<aside th:replace="layout/aside :: aside"></aside>
+
+<!-- ════════ MAIN ════════ -->
+<div class="bl-main">
+    <header th:replace="layout/header :: header"></header>
+
+    <div class="bl-content">
+        <!-- ══════ PAGE: BOOKS ══════ -->
+        <div class="bl-page active" id="page-users">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                <div class="bl-search-bar" style="flex:1;min-width:220px;">
+                    <span style="color:var(--mist);">🔍</span>
+                    <input type="text" placeholder="Tìm theo tên sách, tác giả, ISBN...">
+                </div>
+                <select class="bl-filter-select">
+                    <option>Tất cả vai trò</option>
+                    <option>Văn học</option>
+                    <option>Kỹ năng sống</option>
+                    <option>Lịch sử</option>
+                    <option>Tâm lý học</option>
+                    <option>Công nghệ</option>
+                    <option>Thiếu nhi</option>
+                </select>
+                <select class="bl-filter-select">
+                    <option>Tất cả trạng thái</option>
+                    <option>Còn sách</option>
+                    <option>Đang mượn</option>
+                    <option>Quá hạn</option>
+                </select>
+                <button type="button" class="bl-btn bl-btn-primary" onclick="openAddMember()">➕ Thêm mới</button>
+            </div>
+
+            <div id="books-list-view">
+                <div class="bl-panel">
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Thành công!</strong> <span th:text="${success}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <table class="bl-data-table">
+                        <thead>
+                         <tr>
+                            <th>ID</th>
+                            <th>Tên</th>
+                            <th>Email</th>
+                            <th>Ngày sinh</th>
+                            <th>Vai trò</th>
+                            <th>SĐT</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                         </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(listUser)}">
+                            <td colspan="7" style="text-align:center; padding:20px; color:var(--mist);">
+                                Không có dữ liệu
+                            </td>
+                        </tr>
+                        <tr th:each="u : ${listUser}">
+                            <td><span style="font-family:'DM Mono',monospace;font-weight:600;" th:text="${u.id}"></span></td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="font-weight:500;" th:text="${u.name}"></div>
+                                </div>
+                            </td>
+                            <td style="color:var(--mist);" th:text="${u.email}"></td>
+                            <td style="color:var(--mist);" th:text="${u.birthDate != null} ? ${#temporals.format(u.birthDate, 'dd/MM/yyyy')} : ''"></td>
+                            <td><span class="bl-badge bl-badge-silver" th:each="r : ${u.roles}"
+                                      th:text="${r.roleName}"></span></td>
+                            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);" th:text="${u.phone}"></td>
+                            <td><span class="bl-badge bl-badge-borrowed" th:classappend="${u.status} ? 'bl-badge-active' : 'bl-badge-inactive'"
+                                      th:text="${u.status} ? 'Hoạt động' : 'Bị khóa'"></span></td>
+                            <td>
+                                <button class="action-btn btn-edit"
+                                        th:data-id="${u.id}"
+                                        th:data-name="${u.name}"
+                                        th:data-email="${u.email}"
+                                        th:data-birthdate="${u.birthDate}"
+                                        th:data-phone="${u.phone}"
+                                        th:data-status="${u.status}"
+                                        th:data-roles="${u.roles != null ? #strings.arrayJoin(u.roles.![roleName], ',') : ''}"
+                                        onclick="openUpdateMember()">Sửa</button>
+                                <button class="action-btn" th:data-id="${u.id}" onclick="confirmDelete(this)">Xóa</button>
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ════════ MODALS ════════ -->
+<div class="bl-modal-overlay" id="add-member-modal" onclick="closeModal('add-member-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
+            <div><div class="bl-modal-book-title">Đăng ký nhân viên</div><div class="bl-modal-book-author">Tạo tài khoản nhân viên</div></div>
+            <button class="bl-modal-close" onclick="closeModal('add-member-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <form th:action="@{/add-user}" th:object="${user}" method="post">
+                <div class="bl-form-row">
+                    <div style="color:red" th:if="${error}" th:text="${error}">
+                    </div>
+                </div>
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Họ và tên *</div>
+                        <input class="bl-form-input" th:field="*{name}" placeholder="Nhập họ tên đầy đủ...">
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Ngày sinh *</div>
+                        <input th:field="*{birthDate}" class="bl-form-input" type="date">
+                    </div>
+                </div>
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Số điện thoại *</div>
+                        <input class="bl-form-input" th:field="*{phone}" placeholder="09xx xxx xxx">
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Email</div>
+                        <input class="bl-form-input" th:field="*{email}" type="email" placeholder="email@domain.com">
+                    </div>
+                </div>
+                <div class="bl-form-row">
+
+                    <div class="bl-form-group"><div class="bl-form-label">Trạng thái</div>
+                        <select class="bl-form-input" th:field="*{status}">
+                            <option th:value="true">Hoạt động</option>
+                            <option th:value="false">Khóa</option>
+                        </select>
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Quyền</div>
+                        <label>
+                            <input type="checkbox" name="roleName" value="ADMIN">
+                            Admin
+                        </label>
+                        <label>
+                            <input type="checkbox" name="roleName" value="LIBRARIAN">
+                            Thủ thư
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký &amp; In thẻ</button>
+                    <button class="bl-btn bl-btn-secondary" onclick="closeModal('add-member-modal')">Hủy</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<div class="bl-modal-overlay" id="update-member-modal" onclick="closeModal('update-member-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
+            <div><div class="bl-modal-book-title">Cập nhật nhân viên</div><div class="bl-modal-book-author">Tạo tài khoản nhân viên</div></div>
+            <button class="bl-modal-close" onclick="closeModal('update-member-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <form th:action="@{/update-user}" method="post">
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <input type="hidden" name="id" id="edit-id">
+                        <div class="bl-form-label">Họ và tên *</div>
+                        <input class="bl-form-input" name="name" id="edit-name" placeholder="Nhập họ tên đầy đủ...">
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Ngày sinh *</div>
+                        <input name="birthDate" id="edit-ngaysinh"  class="bl-form-input" type="date">
+                    </div>
+                </div>
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Số điện thoại *</div>
+                        <input class="bl-form-input" name="phone" id="edit-sdt" placeholder="09xx xxx xxx">
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Email</div>
+                        <input class="bl-form-input" name="email" id="edit-email" type="email" placeholder="email@domain.com">
+                    </div>
+                </div>
+                <div class="bl-form-row">
+
+                    <div class="bl-form-group"><div class="bl-form-label">Trạng thái</div>
+                        <select class="bl-form-input" id="edit-status" name="status">
+                            <option th:value="true">Hoạt động</option>
+                            <option th:value="false">Khóa</option>
+                        </select>
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Quyền</div>
+                        <label>
+                            <input type="checkbox" name="roleName" value="ADMIN">
+                            Admin
+                        </label>
+                        <label>
+                            <input type="checkbox" name="roleName" value="LIBRARIAN">
+                            Thủ thư
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">Cập nhật</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<script th:replace="layout/script :: script"></script>
+<script th:if="${showModal}">
+     window.addEventListener("load", function () {
+         document.getElementById("add-member-modal").classList.add("bl-open");
+     });
+</script>
+<script>
+    function confirmDelete(element) {
+    const userId = element.dataset.id;
+    if (confirm("Bạn có chắc chắn muốn xóa nhân viên " + userId + " này?")) {
+        window.location.href = "/qltv/delete-user?id=" + userId;
+    }
+}
+    document.querySelectorAll(".btn-edit").forEach(btn => {
+    btn.addEventListener("click", function () {
+    console.log("ID:", this.dataset.id);
+    console.log("Name:", this.dataset.name);
+    console.log("Email:", this.dataset.email);
+    console.log("Phone:", this.dataset.phone);
+    console.log("Birthdate:", this.dataset.birthdate);
+    console.log("Status:", this.dataset.status);
+    console.log("Roles raw:", this.dataset.roles);
+        document.getElementById("edit-id").value = this.dataset.id;
+        document.getElementById("edit-name").value = this.dataset.name;
+        document.getElementById("edit-email").value = this.dataset.email;
+        document.getElementById("edit-sdt").value = this.dataset.phone;
+        document.getElementById("edit-ngaysinh").value = this.dataset.birthdate;
+        document.getElementById("edit-status").value = this.dataset.status;
+        let roles = this.dataset.roles ? this.dataset.roles.split(",") : [];
+        document.querySelectorAll('input[name="roleName"]').forEach(cb => {
+            cb.checked = roles.includes(cb.value);
+        });
+        document.getElementById("updateUserModal").classList.add("show");
+    });
+});
+</script>
+</body>
+</html>

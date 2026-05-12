@@ -1,0 +1,77 @@
+<aside class="bl-sidebar" th:fragment="aside">
+<div class="bl-sidebar-logo">
+    <div class="logo-mark">
+        <div class="logo-icon">📚</div>
+        <div>
+            <div class="logo-text">BiblioAdmin</div>
+            <div class="logo-sub">Quản lý thư viện</div>
+        </div>
+    </div>
+</div>
+
+<div class="bl-sidebar-section">
+    <div class="section-label">Tổng quan</div>
+    <div class="bl-nav-item" id="nav-dashboard" onclick="goPage('dashboard')"><span class="bl-nav-icon">⊞</span>Bảng điều khiển</div>
+    <div class="bl-nav-item" id="nav-stats" onclick="goPage('stats')"><span class="bl-nav-icon">📊</span>Thống kê &amp; Báo cáo</div>
+</div>
+<div class="bl-sidebar-section">
+    <div class="section-label">Người dùng</div>
+    <a class="bl-nav-item" id="nav-user" th:href="@{/users}" th:classappend="${activePage == 'user'} ? 'active' : ''">
+        <span class="bl-nav-icon">👥</span>Quản lý người dùng
+    </a>
+</div>
+<div class="bl-sidebar-section">
+    <div class="section-label">Kho sách</div>
+    <a class="bl-nav-item" th:href="@{/categories}" th:classappend="${activePage == 'category'} ? 'active' : ''">
+        <span class="bl-nav-icon">📖</span>Quản lý danh mục
+    </a>
+
+<!--    <a class="bl-nav-item" id="nav-books"  th:classappend="${activePage == 'books'} ? 'active' : ''">-->
+<!--        <span class="bl-nav-icon">📖</span>Danh mục sách-->
+<!--    </a>-->
+
+    <a class="bl-nav-item menu-toggle" id="nav-books">
+        <span class="bl-nav-icon">📚</span> Danh mục sách
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </a>
+    <ul class="nav-content">
+        <li>
+            <a class="bl-nav-item" th:href="@{/books}" th:classappend="${activePage == 'books'} ? 'active' : ''">
+                <span class="bl-nav-icon">📕</span>
+                <span>Sách Offline</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="bl-nav-item" onclick="goPage('books');openAddBook()"><span class="bl-nav-icon">➕</span>Nhập sách mới</div>
+    <div class="bl-nav-item"><span class="bl-nav-icon">🏷️</span>Thể loại / Tag</div>
+</div>
+
+<div class="bl-sidebar-section">
+    <div class="section-label">Lưu hành</div>
+    <div class="bl-nav-item" id="nav-borrow" onclick="goPage('borrow');showCircTab('borrow-tab')"><span class="bl-nav-icon">↗</span>Cho mượn</div>
+    <div class="bl-nav-item" onclick="goPage('borrow');showCircTab('return-tab')"><span class="bl-nav-icon">↙</span>Trả sách</div>
+    <div class="bl-nav-item" onclick="goPage('borrow');showCircTab('overdue-tab')"><span class="bl-nav-icon">⚠️</span>Quá hạn<span class="bl-nav-badge">7</span></div>
+    <div class="bl-nav-item"><span class="bl-nav-icon">🔔</span>Đặt trước<span class="bl-nav-badge">3</span></div>
+</div>
+
+<div class="bl-sidebar-section">
+    <div class="section-label">Độc giả</div>
+    <div class="bl-nav-item" id="nav-members" onclick="goPage('members')"><span class="bl-nav-icon">👥</span>Hội viên</div>
+    <div class="bl-nav-item" onclick="goPage('members');openAddMember()"><span class="bl-nav-icon">👤</span>Đăng ký mới</div>
+    <div class="bl-nav-item"><span class="bl-nav-icon">💳</span>Thẻ thư viện</div>
+</div>
+
+<div class="bl-sidebar-section">
+    <div class="section-label">Hệ thống</div>
+    <div class="bl-nav-item"><span class="bl-nav-icon">⚙️</span>Cài đặt</div>
+    <div class="bl-nav-item"><span class="bl-nav-icon">🛡️</span>Phân quyền</div>
+</div>
+
+<div class="bl-sidebar-footer">
+    <div class="user-card">
+        <div class="user-avatar">NV</div>
+        <div><div class="user-name">Nguyễn Văn Minh</div><div class="user-role">Quản trị viên</div></div>
+    </div>
+</div>
+</aside>

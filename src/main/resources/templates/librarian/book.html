@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head th:replace="layout/head :: head">
+</head>
+<body>
+
+<!-- ════════ SIDEBAR ════════ -->
+<aside th:replace="layout/aside :: aside"></aside>
+
+<!-- ════════ MAIN ════════ -->
+<div class="bl-main">
+    <header th:replace="layout/header :: header"></header>
+    <div class="bl-content">
+        <!-- ══════ PAGE: BOOKS ══════ -->
+        <div class="bl-page active" id="page-books" >
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                <div class="bl-search-bar" style="flex:1;min-width:220px;"><span style="color:var(--mist);">🔍</span><input type="text" placeholder="Tìm theo tên sách, tác giả, ISBN..."></div>
+                <select class="bl-filter-select"><option>Tất cả thể loại</option><option>Văn học</option><option>Kỹ năng sống</option><option>Lịch sử</option><option>Tâm lý học</option><option>Công nghệ</option><option>Thiếu nhi</option></select>
+                <select class="bl-filter-select"><option>Tất cả trạng thái</option><option>Còn sách</option><option>Đang mượn</option><option>Quá hạn</option></select>
+                <button class="bl-btn bl-btn-primary" onclick="openAddBook()">➕ Thêm sách</button>
+            </div>
+
+            <div id="books-list-view" >
+                <div class="bl-panel">
+                    <table class="bl-data-table">
+                        <thead>
+                        <tr>
+                            <th>Tên sách</th>
+                            <th>Tác giả</th>
+                            <th>Thể loại</th>
+                            <th>ISBN</th>
+                            <th>Tồn kho</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="b : ${books}">
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📗</div>
+                                    <div style="font-weight:500;"
+                                         th:text="${b.title != null ? b.title : 'Chưa có tên'}">
+                                        Đắc Nhân Tâm
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td style="color:var(--mist);"
+                                th:text="${b.author != null ? b.author.authorName : 'Không rõ'}">
+                                Dale Carnegie
+                            </td>
+
+                            <td>
+                                <span class="bl-badge bl-badge-silver"
+                                      th:text="${b.category != null ? b.category.categoryName : 'Chưa phân loại'}">
+                                    Kỹ năng sống
+                                </span>
+                            </td>
+
+                            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);"
+                                th:text="${b.isbn != null ? b.isbn : '---'}">
+                                978-604-1-22345-6
+                            </td>
+                            <td>
+                            <span style="font-family:'DM Mono',monospace;font-weight:600;" th:text="${b.quantity}">
+                                12/15
+                            </span>
+                            </td>
+
+                            <td>
+                            <span class="bl-badge bl-badge-borrowed">
+                                Đang mượn
+                            </span>
+                            </td>
+                            <td>
+                                <a class="action-btn" th:href="@{/books-management(id=${b.id})}">Xem</a>
+                                <button class="action-btn" th:data-id="${b.id}"
+                                        th:data-author="${b.author.id}"
+                                        th:data-isbn="${b.isbn}" th:data-language="${b.language}"
+                                        th:data-publisher="${b.publisher.publisherName}"
+                                        th:data-publishYear="${b.publishYear}" >Sửa</button>
+                                <a class="action-btn" th:data-id="${b.id}" onclick="confirmDelete(this)">Xóa</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ════════ MODALS ════════ -->
+<div class="bl-modal-overlay" id="book-modal" onclick="closeModal('book-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" id="modal-book-icon" style="background:#fef3dc;">📗</div>
+            <div style="flex:1;">
+                <div class="bl-modal-book-title" id="modal-book-title">Đắc Nhân Tâm</div>
+                <div class="bl-modal-book-author" id="modal-book-author">Dale Carnegie</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="bl-badge bl-badge-borrowed" id="modal-book-status">Đang mượn</span><span class="bl-badge bl-badge-silver" id="modal-book-genre">Kỹ năng sống</span></div>
+            </div>
+            <button class="bl-modal-close" onclick="closeModal('book-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">ISBN</div>
+                    <div class="detail-value" id="modal-isbn" style="font-family:'DM Mono',monospace;font-size:13px;">978-604-1-22345-6</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Năm xuất bản</div>
+                    <div class="detail-value" id="modal-year">1936</div>
+                </div>
+                <div class="detail-item"><div class="detail-label">Nhà xuất bản</div><div class="detail-value" id="modal-publisher">NXB Tổng Hợp</div></div>
+                <div class="detail-item"><div class="detail-label">Số lượng tồn</div><div class="detail-value" id="modal-qty" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--gold);">12 / 15</div></div>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--mist);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;">Lịch sử mượn gần đây</div>
+            <div class="borrow-history">
+                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rust));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">TL</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Trần Thị Lan</div><div style="font-size:11px;color:var(--mist);">Mượn 01/03/2026</div></div><span class="bl-badge bl-badge-borrowed">Đang mượn</span></div>
+                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#5a8cd0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">LM</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Lê Minh Tú</div><div style="font-size:11px;color:var(--mist);">15/02 – 01/03/2026</div></div><span class="bl-badge bl-badge-available">Đã trả</span></div>
+                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--forest),var(--forest-light));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">PH</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Phạm Hoàng Nam</div><div style="font-size:11px;color:var(--mist);">01/02 – 15/02/2026</div></div><span class="bl-badge bl-badge-available">Đã trả</span></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;">
+                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;" onclick="closeModal('book-modal');goPage('borrow');showCircTab('borrow-tab')">↗ Tạo phiếu mượn</button>
+                <button class="bl-btn bl-btn-secondary">✏️ Chỉnh sửa</button>
+                <button class="bl-btn bl-btn-danger">🗑️ Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bl-modal-overlay" id="add-book-modal" onclick="closeModal('add-book-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" style="background:#e6f2ec;font-size:28px;">➕</div>
+            <div>
+                <div class="bl-modal-book-title">Thêm sách mới</div>
+                <div class="bl-modal-book-author">Nhập thông tin đầu sách mới vào hệ thống</div></div>
+            <button class="bl-modal-close" onclick="closeModal('add-book-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <form th:action="@{/books}" method="post" th:object="${book}">
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <input type="hidden" th:field="*{id}">
+                        <div class="bl-form-label">Tên sách *</div>
+                        <input th:field="*{title}" required class="bl-form-input" placeholder="Nhập tên sách...">
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Tác giả *</div>
+                        <input type="text" name="author" required class="bl-form-input" placeholder="Tên tác giả...">
+                    </div>
+                </div>
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">ISBN</div>
+                        <input id="isbnInput" th:field="*{isbn}" class="bl-form-input" placeholder="978-...">
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Ngôn ngữ</div>
+                        <select class="bl-form-input" required th:field="*{language}">
+                            <option value="vn">Tiếng Việt</option>
+                            <option value="us">Tiếng Anh</option>
+                            <option value="phap">Tiếng Pháp</option>
+                            <option value="nhat">Tiếng Nhật</option>
+                            <option value="china">Tiếng Trung</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <div class="bl-form-label" >Nhà xuất bản</div>
+                        <input type="text" name="nxb" required class="bl-form-input" placeholder="Tên NXB...">
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Năm xuất bản</div>
+                        <input class="bl-form-input" required th:field="*{publishYear}" type="text" placeholder="2024">
+                    </div>
+                </div>
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Chủ đề</div>
+                        <select id="topicSelect" class="bl-form-input">
+                            <option value="">-- Chọn chủ đề --</option>
+                            <option value="1">Văn học</option>
+                            <option value="2">Kỹ năng sống</option>
+                            <option value="3">Lịch sử</option>
+                            <option value="4">Tâm lý học</option>
+                            <option value="5">Công nghệ</option>
+                            <option value="6">Kinh tế</option>
+                            <option value="7">Giáo dục</option>
+                            <option value="8">Thiếu nhi</option>
+                            <option value="9">Khoa học</option>
+                            <option value="10">Ngoại ngữ</option>
+                            <option value="">Không có chủ đề</option>
+                        </select>
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Thể loại</div>
+                        <select id="categorySelect" required class="bl-form-input" th:field="*{category.id}">
+                            <option value="">-- Chọn thể loại --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bl-form-row"><div class="bl-form-group">
+                    <div class="bl-form-label">Số lượng nhập *</div>
+                    <input class="bl-form-input" required th:field="*{quantity}" type="number" placeholder="0" min="1">
+                </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Giá bìa (VNĐ)</div>
+                        <input class="bl-form-input" required th:field="*{price}" placeholder="0" style="font-family:'DM Mono',monospace;">
+                    </div>
+                </div>
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Mô tả / Tóm tắt</div>
+                    <textarea class="bl-form-input" th:field="*{note}" rows="3" placeholder="Nội dung tóm tắt của sách..."></textarea>
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Thêm vào kho</button>
+                    <button class="bl-btn bl-btn-secondary" onclick="closeModal('add-book-modal')">Hủy</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+<script th:replace="layout/script :: script"></script>
+<script src=""></script><script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script>
+<!--    function startScanner() {-->
+<!--    Quagga.init({-->
+<!--        inputStream: {-->
+<!--            name: "Live",-->
+<!--            type: "LiveStream",-->
+<!--            target: document.querySelector('#reader'),-->
+<!--            constraints: {-->
+<!--                facingMode: "environment" // laptop sẽ tự fallback-->
+<!--            }-->
+<!--        },-->
+<!--        decoder: {-->
+<!--            readers: ["ean_reader"] // 👉 ISBN = EAN-13-->
+<!--        }-->
+<!--    }, function(err) {-->
+<!--        if (err) {-->
+<!--            console.log(err);-->
+<!--            return;-->
+<!--        }-->
+<!--        Quagga.start();-->
+<!--    });-->
+
+<!--    Quagga.onDetected(function(result) {-->
+<!--        let code = result.codeResult.code;-->
+<!--        console.log("ISBN:", code);-->
+
+<!--        document.getElementById("isbnInput").value = code;-->
+
+<!--        Quagga.stop();-->
+<!--        document.getElementById("reader").innerHTML = "";-->
+<!--    });-->
+<!--}-->
+function confirmDelete(element) {
+    const cId = element.dataset.id;
+    if (confirm("Bạn có chắc chắn muốn xóa đầu sách " + cId + " này?")) {
+        window.location.href = "/qltv/books?id=" + cId;
+    }
+}
+
+document.getElementById("topicSelect")
+.addEventListener("change", function () {
+
+    let parent = this.value;
+
+    fetch("/qltv/get-category?parent=" + parent)
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            let categorySelect =
+                document.getElementById("categorySelect");
+
+            categorySelect.innerHTML =
+                '<option value="">-- Chọn thể loại --</option>';
+
+            data.forEach(item => {
+
+                categorySelect.innerHTML += `
+                    <option value="${item.id}">
+                        ${item.categoryName}
+                    </option>
+                `;
+
+            });
+
+        });
+
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head th:replace="layout/head :: head">
+</head>
+<body>
+
+<!-- ════════ SIDEBAR ════════ -->
+<aside th:replace="layout/aside :: aside"></aside>
+
+<!-- ════════ MAIN ════════ -->
+<div class="bl-main">
+   <header th:replace="layout/header :: header"></header>
+    <div class="bl-content">
+
+        <!-- ══════ PAGE: DASHBOARD ══════ -->
+        <div class="bl-page active" id="page-dashboard">
+            <div class="stats-row">
+                <div class="stat-card gold" style="animation-delay:.05s;">
+                    <div class="stat-top"><div class="stat-icon">📚</div><div class="stat-trend trend-up">+42</div></div>
+                    <div class="stat-value">8,247</div>
+                    <div class="stat-label">Tổng đầu sách</div>
+                </div>
+                <div class="stat-card rust" style="animation-delay:.10s;">
+                    <div class="stat-top"><div class="stat-icon">↗</div><div class="stat-trend trend-up">+18%</div></div>
+                    <div class="stat-value">312</div>
+                    <div class="stat-label">Đang cho mượn</div>
+                </div>
+                <div class="stat-card forest" style="animation-delay:.15s;">
+                    <div class="stat-top"><div class="stat-icon">👥</div><div class="stat-trend trend-up">+5</div></div>
+                    <div class="stat-value">1,584</div>
+                    <div class="stat-label">Hội viên tích cực</div>
+                </div>
+                <div class="stat-card blue" style="animation-delay:.20s;">
+                    <div class="stat-top"><div class="stat-icon">⚠️</div><div class="stat-trend trend-down">+2</div></div>
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Sách quá hạn</div>
+                </div>
+            </div>
+
+            <div class="bl-main-grid">
+                <div class="bl-panel">
+                    <div class="bl-panel-header">
+                        <div class="bl-panel-title">Sách gần đây được mượn</div>
+                        <a class="bl-panel-action" onclick="goPage('books')">Xem tất cả →</a>
+                    </div>
+                    <table class="book-table">
+                        <thead><tr><th>Tên sách</th><th>Thể loại</th><th>Số lượng</th><th>Trạng thái</th><th></th></tr></thead>
+                        <tbody>
+                        <tr><td><div class="book-info"><div class="book-cover" style="background:#fef3dc;">📗</div><div><div class="book-title">Đắc Nhân Tâm</div><div class="book-author">Dale Carnegie</div></div></div></td><td><span class="genre-tag">Kỹ năng sống</span></td><td><span class="qty">12/15</span></td><td><span class="status-badge status-borrowed">Đang mượn</span></td><td><span class="action-dots">···</span></td></tr>
+                        <tr><td><div class="book-info"><div class="book-cover" style="background:#e6f2ec;">📘</div><div><div class="book-title">Nhà Giả Kim</div><div class="book-author">Paulo Coelho</div></div></div></td><td><span class="genre-tag">Văn học</span></td><td><span class="qty">8/10</span></td><td><span class="status-badge status-available">Còn sách</span></td><td><span class="action-dots">···</span></td></tr>
+                        <tr><td><div class="book-info"><div class="book-cover" style="background:#fdeee9;">📕</div><div><div class="book-title">Tư Duy Nhanh Và Chậm</div><div class="book-author">Daniel Kahneman</div></div></div></td><td><span class="genre-tag">Tâm lý học</span></td><td><span class="qty">5/5</span></td><td><span class="status-badge status-overdue">Quá hạn</span></td><td><span class="action-dots">···</span></td></tr>
+                        <tr><td><div class="book-info"><div class="book-cover" style="background:#e8f0fb;">📙</div><div><div class="book-title">Sapiens: Lược Sử Loài Người</div><div class="book-author">Yuval Noah Harari</div></div></div></td><td><span class="genre-tag">Lịch sử</span></td><td><span class="qty">3/6</span></td><td><span class="status-badge status-borrowed">Đang mượn</span></td><td><span class="action-dots">···</span></td></tr>
+                        <tr><td><div class="book-info"><div class="book-cover" style="background:#fef3dc;">📒</div><div><div class="book-title">Clean Code</div><div class="book-author">Robert C. Martin</div></div></div></td><td><span class="genre-tag">Công nghệ</span></td><td><span class="qty">7/7</span></td><td><span class="status-badge status-available">Còn sách</span></td><td><span class="action-dots">···</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bl-panel">
+                    <div class="bl-panel-header">
+                        <div class="bl-panel-title">Hoạt động hôm nay</div>
+                        <a class="bl-panel-action">Tất cả</a>
+                    </div>
+                    <div class="activity-list">
+                        <div class="activity-item"><div class="activity-dot dot-borrow">↗</div><div><div class="act-title">Trần Thị Lan mượn sách</div><div class="act-sub">Đắc Nhân Tâm — Mã: TL-0482</div></div><div class="act-time">09:14</div></div>
+                        <div class="activity-item"><div class="activity-dot dot-return">↙</div><div><div class="act-title">Lê Minh Tú trả sách</div><div class="act-sub">Nhà Giả Kim — Đúng hạn</div></div><div class="act-time">09:02</div></div>
+                        <div class="activity-item"><div class="activity-dot dot-overdue" style="color:var(--rust);">⚠</div><div><div class="act-title">Phạm Hoàng Nam quá hạn</div><div class="act-sub">Tư Duy Nhanh và Chậm — 3 ngày</div></div><div class="act-time">08:50</div></div>
+                        <div class="activity-item"><div class="activity-dot dot-new">🆕</div><div><div class="act-title">Hội viên mới đăng ký</div><div class="act-sub">Nguyễn Thị Hương — ID: #1585</div></div><div class="act-time">08:30</div></div>
+                        <div class="activity-item"><div class="activity-dot dot-borrow">↗</div><div><div class="act-title">Vũ Đình Khoa mượn sách</div><div class="act-sub">Sapiens — Mã: VK-0319</div></div><div class="act-time">08:15</div></div>
+                        <div class="activity-item"><div class="activity-dot dot-new" style="background:#e6f2ec;">📦</div><div><div class="act-title">Nhập kho 42 đầu sách</div><div class="act-sub">NXB Kim Đồng — Lô T03/2026</div></div><div class="act-time">07:45</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-grid">
+                <div class="bl-panel">
+                    <div class="bl-panel-header">
+                        <div class="bl-panel-title">Hội viên mượn nhiều nhất</div>
+                        <a class="bl-panel-action" onclick="goPage('members')">Xem thêm →</a>
+                    </div>
+                    <div class="member-row"><div class="member-avatar" style="background:linear-gradient(135deg,#c9963a,#e8c06a);">TL</div><div><div class="member-name">Trần Thị Lan</div><div class="member-id">#1042 · Hội viên Vàng</div></div><div class="member-books">24 <span>quyển</span></div></div>
+                    <div class="member-row"><div class="member-avatar" style="background:linear-gradient(135deg,#2d5a3d,#3e7a54);">PH</div><div><div class="member-name">Phạm Hoàng Nam</div><div class="member-id">#0891 · Hội viên Bạc</div></div><div class="member-books">18 <span>quyển</span></div></div>
+                    <div class="member-row"><div class="member-avatar" style="background:linear-gradient(135deg,#3a6cb0,#5a8cd0);">LM</div><div><div class="member-name">Lê Minh Tú</div><div class="member-id">#1203 · Hội viên Vàng</div></div><div class="member-books">15 <span>quyển</span></div></div>
+                    <div class="member-row"><div class="member-avatar" style="background:linear-gradient(135deg,#b04a2a,#d06040);">VĐ</div><div><div class="member-name">Vũ Đình Khoa</div><div class="member-id">#0674 · Hội viên Thường</div></div><div class="member-books">11 <span>quyển</span></div></div>
+                    <div class="member-row"><div class="member-avatar" style="background:linear-gradient(135deg,#7a4a8a,#9a6aaa);">NH</div><div><div class="member-name">Nguyễn Thị Hương</div><div class="member-id">#1585 · Mới đăng ký</div></div><div class="member-books">1 <span>quyển</span></div></div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <div class="bl-panel">
+                        <div class="bl-panel-header"><div class="bl-panel-title">Lượt mượn — Tuần này</div></div>
+                        <div class="mini-chart">
+                            <div class="chart-bars">
+                                <div class="bar-wrap"><div class="bar" style="height:45px;animation-delay:.1s;"></div><div class="bar-label">T2</div></div>
+                                <div class="bar-wrap"><div class="bar" style="height:62px;animation-delay:.15s;"></div><div class="bar-label">T3</div></div>
+                                <div class="bar-wrap"><div class="bar" style="height:38px;animation-delay:.2s;"></div><div class="bar-label">T4</div></div>
+                                <div class="bar-wrap"><div class="bar" style="height:75px;animation-delay:.25s;"></div><div class="bar-label">T5</div></div>
+                                <div class="bar-wrap"><div class="bar" style="height:55px;animation-delay:.3s;"></div><div class="bar-label">T6</div></div>
+                                <div class="bar-wrap"><div class="bar" style="height:28px;animation-delay:.35s;"></div><div class="bar-label">T7</div></div>
+                                <div class="bar-wrap"><div class="bar highlight" style="height:80px;animation-delay:.4s;"></div><div class="bar-label">CN</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bl-panel">
+                        <div class="bl-panel-header"><div class="bl-panel-title">Thao tác nhanh</div></div>
+                        <div class="quick-grid">
+                            <div class="quick-btn" onclick="goPage('borrow');showCircTab('borrow-tab')"><div class="quick-btn-icon">📤</div><div class="quick-btn-label">Cho mượn</div></div>
+                            <div class="quick-btn" onclick="goPage('borrow');showCircTab('return-tab')"><div class="quick-btn-icon">📥</div><div class="quick-btn-label">Nhận trả</div></div>
+                            <div class="quick-btn" onclick="goPage('books');openAddBook()"><div class="quick-btn-icon">➕</div><div class="quick-btn-label">Thêm sách</div></div>
+                            <div class="quick-btn" onclick="goPage('stats')"><div class="quick-btn-icon">📋</div><div class="quick-btn-label">Xuất báo cáo</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════ PAGE: BOOKS ══════ -->
+        <div class="bl-page" id="page-books">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                <div class="bl-search-bar" style="flex:1;min-width:220px;"><span style="color:var(--mist);">🔍</span><input type="text" placeholder="Tìm theo tên sách, tác giả, ISBN..."></div>
+                <select class="bl-filter-select"><option>Tất cả thể loại</option><option>Văn học</option><option>Kỹ năng sống</option><option>Lịch sử</option><option>Tâm lý học</option><option>Công nghệ</option><option>Thiếu nhi</option></select>
+                <select class="bl-filter-select"><option>Tất cả trạng thái</option><option>Còn sách</option><option>Đang mượn</option><option>Quá hạn</option></select>
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="setView('grid')">⊞</button>
+                    <button class="view-btn" onclick="setView('list')">☰</button>
+                </div>
+                <button class="bl-btn bl-btn-primary" onclick="openAddBook()">➕ Thêm sách</button>
+            </div>
+
+            <div id="books-grid-view">
+                <div class="book-grid">
+                    <div class="book-card" onclick="openBookDetail('Đắc Nhân Tâm','Dale Carnegie','📗','#fef3dc','Kỹ năng sống','978-604-1-22345-6','12','15','1936','NXB Tổng Hợp')"><div class="book-spine" style="background:#fef3dc;">📗</div><div class="book-card-body"><div class="book-card-title">Đắc Nhân Tâm</div><div class="book-card-author">Dale Carnegie</div><div class="book-card-footer"><span class="bl-badge bl-badge-borrowed">3/15</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('Nhà Giả Kim','Paulo Coelho','📘','#e6f2ec','Văn học','978-604-1-33456-7','8','10','1988','NXB Văn Học')"><div class="book-spine" style="background:#e6f2ec;">📘</div><div class="book-card-body"><div class="book-card-title">Nhà Giả Kim</div><div class="book-card-author">Paulo Coelho</div><div class="book-card-footer"><span class="bl-badge bl-badge-available">10/10</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('Tư Duy Nhanh Và Chậm','Daniel Kahneman','📕','#fdeee9','Tâm lý học','978-0-374-27563-1','0','5','2011','NXB Lao Động')"><div class="book-spine" style="background:#fdeee9;">📕</div><div class="book-card-body"><div class="book-card-title">Tư Duy Nhanh Và Chậm</div><div class="book-card-author">Daniel Kahneman</div><div class="book-card-footer"><span class="bl-badge bl-badge-overdue">QH</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('Sapiens: Lược Sử Loài Người','Yuval N. Harari','📙','#e8f0fb','Lịch sử','978-0-099-59008-8','3','6','2011','NXB Tri Thức')"><div class="book-spine" style="background:#e8f0fb;">📙</div><div class="book-card-body"><div class="book-card-title">Sapiens</div><div class="book-card-author">Yuval N. Harari</div><div class="book-card-footer"><span class="bl-badge bl-badge-borrowed">3/6</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('Clean Code','Robert C. Martin','📒','#fef3dc','Công nghệ','978-0-13-235088-4','7','7','2008','NXB Lập Trình')"><div class="book-spine" style="background:#fef3dc;">📒</div><div class="book-card-body"><div class="book-card-title">Clean Code</div><div class="book-card-author">Robert C. Martin</div><div class="book-card-footer"><span class="bl-badge bl-badge-available">7/7</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('Dune','Frank Herbert','📔','#e8ece6','Khoa học viễn tưởng','978-0-441-17271-9','4','4','1965','NXB Văn Học')"><div class="book-spine" style="background:#e8ece6;">📔</div><div class="book-card-body"><div class="book-card-title">Dune</div><div class="book-card-author">Frank Herbert</div><div class="book-card-footer"><span class="bl-badge bl-badge-borrowed">0/4</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('Chiến Tranh Và Hòa Bình','Leo Tolstoy','📗','#f0ede8','Văn học','978-0-199-23469-9','2','3','1869','NXB Văn Học')"><div class="book-spine" style="background:#f0ede8;">📗</div><div class="book-card-body"><div class="book-card-title">Chiến Tranh &amp; Hòa Bình</div><div class="book-card-author">Leo Tolstoy</div><div class="book-card-footer"><span class="bl-badge bl-badge-available">2/3</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('Atomic Habits','James Clear','📘','#e8f5f0','Kỹ năng sống','978-0-735-21129-2','6','8','2018','NXB Lao Động')"><div class="book-spine" style="background:#e8f5f0;">📘</div><div class="book-card-body"><div class="book-card-title">Atomic Habits</div><div class="book-card-author">James Clear</div><div class="book-card-footer"><span class="bl-badge bl-badge-borrowed">2/8</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('The Pragmatic Programmer','D. Thomas &amp; A. Hunt','📕','#ece8f4','Công nghệ','978-0-13-595705-9','3','3','1999','NXB IT')"><div class="book-spine" style="background:#ece8f4;">📕</div><div class="book-card-body"><div class="book-card-title">The Pragmatic Programmer</div><div class="book-card-author">Thomas &amp; Hunt</div><div class="book-card-footer"><span class="bl-badge bl-badge-available">3/3</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('1984','George Orwell','📙','#fce8e8','Văn học','978-0-451-52493-5','1','4','1949','NXB Văn Học')"><div class="book-spine" style="background:#fce8e8;">📙</div><div class="book-card-body"><div class="book-card-title">1984</div><div class="book-card-author">George Orwell</div><div class="book-card-footer"><span class="bl-badge bl-badge-overdue">QH</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('Lolita','Vladimir Nabokov','📒','#f4f0e8','Văn học','978-0-679-72020-1','3','3','1955','NXB Hội Nhà Văn')"><div class="book-spine" style="background:#f4f0e8;">📒</div><div class="book-card-body"><div class="book-card-title">Lolita</div><div class="book-card-author">Vladimir Nabokov</div><div class="book-card-footer"><span class="bl-badge bl-badge-available">3/3</span></div></div></div>
+                    <div class="book-card" onclick="openBookDetail('Homo Deus','Yuval N. Harari','📔','#e8f0fb','Lịch sử','978-1-910-70187-2','2','5','2015','NXB Tri Thức')"><div class="book-spine" style="background:#e8f0fb;">📔</div><div class="book-card-body"><div class="book-card-title">Homo Deus</div><div class="book-card-author">Yuval N. Harari</div><div class="book-card-footer"><span class="bl-badge bl-badge-borrowed">3/5</span></div></div></div>
+                </div>
+            </div>
+
+            <div id="books-list-view" style="display:none;">
+                <div class="bl-panel">
+                    <table class="bl-data-table">
+                        <thead><tr><th>Tên sách</th><th>Tác giả</th><th>Thể loại</th><th>ISBN</th><th>Tồn kho</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+                        <tbody>
+                        <tr><td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📗</div><div style="font-weight:500;">Đắc Nhân Tâm</div></div></td><td style="color:var(--mist);">Dale Carnegie</td><td><span class="bl-badge bl-badge-silver">Kỹ năng sống</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">978-604-1-22345-6</td><td><span style="font-family:'DM Mono',monospace;font-weight:600;">12/15</span></td><td><span class="bl-badge bl-badge-borrowed">Đang mượn</span></td><td><button class="action-btn">Xem</button> <button class="action-btn">Sửa</button></td></tr>
+                        <tr><td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:42px;background:#e6f2ec;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📘</div><div style="font-weight:500;">Nhà Giả Kim</div></div></td><td style="color:var(--mist);">Paulo Coelho</td><td><span class="bl-badge bl-badge-silver">Văn học</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">978-604-1-33456-7</td><td><span style="font-family:'DM Mono',monospace;font-weight:600;">10/10</span></td><td><span class="bl-badge bl-badge-available">Còn sách</span></td><td><button class="action-btn">Xem</button> <button class="action-btn">Sửa</button></td></tr>
+                        <tr><td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:42px;background:#fdeee9;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📕</div><div style="font-weight:500;">Tư Duy Nhanh Và Chậm</div></div></td><td style="color:var(--mist);">Daniel Kahneman</td><td><span class="bl-badge bl-badge-silver">Tâm lý học</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">978-0-374-27563-1</td><td><span style="font-family:'DM Mono',monospace;font-weight:600;">0/5</span></td><td><span class="bl-badge bl-badge-overdue">Quá hạn</span></td><td><button class="action-btn">Xem</button> <button class="action-btn">Sửa</button></td></tr>
+                        <tr><td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:42px;background:#e8f0fb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📙</div><div style="font-weight:500;">Sapiens: Lược Sử Loài Người</div></div></td><td style="color:var(--mist);">Yuval N. Harari</td><td><span class="bl-badge bl-badge-silver">Lịch sử</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">978-0-099-59008-8</td><td><span style="font-family:'DM Mono',monospace;font-weight:600;">3/6</span></td><td><span class="bl-badge bl-badge-borrowed">Đang mượn</span></td><td><button class="action-btn">Xem</button> <button class="action-btn">Sửa</button></td></tr>
+                        <tr><td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📒</div><div style="font-weight:500;">Clean Code</div></div></td><td style="color:var(--mist);">Robert C. Martin</td><td><span class="bl-badge bl-badge-silver">Công nghệ</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">978-0-13-235088-4</td><td><span style="font-family:'DM Mono',monospace;font-weight:600;">7/7</span></td><td><span class="bl-badge bl-badge-available">Còn sách</span></td><td><button class="action-btn">Xem</button> <button class="action-btn">Sửa</button></td></tr>
+                        <tr><td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:42px;background:#e8f5f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📘</div><div style="font-weight:500;">Atomic Habits</div></div></td><td style="color:var(--mist);">James Clear</td><td><span class="bl-badge bl-badge-silver">Kỹ năng sống</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">978-0-735-21129-2</td><td><span style="font-family:'DM Mono',monospace;font-weight:600;">6/8</span></td><td><span class="bl-badge bl-badge-borrowed">Đang mượn</span></td><td><button class="action-btn">Xem</button> <button class="action-btn">Sửa</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════ PAGE: BORROW ══════ -->
+        <div class="bl-page" id="page-borrow">
+            <div class="circulation-tabs">
+                <button class="circ-tab active" id="tab-borrow-btn" onclick="showCircTab('borrow-tab')">↗ Cho mượn</button>
+                <button class="circ-tab" id="tab-return-btn" onclick="showCircTab('return-tab')">↙ Trả sách</button>
+                <button class="circ-tab" id="tab-overdue-btn" onclick="showCircTab('overdue-tab')">⚠️ Quá hạn (7)</button>
+                <button class="circ-tab" id="tab-history-btn" onclick="showCircTab('history-tab')">📋 Lịch sử</button>
+            </div>
+
+            <div class="circ-panel active" id="borrow-tab">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <div>
+                        <div class="circ-form-card">
+                            <div class="circ-form-title"><span class="step-chip">1</span> Xác định độc giả</div>
+                            <div class="bl-form-group"><div class="bl-form-label">Mã thẻ hội viên hoặc CMND</div><div class="scan-input"><input class="bl-form-input" placeholder="Quét thẻ hoặc nhập mã..." value="TL-1042"><button class="bl-btn bl-btn-primary">Tìm</button></div></div>
+                            <div class="confirm-card"><div class="confirm-icon">👤</div><div><div class="confirm-title">Trần Thị Lan</div><div class="confirm-sub">Mã: #1042 · Hội viên Vàng · Còn hạn đến 31/12/2026</div><div style="margin-top:6px;"><span class="bl-badge bl-badge-available">Đủ điều kiện mượn</span></div></div></div>
+                        </div>
+                        <div class="circ-form-card">
+                            <div class="circ-form-title"><span class="step-chip">2</span> Chọn sách</div>
+                            <div class="bl-form-group"><div class="bl-form-label">Mã sách hoặc ISBN</div><div class="scan-input"><input class="bl-form-input" placeholder="Quét mã vạch hoặc tìm tên sách..."><button class="bl-btn bl-btn-secondary">Tìm</button></div></div>
+                            <div class="confirm-card" style="border-color:var(--forest);"><div class="confirm-icon">📗</div><div style="flex:1"><div class="confirm-title">Đắc Nhân Tâm</div><div class="confirm-sub">Dale Carnegie · ISBN 978-604-1-22345-6</div><div style="margin-top:6px;"><span class="bl-badge bl-badge-available">Còn 3 quyển</span></div></div><button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--rust);">✕</button></div>
+                        </div>
+                        <div class="circ-form-card">
+                            <div class="circ-form-title"><span class="step-chip">3</span> Xác nhận &amp; Ngày hạn</div>
+                            <div class="bl-form-row" style="margin-bottom:16px;"><div class="bl-form-group" style="margin-bottom:0;"><div class="bl-form-label">Ngày mượn</div><input class="bl-form-input" type="date" value="2026-03-25"></div><div class="bl-form-group" style="margin-bottom:0;"><div class="bl-form-label">Ngày hẹn trả</div><input class="bl-form-input" type="date" value="2026-04-08"></div></div>
+                            <div class="bl-form-group"><div class="bl-form-label">Ghi chú</div><input class="bl-form-input" placeholder="Ghi chú thêm (tình trạng sách, ghi chú đặc biệt...)"></div>
+                            <button class="bl-btn bl-btn-forest" style="width:100%;justify-content:center;padding:12px;">✓ Xác nhận cho mượn</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="bl-panel">
+                            <div class="bl-panel-header"><div class="bl-panel-title">Đang mượn (3 quyển)</div><span class="bl-badge bl-badge-borrowed">Tối đa: 5</span></div>
+                            <div class="borrow-list-item"><div class="borrow-book-icon" style="background:#e6f2ec;">📘</div><div class="borrow-info"><div class="borrow-title-text">Nhà Giả Kim</div><div class="borrow-meta">Mượn: 10/03/2026</div></div><div class="due-date due-ok">Hạn: 24/03/2026</div></div>
+                            <div class="borrow-list-item"><div class="borrow-book-icon" style="background:#e8f0fb;">📙</div><div class="borrow-info"><div class="borrow-title-text">Sapiens</div><div class="borrow-meta">Mượn: 01/03/2026</div></div><div class="due-date due-warn">Hạn: 15/03/2026</div></div>
+                            <div class="borrow-list-item"><div class="borrow-book-icon" style="background:#fdeee9;">📕</div><div class="borrow-info"><div class="borrow-title-text">Tư Duy Nhanh Và Chậm</div><div class="borrow-meta">Mượn: 20/02/2026</div></div><div class="due-date due-over">Quá 4 ngày!</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="circ-panel" id="return-tab">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <div>
+                        <div class="circ-form-card">
+                            <div class="circ-form-title"><span class="step-chip">1</span> Quét mã sách / thẻ trả</div>
+                            <div class="bl-form-group"><div class="bl-form-label">Mã phiếu mượn hoặc ISBN sách</div><div class="scan-input"><input class="bl-form-input" placeholder="Nhập hoặc quét mã..." value="BRW-20260301-0891"><button class="bl-btn bl-btn-primary">Tra cứu</button></div></div>
+                        </div>
+                        <div class="circ-form-card">
+                            <div class="circ-form-title"><span class="step-chip">2</span> Thông tin phiếu mượn</div>
+                            <div class="overdue-alert">⚠️ Sách quá hạn 4 ngày — Phí phạt: 20,000đ</div>
+                            <div class="confirm-card" style="margin-bottom:14px;"><div class="confirm-icon">📕</div><div><div class="confirm-title">Tư Duy Nhanh Và Chậm</div><div class="confirm-sub">Phạm Hoàng Nam · Mượn 20/02 · Hạn 06/03/2026</div></div></div>
+                            <div class="bl-form-row" style="margin-bottom:14px;"><div class="bl-form-group" style="margin-bottom:0;"><div class="bl-form-label">Tình trạng sách</div><select class="bl-form-input"><option>Tốt (như lúc mượn)</option><option>Có hư hỏng nhẹ</option><option>Hư hỏng nặng</option><option>Mất sách</option></select></div><div class="bl-form-group" style="margin-bottom:0;"><div class="bl-form-label">Phí phạt (VNĐ)</div><input class="bl-form-input" value="20,000" style="font-family:'DM Mono',monospace;"></div></div>
+                            <div style="display:flex;gap:10px;"><button class="bl-btn bl-btn-forest" style="flex:1;justify-content:center;">✓ Xác nhận trả sách</button><button class="bl-btn bl-btn-secondary">🖨️ In biên lai</button></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="bl-panel">
+                            <div class="bl-panel-header"><div class="bl-panel-title">Trả sách hôm nay</div><span class="bl-badge bl-badge-available">12 lượt</span></div>
+                            <table class="bl-data-table"><thead><tr><th>Sách</th><th>Độc giả</th><th>Trạng thái</th><th>Giờ</th></tr></thead>
+                                <tbody>
+                                <tr><td style="font-weight:500;">Nhà Giả Kim</td><td style="color:var(--mist);">Lê Minh Tú</td><td><span class="bl-badge bl-badge-available">Đúng hạn</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">09:02</td></tr>
+                                <tr><td style="font-weight:500;">Atomic Habits</td><td style="color:var(--mist);">Nguyễn Thu Hà</td><td><span class="bl-badge bl-badge-available">Đúng hạn</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">08:45</td></tr>
+                                <tr><td style="font-weight:500;">1984</td><td style="color:var(--mist);">Trần Bảo Long</td><td><span class="bl-badge bl-badge-overdue">Quá 2 ngày</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">08:30</td></tr>
+                                </tbody></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="circ-panel" id="overdue-tab">
+                <div class="overdue-alert" style="margin-bottom:20px;">⚠️ Có 7 phiếu mượn quá hạn. Hệ thống đã tự động gửi thông báo email cho 5 trường hợp.</div>
+                <div class="bl-panel">
+                    <div class="bl-panel-header"><div class="bl-panel-title">Danh sách sách quá hạn</div><div style="display:flex;gap:8px;"><button class="bl-btn bl-btn-secondary">📧 Gửi thông báo tất cả</button><button class="bl-btn bl-btn-primary">🖨️ In danh sách</button></div></div>
+                    <table class="bl-data-table">
+                        <thead><tr><th>Sách</th><th>Độc giả</th><th>Ngày mượn</th><th>Hạn trả</th><th>Số ngày trễ</th><th>Phí phạt</th><th>Thao tác</th></tr></thead>
+                        <tbody>
+                        <tr><td><div style="font-weight:500;">Tư Duy Nhanh Và Chậm</div></td><td><div style="display:flex;align-items:center;gap:8px;"><div class="member-table-avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,var(--forest),var(--forest-light));">PH</div>Phạm Hoàng Nam</div></td><td style="color:var(--mist);font-family:'DM Mono',monospace;font-size:12px;">20/02/2026</td><td style="color:var(--rust);font-family:'DM Mono',monospace;font-size:12px;">06/03/2026</td><td style="text-align:center;"><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);">+18</span></td><td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rust);">90,000đ</td><td><button class="action-btn">Nhắc nhở</button> <button class="action-btn">Nhận trả</button></td></tr>
+                        <tr><td><div style="font-weight:500;">1984</div></td><td><div style="display:flex;align-items:center;gap:8px;"><div class="member-table-avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,var(--blue),#5a8cd0);">TB</div>Trần Bảo Long</div></td><td style="color:var(--mist);font-family:'DM Mono',monospace;font-size:12px;">01/03/2026</td><td style="color:var(--rust);font-family:'DM Mono',monospace;font-size:12px;">15/03/2026</td><td style="text-align:center;"><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);">+9</span></td><td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rust);">45,000đ</td><td><button class="action-btn">Nhắc nhở</button> <button class="action-btn">Nhận trả</button></td></tr>
+                        <tr><td><div style="font-weight:500;">Sapiens</div></td><td><div style="display:flex;align-items:center;gap:8px;"><div class="member-table-avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,var(--gold),var(--rust));">TL</div>Trần Thị Lan</div></td><td style="color:var(--mist);font-family:'DM Mono',monospace;font-size:12px;">01/03/2026</td><td style="color:var(--rust);font-family:'DM Mono',monospace;font-size:12px;">15/03/2026</td><td style="text-align:center;"><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);">+9</span></td><td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rust);">45,000đ</td><td><button class="action-btn">Nhắc nhở</button> <button class="action-btn">Nhận trả</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="circ-panel" id="history-tab">
+                <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+                    <div class="bl-search-bar" style="flex:1;min-width:200px;"><span style="color:var(--mist);">🔍</span><input type="text" placeholder="Tìm theo độc giả, sách, mã phiếu..."></div>
+                    <input class="bl-filter-select" type="date" value="2026-03-01">
+                    <input class="bl-filter-select" type="date" value="2026-03-25">
+                    <select class="bl-filter-select"><option>Tất cả</option><option>Đang mượn</option><option>Đã trả</option><option>Quá hạn</option></select>
+                    <button class="bl-btn bl-btn-secondary">📥 Xuất Excel</button>
+                </div>
+                <div class="bl-panel">
+                    <table class="bl-data-table">
+                        <thead><tr><th>Mã phiếu</th><th>Sách</th><th>Độc giả</th><th>Ngày mượn</th><th>Hạn trả</th><th>Ngày trả</th><th>Trạng thái</th></tr></thead>
+                        <tbody>
+                        <tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">BRW-26032401</td><td style="font-weight:500;">Atomic Habits</td><td>Nguyễn Thu Hà</td><td style="color:var(--mist);font-size:12px;">07/03</td><td style="font-size:12px;">24/03</td><td style="font-size:12px;color:var(--forest);">24/03 ✓</td><td><span class="bl-badge bl-badge-available">Đã trả</span></td></tr>
+                        <tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">BRW-26032402</td><td style="font-weight:500;">Nhà Giả Kim</td><td>Lê Minh Tú</td><td style="color:var(--mist);font-size:12px;">10/03</td><td style="font-size:12px;">24/03</td><td style="font-size:12px;color:var(--forest);">24/03 ✓</td><td><span class="bl-badge bl-badge-available">Đã trả</span></td></tr>
+                        <tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">BRW-26030191</td><td style="font-weight:500;">Tư Duy Nhanh Và Chậm</td><td>Phạm Hoàng Nam</td><td style="color:var(--mist);font-size:12px;">20/02</td><td style="font-size:12px;color:var(--rust);">06/03</td><td style="font-size:12px;color:var(--mist);">—</td><td><span class="bl-badge bl-badge-overdue">Quá hạn</span></td></tr>
+                        <tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">BRW-26030145</td><td style="font-weight:500;">Đắc Nhân Tâm</td><td>Trần Thị Lan</td><td style="color:var(--mist);font-size:12px;">01/03</td><td style="font-size:12px;">15/03</td><td style="font-size:12px;color:var(--mist);">—</td><td><span class="bl-badge bl-badge-borrowed">Đang mượn</span></td></tr>
+                        <tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">BRW-26030089</td><td style="font-weight:500;">Sapiens</td><td>Vũ Đình Khoa</td><td style="color:var(--mist);font-size:12px;">24/03</td><td style="font-size:12px;">07/04</td><td style="font-size:12px;color:var(--mist);">—</td><td><span class="bl-badge bl-badge-borrowed">Đang mượn</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;"><div style="font-size:13px;color:var(--mist);">Hiển thị 5 / 312 kết quả</div><div style="display:flex;gap:6px;"><button class="action-btn">‹ Trước</button><button class="action-btn" style="border-color:var(--gold);color:var(--gold);">1</button><button class="action-btn">2</button><button class="action-btn">3</button><button class="action-btn">Sau ›</button></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════ PAGE: MEMBERS ══════ -->
+        <div class="bl-page" id="page-members">
+            <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+                <div>
+                    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+                        <div class="bl-search-bar" style="flex:1;min-width:220px;"><span style="color:var(--mist);">🔍</span><input type="text" placeholder="Tìm theo tên, mã thẻ, số điện thoại..."></div>
+                        <select class="bl-filter-select"><option>Tất cả hạng thẻ</option><option>Hội viên Vàng</option><option>Hội viên Bạc</option><option>Hội viên Thường</option></select>
+                        <select class="bl-filter-select"><option>Tất cả trạng thái</option><option>Đang hoạt động</option><option>Hết hạn</option><option>Khóa</option></select>
+                        <button class="bl-btn bl-btn-primary" onclick="openAddMember()">➕ Đăng ký mới</button>
+                    </div>
+                    <div class="bl-panel">
+                        <table class="bl-data-table">
+                            <thead><tr><th>Hội viên</th><th>Hạng thẻ</th><th>Liên hệ</th><th>Đang mượn</th><th>Hết hạn</th><th>Trạng thái</th><th></th></tr></thead>
+                            <tbody>
+                            <tr onclick="showMemberProfile('Trần Thị Lan','TL','#c9963a,#e8c06a','1042','Hội viên Vàng','0912 345 678','lan.tran@email.com','12/01/1995','24','2','31/12/2026')" style="cursor:pointer;"><td><div style="display:flex;align-items:center;gap:10px;"><div class="member-table-avatar" style="background:linear-gradient(135deg,var(--gold),var(--rust));">TL</div><div><div style="font-weight:500;">Trần Thị Lan</div><div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;">#1042</div></div></div></td><td><span class="bl-badge bl-badge-gold">⭐ Vàng</span></td><td style="font-size:12px;color:var(--mist);">0912 345 678</td><td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;">3</td><td style="font-size:12px;font-family:'DM Mono',monospace;">31/12/2026</td><td><span class="bl-badge bl-badge-active">Hoạt động</span></td><td><button class="action-btn">Xem</button></td></tr>
+                            <tr onclick="showMemberProfile('Phạm Hoàng Nam','PH','#2d5a3d,#3e7a54','0891','Hội viên Bạc','0988 765 432','nam.pham@email.com','05/08/1992','18','1','30/06/2026')" style="cursor:pointer;"><td><div style="display:flex;align-items:center;gap:10px;"><div class="member-table-avatar" style="background:linear-gradient(135deg,var(--forest),var(--forest-light));">PH</div><div><div style="font-weight:500;">Phạm Hoàng Nam</div><div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;">#0891</div></div></div></td><td><span class="bl-badge bl-badge-silver">🥈 Bạc</span></td><td style="font-size:12px;color:var(--mist);">0988 765 432</td><td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;color:var(--rust);">2 ⚠️</td><td style="font-size:12px;font-family:'DM Mono',monospace;">30/06/2026</td><td><span class="bl-badge bl-badge-active">Hoạt động</span></td><td><button class="action-btn">Xem</button></td></tr>
+                            <tr onclick="showMemberProfile('Lê Minh Tú','LM','#3a6cb0,#5a8cd0','1203','Hội viên Vàng','0901 234 567','tu.le@email.com','22/11/1998','15','0','31/12/2026')" style="cursor:pointer;"><td><div style="display:flex;align-items:center;gap:10px;"><div class="member-table-avatar" style="background:linear-gradient(135deg,var(--blue),#5a8cd0);">LM</div><div><div style="font-weight:500;">Lê Minh Tú</div><div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;">#1203</div></div></div></td><td><span class="bl-badge bl-badge-gold">⭐ Vàng</span></td><td style="font-size:12px;color:var(--mist);">0901 234 567</td><td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;">1</td><td style="font-size:12px;font-family:'DM Mono',monospace;">31/12/2026</td><td><span class="bl-badge bl-badge-active">Hoạt động</span></td><td><button class="action-btn">Xem</button></td></tr>
+                            <tr onclick="showMemberProfile('Vũ Đình Khoa','VĐ','#b04a2a,#d06040','0674','Hội viên Thường','0976 543 210','khoa.vu@email.com','14/03/2000','11','0','15/09/2026')" style="cursor:pointer;"><td><div style="display:flex;align-items:center;gap:10px;"><div class="member-table-avatar" style="background:linear-gradient(135deg,var(--rust),#d06040);">VĐ</div><div><div style="font-weight:500;">Vũ Đình Khoa</div><div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;">#0674</div></div></div></td><td><span class="bl-badge bl-badge-silver">Thường</span></td><td style="font-size:12px;color:var(--mist);">0976 543 210</td><td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;">1</td><td style="font-size:12px;font-family:'DM Mono',monospace;">15/09/2026</td><td><span class="bl-badge bl-badge-active">Hoạt động</span></td><td><button class="action-btn">Xem</button></td></tr>
+                            <tr onclick="showMemberProfile('Nguyễn Thị Hương','NH','#7a4a8a,#9a6aaa','1585','Mới đăng ký','0945 678 901','huong.nguyen@email.com','30/07/2001','1','0','24/03/2027')" style="cursor:pointer;"><td><div style="display:flex;align-items:center;gap:10px;"><div class="member-table-avatar" style="background:linear-gradient(135deg,#7a4a8a,#9a6aaa);">NH</div><div><div style="font-weight:500;">Nguyễn Thị Hương</div><div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;">#1585</div></div></div></td><td><span class="bl-badge bl-badge-new">Mới</span></td><td style="font-size:12px;color:var(--mist);">0945 678 901</td><td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;">1</td><td style="font-size:12px;font-family:'DM Mono',monospace;">24/03/2027</td><td><span class="bl-badge bl-badge-active">Hoạt động</span></td><td><button class="action-btn">Xem</button></td></tr>
+                            <tr><td><div style="display:flex;align-items:center;gap:10px;"><div class="member-table-avatar" style="background:linear-gradient(135deg,#606060,#909090);">ĐH</div><div><div style="font-weight:500;">Đinh Hải Yến</div><div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;">#0423</div></div></div></td><td><span class="bl-badge bl-badge-silver">🥈 Bạc</span></td><td style="font-size:12px;color:var(--mist);">0933 456 789</td><td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;">0</td><td style="font-size:12px;font-family:'DM Mono',monospace;color:var(--rust);">01/01/2026</td><td><span class="bl-badge bl-badge-inactive">Hết hạn</span></td><td><button class="action-btn">Gia hạn</button></td></tr>
+                            </tbody>
+                        </table>
+                        <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;"><div style="font-size:13px;color:var(--mist);">Hiển thị 6 / 1,584 hội viên</div><div style="display:flex;gap:6px;"><button class="action-btn">‹</button><button class="action-btn" style="border-color:var(--gold);color:var(--gold);">1</button><button class="action-btn">2</button><button class="action-btn">3</button><button class="action-btn">›</button></div></div>
+                    </div>
+                </div>
+
+                <div id="member-profile-panel">
+                    <div class="profile-card">
+                        <div class="profile-top">
+                            <div class="profile-avatar-big" id="prof-avatar">TL</div>
+                            <div class="profile-name" id="prof-name">Trần Thị Lan</div>
+                            <div class="profile-id" id="prof-id">#1042</div>
+                            <div style="margin-top:10px;"><span class="bl-badge bl-badge-gold">⭐ Hội viên Vàng</span></div>
+                        </div>
+                        <div class="profile-body">
+                            <div class="profile-stat-row">
+                                <div class="profile-stat"><div class="profile-stat-num" style="color:var(--gold);" id="prof-total">24</div><div class="profile-stat-lbl">Tổng mượn</div></div>
+                                <div class="profile-stat"><div class="profile-stat-num" style="color:var(--rust);" id="prof-overdue">2</div><div class="profile-stat-lbl">Quá hạn</div></div>
+                                <div class="profile-stat"><div class="profile-stat-num" style="color:var(--forest);" id="prof-current">3</div><div class="profile-stat-lbl">Đang mượn</div></div>
+                            </div>
+                            <div id="prof-info">
+                                <div class="profile-info-row"><span class="profile-info-icon">📱</span><span class="profile-info-label">Điện thoại</span><span class="profile-info-val">0912 345 678</span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📧</span><span class="profile-info-label">Email</span><span class="profile-info-val" style="font-size:12px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e68a8788c892948788a6838b878f8ac885898b">[email&#160;protected]</a></span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span class="profile-info-label">Ngày sinh</span><span class="profile-info-val">12/01/1995</span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📅</span><span class="profile-info-label">Hết hạn</span><span class="profile-info-val">31/12/2026</span></div>
+                            </div>
+                            <div style="display:flex;gap:8px;margin-top:16px;">
+                                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;font-size:12px;">✏️ Chỉnh sửa</button>
+                                <button class="bl-btn bl-btn-secondary" style="font-size:12px;">🖨️ In thẻ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════ PAGE: STATS ══════ -->
+        <div class="bl-page" id="page-stats">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;">
+                <div style="display:flex;gap:4px;background:var(--paper);border:1.5px solid var(--border);border-radius:10px;padding:4px;">
+                    <button class="circ-tab active" style="padding:7px 16px;font-size:12px;">Tuần này</button>
+                    <button class="circ-tab" style="padding:7px 16px;font-size:12px;">Tháng này</button>
+                    <button class="circ-tab" style="padding:7px 16px;font-size:12px;">Quý này</button>
+                    <button class="circ-tab" style="padding:7px 16px;font-size:12px;">Năm 2026</button>
+                </div>
+                <input class="bl-filter-select" type="date" value="2026-03-01">
+                <span style="color:var(--mist);font-size:13px;">đến</span>
+                <input class="bl-filter-select" type="date" value="2026-03-25">
+                <button class="bl-btn bl-btn-secondary" style="margin-left:auto;">📥 Xuất báo cáo</button>
+                <button class="bl-btn bl-btn-primary">🖨️ In báo cáo</button>
+            </div>
+
+            <div class="stats-overview">
+                <div class="stat-card" style="animation-delay:.05s;"><div class="stat-icon-box" style="background:#fef3dc;">📚</div><div class="stat-num">8,247</div><div class="stat-lbl">Tổng đầu sách</div><div class="stat-trend-row"><span class="trend-pill trend-up">+42</span><span class="trend-lbl">so tháng trước</span></div></div>
+                <div class="stat-card" style="animation-delay:.10s;"><div class="stat-icon-box" style="background:#fdeee9;">↗</div><div class="stat-num">312</div><div class="stat-lbl">Đang cho mượn</div><div class="stat-trend-row"><span class="trend-pill trend-up">+18%</span><span class="trend-lbl">vs tuần trước</span></div></div>
+                <div class="stat-card" style="animation-delay:.15s;"><div class="stat-icon-box" style="background:#e6f2ec;">👥</div><div class="stat-num">1,584</div><div class="stat-lbl">Hội viên tích cực</div><div class="stat-trend-row"><span class="trend-pill trend-up">+5</span><span class="trend-lbl">đăng ký mới</span></div></div>
+                <div class="stat-card" style="animation-delay:.20s;"><div class="stat-icon-box" style="background:#e8f0fb;">📋</div><div class="stat-num">2,841</div><div class="stat-lbl">Lượt mượn tháng 3</div><div class="stat-trend-row"><span class="trend-pill trend-up">+12%</span><span class="trend-lbl">vs tháng 2</span></div></div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-box">
+                    <div class="chart-title">Lượt mượn sách — Tháng 3/2026</div>
+                    <div class="bar-chart">
+                        <div class="bar-col"><div class="bar-val">78</div><div class="bar-fill" style="height:56px;animation-delay:.1s;"></div><div class="bar-lbl">1</div></div>
+                        <div class="bar-col"><div class="bar-val">92</div><div class="bar-fill" style="height:66px;animation-delay:.12s;"></div><div class="bar-lbl">2</div></div>
+                        <div class="bar-col"><div class="bar-val">65</div><div class="bar-fill" style="height:47px;animation-delay:.14s;"></div><div class="bar-lbl">3</div></div>
+                        <div class="bar-col"><div class="bar-val">110</div><div class="bar-fill" style="height:80px;animation-delay:.16s;"></div><div class="bar-lbl">4</div></div>
+                        <div class="bar-col"><div class="bar-val">88</div><div class="bar-fill" style="height:64px;animation-delay:.18s;"></div><div class="bar-lbl">5</div></div>
+                        <div class="bar-col"><div class="bar-val">42</div><div class="bar-fill teal" style="height:30px;animation-delay:.20s;"></div><div class="bar-lbl">6</div></div>
+                        <div class="bar-col"><div class="bar-val">35</div><div class="bar-fill teal" style="height:25px;animation-delay:.22s;"></div><div class="bar-lbl">7</div></div>
+                        <div class="bar-col"><div class="bar-val">95</div><div class="bar-fill" style="height:69px;animation-delay:.24s;"></div><div class="bar-lbl">8</div></div>
+                        <div class="bar-col"><div class="bar-val">102</div><div class="bar-fill" style="height:74px;animation-delay:.26s;"></div><div class="bar-lbl">9</div></div>
+                        <div class="bar-col"><div class="bar-val">118</div><div class="bar-fill" style="height:86px;animation-delay:.28s;"></div><div class="bar-lbl">10</div></div>
+                        <div class="bar-col"><div class="bar-val">87</div><div class="bar-fill" style="height:63px;animation-delay:.30s;"></div><div class="bar-lbl">11</div></div>
+                        <div class="bar-col"><div class="bar-val">76</div><div class="bar-fill" style="height:55px;animation-delay:.32s;"></div><div class="bar-lbl">12</div></div>
+                        <div class="bar-col"><div class="bar-val">99</div><div class="bar-fill" style="height:72px;animation-delay:.34s;"></div><div class="bar-lbl">13</div></div>
+                        <div class="bar-col"><div class="bar-val">55</div><div class="bar-fill teal" style="height:40px;animation-delay:.36s;"></div><div class="bar-lbl">14</div></div>
+                        <div class="bar-col"><div class="bar-val">48</div><div class="bar-fill teal" style="height:35px;animation-delay:.38s;"></div><div class="bar-lbl">15</div></div>
+                        <div class="bar-col"><div class="bar-val">120</div><div class="bar-fill" style="height:87px;animation-delay:.40s;"></div><div class="bar-lbl">16</div></div>
+                        <div class="bar-col"><div class="bar-val">108</div><div class="bar-fill" style="height:78px;animation-delay:.42s;"></div><div class="bar-lbl">17</div></div>
+                        <div class="bar-col"><div class="bar-val">93</div><div class="bar-fill" style="height:67px;animation-delay:.44s;"></div><div class="bar-lbl">18</div></div>
+                        <div class="bar-col"><div class="bar-val">134</div><div class="bar-fill hl" style="height:97px;animation-delay:.46s;"></div><div class="bar-lbl">19</div></div>
+                        <div class="bar-col"><div class="bar-val">89</div><div class="bar-fill" style="height:65px;animation-delay:.48s;"></div><div class="bar-lbl">20</div></div>
+                        <div class="bar-col"><div class="bar-val">62</div><div class="bar-fill teal" style="height:45px;animation-delay:.50s;"></div><div class="bar-lbl">21</div></div>
+                        <div class="bar-col"><div class="bar-val">44</div><div class="bar-fill teal" style="height:32px;animation-delay:.52s;"></div><div class="bar-lbl">22</div></div>
+                        <div class="bar-col"><div class="bar-val">97</div><div class="bar-fill" style="height:70px;animation-delay:.54s;"></div><div class="bar-lbl">23</div></div>
+                        <div class="bar-col"><div class="bar-val">81</div><div class="bar-fill" style="height:59px;animation-delay:.56s;"></div><div class="bar-lbl">25</div></div>
+                    </div>
+                    <div style="display:flex;gap:16px;margin-top:12px;">
+                        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mist);"><div style="width:10px;height:10px;border-radius:2px;background:var(--gold);"></div> Ngày thường</div>
+                        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mist);"><div style="width:10px;height:10px;border-radius:2px;background:#3a8a7a;"></div> Cuối tuần</div>
+                        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mist);"><div style="width:10px;height:10px;border-radius:2px;background:var(--rust);"></div> Cao điểm</div>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-title">Phân bố thể loại</div>
+                    <div class="donut-wrap">
+                        <svg class="donut-svg" width="140" height="140" viewBox="0 0 140 140">
+                            <circle cx="70" cy="70" r="54" fill="none" stroke="#ede7d5" stroke-width="20"/>
+                            <circle cx="70" cy="70" r="54" fill="none" stroke="#c9963a" stroke-width="20" stroke-dasharray="102 237" stroke-dashoffset="0"/>
+                            <circle cx="70" cy="70" r="54" fill="none" stroke="#2d5a3d" stroke-width="20" stroke-dasharray="68 237" stroke-dashoffset="-102"/>
+                            <circle cx="70" cy="70" r="54" fill="none" stroke="#3a6cb0" stroke-width="20" stroke-dasharray="51 237" stroke-dashoffset="-170"/>
+                            <circle cx="70" cy="70" r="54" fill="none" stroke="#b04a2a" stroke-width="20" stroke-dasharray="34 237" stroke-dashoffset="-221"/>
+                        </svg>
+                        <div class="donut-center"><div class="donut-num">8,247</div><div class="donut-sub">Tổng đầu sách</div></div>
+                    </div>
+                    <div>
+                        <div class="legend-row"><div class="legend-dot" style="background:#c9963a;"></div><span style="flex:1;font-size:12px;">Văn học</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;">30%</span></div>
+                        <div class="legend-row"><div class="legend-dot" style="background:#2d5a3d;"></div><span style="flex:1;font-size:12px;">Kỹ năng sống</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;">20%</span></div>
+                        <div class="legend-row"><div class="legend-dot" style="background:#3a6cb0;"></div><span style="flex:1;font-size:12px;">Lịch sử</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;">15%</span></div>
+                        <div class="legend-row"><div class="legend-dot" style="background:#b04a2a;"></div><span style="flex:1;font-size:12px;">Công nghệ</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;">10%</span></div>
+                        <div class="legend-row"><div class="legend-dot" style="background:#ede7d5;"></div><span style="flex:1;font-size:12px;">Khác</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;">25%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <div>
+                    <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600;margin-bottom:14px;">Top sách được mượn nhiều nhất</div>
+                    <div class="top-books-list">
+                        <div class="top-book-item"><div class="rank-num gold-rank">1</div><div style="flex:1;"><div style="font-size:13px;font-weight:500;margin-bottom:4px;">Đắc Nhân Tâm</div><div class="top-book-bar-bg"><div class="top-book-bar-fill" style="width:92%;"></div></div></div><div class="top-book-count">134</div></div>
+                        <div class="top-book-item"><div class="rank-num silver-rank">2</div><div style="flex:1;"><div style="font-size:13px;font-weight:500;margin-bottom:4px;">Atomic Habits</div><div class="top-book-bar-bg"><div class="top-book-bar-fill" style="width:78%;background:var(--mist);"></div></div></div><div class="top-book-count">114</div></div>
+                        <div class="top-book-item"><div class="rank-num bronze-rank">3</div><div style="flex:1;"><div style="font-size:13px;font-weight:500;margin-bottom:4px;">Nhà Giả Kim</div><div class="top-book-bar-bg"><div class="top-book-bar-fill" style="width:65%;background:#b87040;"></div></div></div><div class="top-book-count">95</div></div>
+                        <div class="top-book-item"><div class="rank-num">4</div><div style="flex:1;"><div style="font-size:13px;font-weight:500;margin-bottom:4px;">Sapiens</div><div class="top-book-bar-bg"><div class="top-book-bar-fill" style="width:55%;background:#c0b090;"></div></div></div><div class="top-book-count">80</div></div>
+                        <div class="top-book-item"><div class="rank-num">5</div><div style="flex:1;"><div style="font-size:13px;font-weight:500;margin-bottom:4px;">Tư Duy Nhanh Và Chậm</div><div class="top-book-bar-bg"><div class="top-book-bar-fill" style="width:45%;background:#c0b090;"></div></div></div><div class="top-book-count">66</div></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600;margin-bottom:14px;">Xuất báo cáo</div>
+                    <div class="report-cards" style="grid-template-columns:1fr 1fr;">
+                        <div class="report-card"><div class="report-icon">📊</div><div class="report-name">Báo cáo tháng</div><div class="report-desc">Tổng hợp hoạt động tháng 3/2026</div></div>
+                        <div class="report-card"><div class="report-icon">📋</div><div class="report-name">Danh sách mượn</div><div class="report-desc">Tất cả phiếu mượn đang hoạt động</div></div>
+                        <div class="report-card"><div class="report-icon">⚠️</div><div class="report-name">Báo cáo quá hạn</div><div class="report-desc">Danh sách &amp; phí phạt</div></div>
+                        <div class="report-card"><div class="report-icon">👥</div><div class="report-name">Hội viên</div><div class="report-desc">Danh sách &amp; tình trạng thẻ</div></div>
+                        <div class="report-card"><div class="report-icon">📚</div><div class="report-name">Kho sách</div><div class="report-desc">Tồn kho &amp; phân bố thể loại</div></div>
+                        <div class="report-card"><div class="report-icon">💰</div><div class="report-name">Tài chính</div><div class="report-desc">Phí thành viên &amp; phạt</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ════════ MODALS ════════ -->
+<div class="bl-modal-overlay" id="book-modal" onclick="closeModal('book-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" id="modal-book-icon" style="background:#fef3dc;">📗</div>
+            <div style="flex:1;">
+                <div class="bl-modal-book-title" id="modal-book-title">Đắc Nhân Tâm</div>
+                <div class="bl-modal-book-author" id="modal-book-author">Dale Carnegie</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="bl-badge bl-badge-borrowed" id="modal-book-status">Đang mượn</span><span class="bl-badge bl-badge-silver" id="modal-book-genre">Kỹ năng sống</span></div>
+            </div>
+            <button class="bl-modal-close" onclick="closeModal('book-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <div class="detail-grid">
+                <div class="detail-item"><div class="detail-label">ISBN</div><div class="detail-value" id="modal-isbn" style="font-family:'DM Mono',monospace;font-size:13px;">978-604-1-22345-6</div></div>
+                <div class="detail-item"><div class="detail-label">Năm xuất bản</div><div class="detail-value" id="modal-year">1936</div></div>
+                <div class="detail-item"><div class="detail-label">Nhà xuất bản</div><div class="detail-value" id="modal-publisher">NXB Tổng Hợp</div></div>
+                <div class="detail-item"><div class="detail-label">Số lượng tồn</div><div class="detail-value" id="modal-qty" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--gold);">12 / 15</div></div>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--mist);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;">Lịch sử mượn gần đây</div>
+            <div class="borrow-history">
+                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rust));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">TL</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Trần Thị Lan</div><div style="font-size:11px;color:var(--mist);">Mượn 01/03/2026</div></div><span class="bl-badge bl-badge-borrowed">Đang mượn</span></div>
+                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#5a8cd0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">LM</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Lê Minh Tú</div><div style="font-size:11px;color:var(--mist);">15/02 – 01/03/2026</div></div><span class="bl-badge bl-badge-available">Đã trả</span></div>
+                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--forest),var(--forest-light));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">PH</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Phạm Hoàng Nam</div><div style="font-size:11px;color:var(--mist);">01/02 – 15/02/2026</div></div><span class="bl-badge bl-badge-available">Đã trả</span></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;">
+                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;" onclick="closeModal('book-modal');goPage('borrow');showCircTab('borrow-tab')">↗ Tạo phiếu mượn</button>
+                <button class="bl-btn bl-btn-secondary">✏️ Chỉnh sửa</button>
+                <button class="bl-btn bl-btn-danger">🗑️ Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bl-modal-overlay" id="add-book-modal" onclick="closeModal('add-book-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" style="background:#e6f2ec;font-size:28px;">➕</div>
+            <div><div class="bl-modal-book-title">Thêm sách mới</div><div class="bl-modal-book-author">Nhập thông tin đầu sách mới vào hệ thống</div></div>
+            <button class="bl-modal-close" onclick="closeModal('add-book-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <div class="bl-form-row"><div class="bl-form-group"><div class="bl-form-label">Tên sách *</div><input class="bl-form-input" placeholder="Nhập tên sách..."></div><div class="bl-form-group"><div class="bl-form-label">Tác giả *</div><input class="bl-form-input" placeholder="Tên tác giả..."></div></div>
+            <div class="bl-form-row"><div class="bl-form-group"><div class="bl-form-label">ISBN</div><input class="bl-form-input" placeholder="978-..."></div><div class="bl-form-group"><div class="bl-form-label">Thể loại</div><select class="bl-form-input"><option>Văn học</option><option>Kỹ năng sống</option><option>Lịch sử</option><option>Tâm lý học</option><option>Công nghệ</option><option>Thiếu nhi</option></select></div></div>
+            <div class="bl-form-row"><div class="bl-form-group"><div class="bl-form-label">Nhà xuất bản</div><input class="bl-form-input" placeholder="Tên NXB..."></div><div class="bl-form-group"><div class="bl-form-label">Năm xuất bản</div><input class="bl-form-input" type="number" placeholder="2024"></div></div>
+            <div class="bl-form-row"><div class="bl-form-group"><div class="bl-form-label">Số lượng nhập *</div><input class="bl-form-input" type="number" placeholder="0" min="1"></div><div class="bl-form-group"><div class="bl-form-label">Giá bìa (VNĐ)</div><input class="bl-form-input" placeholder="0" style="font-family:'DM Mono',monospace;"></div></div>
+            <div class="bl-form-group"><div class="bl-form-label">Mô tả / Tóm tắt</div><textarea class="bl-form-input" rows="3" placeholder="Nội dung tóm tắt của sách..."></textarea></div>
+            <div style="display:flex;gap:10px;"><button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Thêm vào kho</button><button class="bl-btn bl-btn-secondary" onclick="closeModal('add-book-modal')">Hủy</button></div>
+        </div>
+    </div>
+</div>
+
+<div class="bl-modal-overlay" id="add-member-modal" onclick="closeModal('add-member-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
+            <div><div class="bl-modal-book-title">Đăng ký hội viên mới</div><div class="bl-modal-book-author">Tạo tài khoản thẻ thư viện</div></div>
+            <button class="bl-modal-close" onclick="closeModal('add-member-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <div class="bl-form-row"><div class="bl-form-group"><div class="bl-form-label">Họ và tên *</div><input class="bl-form-input" placeholder="Nhập họ tên đầy đủ..."></div><div class="bl-form-group"><div class="bl-form-label">Ngày sinh *</div><input class="bl-form-input" type="date"></div></div>
+            <div class="bl-form-row"><div class="bl-form-group"><div class="bl-form-label">Số điện thoại *</div><input class="bl-form-input" placeholder="09xx xxx xxx"></div><div class="bl-form-group"><div class="bl-form-label">Email</div><input class="bl-form-input" type="email" placeholder="email@domain.com"></div></div>
+            <div class="bl-form-group"><div class="bl-form-label">Địa chỉ</div><input class="bl-form-input" placeholder="Số nhà, đường, phường/xã, quận/huyện..."></div>
+            <div class="bl-form-row"><div class="bl-form-group"><div class="bl-form-label">CMND / CCCD</div><input class="bl-form-input" placeholder="Số CMND/CCCD..."></div><div class="bl-form-group"><div class="bl-form-label">Loại thẻ</div><select class="bl-form-input"><option>Hội viên Thường (1 năm)</option><option>Hội viên Bạc (1 năm)</option><option>Hội viên Vàng (1 năm)</option></select></div></div>
+            <div class="bl-form-row"><div class="bl-form-group"><div class="bl-form-label">Ngày bắt đầu</div><input class="bl-form-input" type="date" value="2026-03-25"></div><div class="bl-form-group"><div class="bl-form-label">Phí đăng ký (VNĐ)</div><input class="bl-form-input" value="100,000" style="font-family:'DM Mono',monospace;"></div></div>
+            <div style="display:flex;gap:10px;"><button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký &amp; In thẻ</button><button class="bl-btn bl-btn-secondary" onclick="closeModal('add-member-modal')">Hủy</button></div>
+        </div>
+    </div>
+</div>
+<script th:replace="layout/script :: script"></script>
+</body>
+</html>
