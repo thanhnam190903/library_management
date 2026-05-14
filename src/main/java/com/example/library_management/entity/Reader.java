@@ -23,14 +23,15 @@ public class Reader {
     String id;
     String name;
     String gender;
+    String phone;
+    String email;
+    String password;
+    @Column(name = "reader_type")
+    String readerType;
     @Column(name = "birth_date")
     LocalDate birthDate;
     String address;
-    @Column(name = "job_title")
-    String jobTitle;
-    @Column(name = "deposit_fee")
-    double depositFee;
-    boolean status;
+    boolean deleted;
     @Column(name = "created_date")
     @CreationTimestamp
     LocalDateTime createdDate;

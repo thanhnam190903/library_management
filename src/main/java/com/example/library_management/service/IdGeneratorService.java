@@ -43,7 +43,9 @@ public class IdGeneratorService {
                     value, name, date
             );
         }
-
+        if (prefix.equals("#")) {
+           return prefix + String.format("%05d", value);
+        }
         return prefix + date + "-" + String.format("%05d", value);
     }
 }

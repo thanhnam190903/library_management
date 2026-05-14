@@ -17,18 +17,32 @@ import java.util.List;
 public class LibraryCard {
     @Id
     String id;
-    @Column(name = "card_name")
-    String cardName;
+
+    // ngày cấp
     @Column(name = "issue_date")
     LocalDate issueDate;
+
+    // ngày hết hạn
     @Column(name = "expiry_date")
     LocalDate expiryDate;
+
+    // số sách tối đa được mượn
     @Column(name = "max_books_allowed")
     int maxBooksAllowed;
+
+    // tổng số lượt đã mượn
+    Integer totalBorrow;
+
+    // số lần quá hạn
+    Integer overdueCount;
+    // trạng thái thẻ
     boolean status;
+    // bị khóa hay không
+    boolean locked;
     @ManyToOne
     @JoinColumn(name = "reader_id")
     Reader reader;
+
     @OneToMany(mappedBy = "libraryCard")
     List<BorrowSlip> borrowSlips;
 }

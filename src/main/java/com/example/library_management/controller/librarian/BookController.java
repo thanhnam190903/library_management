@@ -12,7 +12,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
@@ -24,15 +26,18 @@ public class BookController {
     PublisherRepository publisherRepository;
     IdGeneratorService idGeneratorService;
     BookCopyRepository bookCopyRepository;
+    DigitalBookRepository digitalBookRepository;
 
     @GetMapping("/books")
     public String showBooks(Model model){
-        model.addAttribute("title","Danh mục sách");
-        model.addAttribute("sub","Quản lý kho sách");
-        model.addAttribute("activePage","books");
-        model.addAttribute("books",bookTitleRepository.getAllBookTitle());
-        model.addAttribute("categories",categoryRepository.getAllCategory());
-        model.addAttribute("book",new BookTitle());
+        Map<String, Object> data = new HashMap<>();
+        data.put("title", "Danh mục sách");
+        data.put("sub", "Quản lý kho sách");
+        data.put("activePage", "books");
+        data.put("books", bookTitleRepository.getAllBookTitle());
+        data.put("categories", categoryRepository.getAllCategory());
+        data.put("book", new BookTitle());
+        model.addAllAttributes(data);
         return "librarian/book";
     }
     @GetMapping("/get-category")
@@ -148,10 +153,13 @@ public class BookController {
     }
     @GetMapping("/books-management")
     public String showBooksManagement(@RequestParam("id") String id,  Model model){
-        model.addAttribute("title","Danh mục sách");
-        model.addAttribute("sub","Quản lý kho sách");
-        model.addAttribute("activePage","books");
-        model.addAttribute("BookTitle",bookCopyRepository.findByBookTitleId(id));
+        Map<String, Object> data = new HashMap<>();
+        data.put("title", "Danh mục sách");
+        data.put("sub", "Quản lý kho sách");
+        data.put("activePage", "books");
+        data.put("bookCopy", bookCopyRepository.findByBookTitleId(id));
+        data.put("digitalBook", digitalBookRepository.findByBookTitleId(id));
+        model.addAllAttributes(data);
         return "librarian/book-copy";
     }
 }

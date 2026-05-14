@@ -23,28 +23,15 @@
 <div class="bl-sidebar-section">
     <div class="section-label">Kho sách</div>
     <a class="bl-nav-item" th:href="@{/categories}" th:classappend="${activePage == 'category'} ? 'active' : ''">
-        <span class="bl-nav-icon">📖</span>Quản lý danh mục
+        <span class="bl-nav-icon">🏷️</span>Quản lý danh mục
     </a>
 
-<!--    <a class="bl-nav-item" id="nav-books"  th:classappend="${activePage == 'books'} ? 'active' : ''">-->
-<!--        <span class="bl-nav-icon">📖</span>Danh mục sách-->
-<!--    </a>-->
-
-    <a class="bl-nav-item menu-toggle" id="nav-books">
+    <a class="bl-nav-item menu-toggle" id="nav-books" th:href="@{/books}" th:classappend="${activePage == 'books'} ? 'active' : ''">
         <span class="bl-nav-icon">📚</span> Danh mục sách
-        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
     </a>
-    <ul class="nav-content">
-        <li>
-            <a class="bl-nav-item" th:href="@{/books}" th:classappend="${activePage == 'books'} ? 'active' : ''">
-                <span class="bl-nav-icon">📕</span>
-                <span>Sách Offline</span>
-            </a>
-        </li>
-    </ul>
 
     <div class="bl-nav-item" onclick="goPage('books');openAddBook()"><span class="bl-nav-icon">➕</span>Nhập sách mới</div>
-    <div class="bl-nav-item"><span class="bl-nav-icon">🏷️</span>Thể loại / Tag</div>
+    <div class="bl-nav-item">Thể loại / Tag</div>
 </div>
 
 <div class="bl-sidebar-section">
@@ -57,7 +44,9 @@
 
 <div class="bl-sidebar-section">
     <div class="section-label">Độc giả</div>
-    <div class="bl-nav-item" id="nav-members" onclick="goPage('members')"><span class="bl-nav-icon">👥</span>Hội viên</div>
+    <a class="bl-nav-item" th:href="@{/readers}" th:classappend="${activePage == 'readers'} ? 'active' : ''" id="nav-members">
+        <span class="bl-nav-icon">👥</span>Hội viên
+    </a>
     <div class="bl-nav-item" onclick="goPage('members');openAddMember()"><span class="bl-nav-icon">👤</span>Đăng ký mới</div>
     <div class="bl-nav-item"><span class="bl-nav-icon">💳</span>Thẻ thư viện</div>
 </div>

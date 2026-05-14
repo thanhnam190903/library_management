@@ -13,7 +13,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
@@ -24,11 +26,13 @@ public class CategoryController {
 
     @GetMapping("/categories")
     public String showCategory(Model model){
-        model.addAttribute("title","Danh mục thể loại sách");
-        model.addAttribute("sub","Quản lý danh mục sách");
-        model.addAttribute("activePage","category");
-        model.addAttribute("categories",categoryRepository.getAllCategory());
-        model.addAttribute("category",new Category());
+        Map<String, Object> data = new HashMap<>();
+        data.put("title", "Danh mục thể loại sách");
+        data.put("sub", "Quản lý danh mục sách");
+        data.put("activePage", "category");
+        data.put("categories", categoryRepository.getAllCategory());
+        data.put("category", new Category());
+        model.addAllAttributes(data);
         return "librarian/category";
     }
     @PostMapping("/categories")

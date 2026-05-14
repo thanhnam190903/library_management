@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head th:replace="layout/head :: head">
+</head>
+<body>
+
+<!-- ════════ SIDEBAR ════════ -->
+<aside th:replace="layout/aside :: aside"></aside>
+
+<!-- ════════ MAIN ════════ -->
+<div class="bl-main">
+    <header th:replace="layout/header :: header"></header>
+    <div class="bl-content">
+        <!-- ══════ PAGE: MEMBERS ══════ -->
+        <div class="bl-page" id="page-members" style="display:block;">
+            <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+                <div>
+                    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+                        <div class="bl-search-bar" style="flex:1;min-width:220px;"><span style="color:var(--mist);">🔍</span><input type="text" placeholder="Tìm theo tên, mã thẻ, số điện thoại..."></div>
+                        <select class="bl-filter-select"><option>Tất cả hạng thẻ</option><option>Hội viên Vàng</option><option>Hội viên Bạc</option><option>Hội viên Thường</option></select>
+                        <select class="bl-filter-select"><option>Tất cả trạng thái</option><option>Đang hoạt động</option><option>Hết hạn</option><option>Khóa</option></select>
+                        <button class="bl-btn bl-btn-primary" onclick="openAddMember()">➕ Đăng ký mới</button>
+                    </div>
+                    <div class="bl-panel">
+                        <table class="bl-data-table">
+                            <thead>
+                            <tr>
+                                <th>Đọc giả</th>
+                                <th>Hạng thẻ</th>
+                                <th>Liên hệ</th>
+                                <th>Đang mượn</th>
+                                <th>Hết hạn</th>
+                                <th>Trạng thái</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="r : ${readerList}">
+                            <tr th:each="c :${r.cards}"  th:attr="onclick=|showMemberProfile('${r.name}',
+                                                            '${#strings.toUpperCase(#strings.substring(r.name.split(' ')[r.name.split(' ').length - 2],0,1) +
+                                                             #strings.substring(r.name.split(' ')[r.name.split(' ').length - 1],0,1))}',
+                                                            '#c9963a,#e8c06a','${c.id}','${r.phone}','${r.email}','${r.birthDate}','${c.totalBorrow}','${c.overdueCount}',
+                                                            '${c.expiryDate}')|" style="cursor:pointer;">
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div class="member-table-avatar" style="background:linear-gradient(135deg,var(--gold),var(--rust));" th:text="${#strings.toUpperCase(
+                                #strings.substring(r.name.split(' ')[r.name.split(' ').length - 2],0,1) +
+                                #strings.substring(r.name.split(' ')[r.name.split(' ').length - 1],0,1))}"></div>
+                                        <div>
+                                            <div style="font-weight:500;" th:text="${r.name}">Trần Thị Lan</div>
+                                            <div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;" th:text="${c.id}">#1042</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="bl-badge bl-badge-gold">⭐ Vàng</span>
+                                </td>
+                                <td style="font-size:12px;color:var(--mist);" th:text="${r.phone}">0912 345 678</td>
+                                <td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;" th:text="${borrowingMap[r.id]}"></td>
+                                <td style="font-size:12px;font-family:'DM Mono',monospace;" th:text="${c.expiryDate}">31/12/2026</td>
+                                <td><span class="bl-badge bl-badge-active">Hoạt động</span></td>
+                                <td><button class="action-btn">Xem</button></td>
+                            </tr>
+
+                            <tr><td><div style="display:flex;align-items:center;gap:10px;"><div class="member-table-avatar" style="background:linear-gradient(135deg,#606060,#909090);">ĐH</div><div><div style="font-weight:500;">Đinh Hải Yến</div><div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;">#0423</div></div></div></td><td><span class="bl-badge bl-badge-silver">🥈 Bạc</span></td><td style="font-size:12px;color:var(--mist);">0933 456 789</td><td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;">0</td><td style="font-size:12px;font-family:'DM Mono',monospace;color:var(--rust);">01/01/2026</td><td><span class="bl-badge bl-badge-inactive">Hết hạn</span></td><td><button class="action-btn">Gia hạn</button></td></tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                        <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;"><div style="font-size:13px;color:var(--mist);">Hiển thị 6 / 1,584 hội viên</div><div style="display:flex;gap:6px;"><button class="action-btn">‹</button><button class="action-btn" style="border-color:var(--gold);color:var(--gold);">1</button><button class="action-btn">2</button><button class="action-btn">3</button><button class="action-btn">›</button></div></div>
+                    </div>
+                </div>
+
+                <div id="member-profile-panel">
+                    <div class="profile-card">
+                        <div class="profile-top">
+                            <div class="profile-avatar-big" id="prof-avatar">TL</div>
+                            <div class="profile-name" id="prof-name">Trần Thị Lan</div>
+                            <div class="profile-id" id="prof-id">#1042</div>
+                            <div style="margin-top:10px;"><span class="bl-badge bl-badge-gold">⭐ Đọc giả </span></div>
+                        </div>
+                        <div class="profile-body">
+                            <div class="profile-stat-row">
+                                <div class="profile-stat"><div class="profile-stat-num" style="color:var(--gold);" id="prof-total">24</div><div class="profile-stat-lbl">Tổng mượn</div></div>
+                                <div class="profile-stat"><div class="profile-stat-num" style="color:var(--rust);" id="prof-overdue">2</div><div class="profile-stat-lbl">Quá hạn</div></div>
+                                <div class="profile-stat"><div class="profile-stat-num" style="color:var(--forest);" id="prof-current">3</div><div class="profile-stat-lbl">Đang mượn</div></div>
+                            </div>
+                            <div id="prof-info">
+                                <div class="profile-info-row"><span class="profile-info-icon">📱</span><span class="profile-info-label">Điện thoại</span><span class="profile-info-val">0912 345 678</span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📧</span><span class="profile-info-label">Email</span><span class="profile-info-val" style="font-size:12px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e68a8788c892948788a6838b878f8ac885898b">[email&#160;protected]</a></span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span class="profile-info-label">Ngày sinh</span><span class="profile-info-val">12/01/1995</span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📅</span><span class="profile-info-label">Hết hạn</span><span class="profile-info-val">31/12/2026</span></div>
+                            </div>
+                            <div style="display:flex;gap:8px;margin-top:16px;">
+                                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;font-size:12px;">✏️ Chỉnh sửa</button>
+                                <button class="bl-btn bl-btn-secondary" style="font-size:12px;">🖨️ In thẻ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /content -->
+</div><!-- /main -->
+
+<div class="bl-modal-overlay" id="add-member-modal" onclick="closeModal('add-member-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
+            <div><div class="bl-modal-book-title">Đăng ký hội viên mới</div><div class="bl-modal-book-author">Tạo tài khoản thẻ thư viện</div></div>
+            <button class="bl-modal-close" onclick="closeModal('add-member-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <form th:action="@{/readers}" method="post">
+            <div class="bl-form-row">
+                <div class="bl-form-group">
+                   <div class="bl-form-label">Họ và tên *</div>
+                   <input class="bl-form-input" required id="edit-name" name="name" placeholder="Nhập họ tên đầy đủ...">
+                </div>
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Giới tính *</div>
+                    <input class="" name="gender" type="radio" value="Nam" checked style="margin-top:10px;margin-right:5px;">Nam
+                    <input class="" name="gender" type="radio" value="Nữ" style="margin-left:13px;margin-right:5px;">Nữ
+                </div>
+            </div>
+            <div class="bl-form-row">
+                <div class="bl-form-group">
+                    <div class="bl-form-label" >Ngày sinh *</div>
+                    <input class="bl-form-input" required id="edit-birthdate" name="birthDate" type="date">
+                </div>
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Số điện thoại *</div>
+                    <input class="bl-form-input" required id="edit-phone" name="phone" placeholder="09xx xxx xxx">
+                </div>
+            </div>
+            <div class="bl-form-group">
+                <div class="bl-form-label">Địa chỉ</div>
+                <input class="bl-form-input" required id="address" name="address" placeholder="Số nhà, đường, phường/xã, quận/huyện...">
+            </div>
+            <div class="bl-form-row">
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Email</div>
+                    <input class="bl-form-input" required id="edit-email" name="email" type="email" placeholder="email@domain.com">
+                </div>
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Đối tượng</div>
+                    <select class="bl-form-input" name="readerType" required>
+                        <option value="Khách">Khách</option>
+                        <option value="Học sinh">Học Sinh</option>
+                        <option value="Giáo viên">Giáo viên</option>
+                        <option value="Cán bộ">Cán bộ</option>
+                        <option value="Hưu chí">Hưu Chí</option>
+                        <option value="Nhân dân">Nhân dân</option>
+                    </select>
+                </div>
+
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký &amp; In thẻ</button>
+                <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('add-member-modal')">Hủy</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script th:replace="layout/script :: script"></script>
+</body>
+</html>

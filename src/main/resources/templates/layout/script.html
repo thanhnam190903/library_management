@@ -1,11 +1,5 @@
 <script th:fragment="script">
-    const pageMap = {
-  dashboard: { id:'page-dashboard', title:'Bảng điều khiển', sub:'Thứ Tư, 25 tháng 3 năm 2026', nav:'nav-dashboard' },
-  books:     { id:'page-books',     title:'Danh mục sách',   sub:'Quản lý kho sách · 8,247 đầu sách', nav:'nav-books' },
-  borrow:    { id:'page-borrow',    title:'Quản lý lưu hành', sub:'Cho mượn · Trả sách · Quá hạn',   nav:'nav-borrow' },
-  members:   { id:'page-members',   title:'Quản lý hội viên', sub:'Danh sách &amp; hồ sơ độc giả',    nav:'nav-members' },
-  stats:     { id:'page-stats',     title:'Thống kê &amp; Báo cáo', sub:'Thứ Tư, 25 tháng 3 năm 2026', nav:'nav-stats' },
-};
+
 
 function showCircTab(tabId) {
   document.querySelectorAll('.circ-panel').forEach(p => p.classList.remove('active'));
@@ -18,11 +12,14 @@ function showCircTab(tabId) {
 function setView(v) {
   const grid = document.getElementById('books-grid-view');
   const list = document.getElementById('books-list-view');
+  const list1 = document.getElementById('books-list');
   document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
   if (v === 'grid') {
+    list1.style.display = 'none';
     grid.style.display = 'block'; list.style.display = 'none';
     document.querySelectorAll('.view-btn')[0].classList.add('active');
   } else {
+    list1.style.display = 'block';
     grid.style.display = 'none'; list.style.display = 'block';
     document.querySelectorAll('.view-btn')[1].classList.add('active');
   }
@@ -68,12 +65,12 @@ function closeModal(id) {
     document.getElementById(id).classList.remove('bl-open');
 }
 
-function showMemberProfile(name, initials, gradient, id, rank, phone, email, dob, total, overdue, expiry) {
+function showMemberProfile(name, initials, gradient, id, phone, email, dob, total, overdue, expiry) {
   const av = document.getElementById('prof-avatar');
   av.textContent = initials;
   av.style.background = `linear-gradient(135deg,${gradient})`;
   document.getElementById('prof-name').textContent = name;
-  document.getElementById('prof-id').textContent = '#' + id;
+  document.getElementById('prof-id').textContent = id;
   document.getElementById('prof-total').textContent = total;
   document.getElementById('prof-overdue').textContent = overdue;
   document.getElementById('prof-info').innerHTML = `

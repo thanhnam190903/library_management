@@ -21,7 +21,7 @@
                     <button class="view-btn active" onclick="setView('grid')">Sách vật lý</button>
                     <button class="view-btn" onclick="setView('list')">Tài liệu online</button>
                 </div>
-                <button class="bl-btn bl-btn-primary bl-panel" onclick="openAddBook()">➕ Thêm sách</button>
+                <button class="bl-btn bl-btn-primary" style="display:none;" id="books-list" onclick="openAddBook()">➕ Thêm sách</button>
             </div>
 
             <div id="books-grid-view">
@@ -38,12 +38,12 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="b : ${BookTitle}">
+                        <tr th:each="b : ${bookCopy}">
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📗</div>
-                                    <div style="font-weight:500;"
-                                         >
+                                    <div style="font-weight:500;" th:text="${b.bookTitle != null ? b.bookTitle.title : 'Không rõ'}">
+                                        Đắc Nhân Tâm
                                     </div>
                                 </div>
                             </td>
@@ -91,11 +91,11 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="b : ${books}">
+                        <tr th:each="b : ${digitalBook}">
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📗</div>
-                                    <div style="font-weight:500;">
+                                    <div style="font-weight:500;" th:text="${b.bookTitle.title}">
                                         Đắc Nhân Tâm
                                     </div>
                                 </div>
