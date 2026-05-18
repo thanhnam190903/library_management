@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "borrow_details")
@@ -16,18 +17,15 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BorrowDetail {
     @Id
-    private String id;
+    String id;
     @ManyToOne
     @JoinColumn(name = "borrow_slip_id")
-    private BorrowSlip borrowSlip;
+    BorrowSlip borrowSlip;
     @ManyToOne
     @JoinColumn(name = "book_copy_id")
-    private BookCopy bookCopy;
-    @ManyToOne
-    @JoinColumn(name = "digital_book_id")
-    private DigitalBook digitalBook;
-    private String type; // PHYSICAL / DIGITAL
-    private LocalDate returnDate;
-    private double fineAmount;
-    private Integer status;
+    BookCopy bookCopy;
+    LocalDate returnDate;
+    LocalTime returnHour;
+    double fineAmount;
+    Integer status;
 }

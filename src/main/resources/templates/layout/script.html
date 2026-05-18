@@ -44,18 +44,31 @@ function openBookDetail(title, author, icon, bg, genre, isbn, avail, total, year
 }
 
 function openAddBook() {
-    document.getElementById('add-book-modal')
-        .classList.add('bl-open');
+    document.getElementById('add-book-modal').classList.add('bl-open');
+    document.querySelector("form").reset();
     document.getElementById("edit-id").value = "";
 
     document.getElementById("modalTitle").innerText =
         "Thêm sách mới";
 
-    document.querySelector("form").reset();
+
 }
 
 function openAddMember() {
     document.getElementById('add-member-modal').classList.add('bl-open');
+    document.getElementById("edit-id").value = "";
+    const id = document.getElementById("edit-id").textContent;
+    console.log("ID in openAddMember:", id);
+    if(id){
+        document.getElementById("edit-row").classList.add("bl-form-row");
+    }else{
+        document.getElementById("edit-row").classList.remove("bl-form-row");
+
+    }
+    document.getElementById("modalTitle").innerText =
+        "Đăng ký hội viên mới";
+
+    document.querySelector("form").reset();
 }
 
 function openUpdateMember() {
@@ -65,19 +78,25 @@ function closeModal(id) {
     document.getElementById(id).classList.remove('bl-open');
 }
 
-function showMemberProfile(name, initials, gradient, id, phone, email, dob, total, overdue, expiry) {
+function showMemberProfile(idReader,gender,address,birth,name, initials, gradient,readerType, id, phone, email,issua, dob, total, overdue, expiry) {
   const av = document.getElementById('prof-avatar');
   av.textContent = initials;
   av.style.background = `linear-gradient(135deg,${gradient})`;
+  document.getElementById('issua-date').textContent = issua;
+  document.getElementById('birth-show').textContent = birth;
+  document.getElementById('id-reader').textContent = idReader;
+  document.getElementById('gender').textContent = gender;
+  document.getElementById('address-prof').textContent = address;
+  document.getElementById('reader-type').textContent = readerType;
   document.getElementById('prof-name').textContent = name;
-  document.getElementById('prof-id').textContent = id;
+  document.getElementById('prof-id').textContent = '#' + id;
   document.getElementById('prof-total').textContent = total;
   document.getElementById('prof-overdue').textContent = overdue;
   document.getElementById('prof-info').innerHTML = `
-    <div class="profile-info-row"><span class="profile-info-icon">📱</span><span class="profile-info-label">Điện thoại</span><span class="profile-info-val">${phone}</span></div>
-    <div class="profile-info-row"><span class="profile-info-icon">📧</span><span class="profile-info-label">Email</span><span class="profile-info-val" style="font-size:12px;">${email}</span></div>
-    <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span class="profile-info-label">Ngày sinh</span><span class="profile-info-val">${dob}</span></div>
-    <div class="profile-info-row"><span class="profile-info-icon">📅</span><span class="profile-info-label">Hết hạn</span><span class="profile-info-val">${expiry}</span></div>
+    <div class="profile-info-row"><span class="profile-info-icon">📱</span><span class="profile-info-label">Điện thoại</span><span class="profile-info-val" id="val-phone">${phone}</span></div>
+    <div class="profile-info-row"><span class="profile-info-icon">📧</span><span class="profile-info-label">Email</span><span class="profile-info-val" style="font-size:12px;" id="val-email">${email}</span></div>
+    <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span class="profile-info-label">Ngày sinh</span><span class="profile-info-val" id="val-date-birth">${dob}</span></div>
+    <div class="profile-info-row"><span class="profile-info-icon">📅</span><span class="profile-info-label">Hết hạn</span><span class="profile-info-val" id="val-date-issua">${expiry}</span></div>
   `;
 }
 

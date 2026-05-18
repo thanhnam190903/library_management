@@ -23,6 +23,4 @@ public class DigitalBook {
     String fileType;
     String accessType;
     Integer status;
-    @OneToMany(mappedBy = "digitalBook")
-    List<BorrowDetail> borrowDetails;
 }

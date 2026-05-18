@@ -36,10 +36,14 @@
 
 <div class="bl-sidebar-section">
     <div class="section-label">Lưu hành</div>
-    <div class="bl-nav-item" id="nav-borrow" onclick="goPage('borrow');showCircTab('borrow-tab')"><span class="bl-nav-icon">↗</span>Cho mượn</div>
-    <div class="bl-nav-item" onclick="goPage('borrow');showCircTab('return-tab')"><span class="bl-nav-icon">↙</span>Trả sách</div>
-    <div class="bl-nav-item" onclick="goPage('borrow');showCircTab('overdue-tab')"><span class="bl-nav-icon">⚠️</span>Quá hạn<span class="bl-nav-badge">7</span></div>
-    <div class="bl-nav-item"><span class="bl-nav-icon">🔔</span>Đặt trước<span class="bl-nav-badge">3</span></div>
+    <a th:href="@{/borrowing}" class="bl-nav-item" id="nav-borrow" onclick="goPage('borrow');showCircTab('borrow-tab')">
+        <span class="bl-nav-icon">↗</span>Cho mượn</a>
+    <div class="bl-nav-item" onclick="goPage('borrow');showCircTab('return-tab')">
+        <span class="bl-nav-icon">↙</span>Trả sách</div>
+    <div class="bl-nav-item" onclick="goPage('borrow');showCircTab('overdue-tab')">
+        <span class="bl-nav-icon">⚠️</span>Quá hạn<span class="bl-nav-badge">7</span></div>
+    <div class="bl-nav-item">
+        <span class="bl-nav-icon">🔔</span>Đặt trước<span class="bl-nav-badge">3</span></div>
 </div>
 
 <div class="bl-sidebar-section">

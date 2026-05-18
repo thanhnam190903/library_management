@@ -22,11 +22,21 @@
                         <button class="bl-btn bl-btn-primary" onclick="openAddMember()">➕ Đăng ký mới</button>
                     </div>
                     <div class="bl-panel">
+                        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <strong>Thành công!</strong> <span th:text="${success}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-circle me-2"></i>
+                            <strong>Lỗi!</strong> <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
                         <table class="bl-data-table">
                             <thead>
                             <tr>
                                 <th>Đọc giả</th>
-                                <th>Hạng thẻ</th>
                                 <th>Liên hệ</th>
                                 <th>Đang mượn</th>
                                 <th>Hết hạn</th>
@@ -36,11 +46,12 @@
                             </thead>
                             <tbody>
                             <th:block th:each="r : ${readerList}">
-                            <tr th:each="c :${r.cards}"  th:attr="onclick=|showMemberProfile('${r.name}',
+                            <tr th:each="c :${r.cards}"  th:attr="onclick=|showMemberProfile('${r.id}','${r.gender}','${r.address}','${r.birthDate}','${r.name}',
                                                             '${#strings.toUpperCase(#strings.substring(r.name.split(' ')[r.name.split(' ').length - 2],0,1) +
                                                              #strings.substring(r.name.split(' ')[r.name.split(' ').length - 1],0,1))}',
-                                                            '#c9963a,#e8c06a','${c.id}','${r.phone}','${r.email}','${r.birthDate}','${c.totalBorrow}','${c.overdueCount}',
-                                                            '${c.expiryDate}')|" style="cursor:pointer;">
+                                                            '#c9963a,#e8c06a','${r.readerType}','${c.id}','${r.phone}','${r.email}','${c.issueDate}',
+                                                            '${#temporals.format(r.birthDate, 'dd-MM-yyyy')}','${c.totalBorrow}',
+                                                            '${c.overdueCount}','${#temporals.format(c.expiryDate, 'dd-MM-yyyy')}')|" style="cursor:pointer;">
                                 <td>
                                     <div style="display:flex;align-items:center;gap:10px;">
                                         <div class="member-table-avatar" style="background:linear-gradient(135deg,var(--gold),var(--rust));" th:text="${#strings.toUpperCase(
@@ -52,17 +63,15 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <span class="bl-badge bl-badge-gold">⭐ Vàng</span>
-                                </td>
                                 <td style="font-size:12px;color:var(--mist);" th:text="${r.phone}">0912 345 678</td>
                                 <td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;" th:text="${borrowingMap[r.id]}"></td>
-                                <td style="font-size:12px;font-family:'DM Mono',monospace;" th:text="${c.expiryDate}">31/12/2026</td>
-                                <td><span class="bl-badge bl-badge-active">Hoạt động</span></td>
-                                <td><button class="action-btn">Xem</button></td>
+                                <td style="font-size:12px;font-family:'DM Mono',monospace;" th:text="${#temporals.format(c.expiryDate, 'dd-MM-yyyy')}">31/12/2026</td>
+                                <td><span class="bl-badge bl-badge-active" th:classappend="${c.status} ? ' bl-badge-active' : ' bl-badge-inactive'" th:text="${c.status} ? 'Hoạt động' : 'Hết hạn'">Hoạt động</span></td>
+                                <td>
+                                    <button th:if="${!c.status}" th:data-idcard="${c.id}" th:data-name="${r.name}" class="action-btn" onclick="confirmCardRenewal(this)">Gia Hạn</button>
+                                    <button class="action-btn">Xem</button>
+                                </td>
                             </tr>
-
-                            <tr><td><div style="display:flex;align-items:center;gap:10px;"><div class="member-table-avatar" style="background:linear-gradient(135deg,#606060,#909090);">ĐH</div><div><div style="font-weight:500;">Đinh Hải Yến</div><div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;">#0423</div></div></div></td><td><span class="bl-badge bl-badge-silver">🥈 Bạc</span></td><td style="font-size:12px;color:var(--mist);">0933 456 789</td><td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;">0</td><td style="font-size:12px;font-family:'DM Mono',monospace;color:var(--rust);">01/01/2026</td><td><span class="bl-badge bl-badge-inactive">Hết hạn</span></td><td><button class="action-btn">Gia hạn</button></td></tr>
                             </th:block>
                             </tbody>
                         </table>
@@ -73,6 +82,12 @@
                 <div id="member-profile-panel">
                     <div class="profile-card">
                         <div class="profile-top">
+                            <input type="hidden" id="id-reader" value="">
+                            <input type="hidden" id="gender" value="">
+                            <input type="hidden" id="address-prof" value="">
+                            <input type="hidden" id="reader-type" value="">
+                            <input type="hidden" id="birth-show" value="">
+                            <input type="hidden" id="issua-date" value="">
                             <div class="profile-avatar-big" id="prof-avatar">TL</div>
                             <div class="profile-name" id="prof-name">Trần Thị Lan</div>
                             <div class="profile-id" id="prof-id">#1042</div>
@@ -85,14 +100,15 @@
                                 <div class="profile-stat"><div class="profile-stat-num" style="color:var(--forest);" id="prof-current">3</div><div class="profile-stat-lbl">Đang mượn</div></div>
                             </div>
                             <div id="prof-info">
-                                <div class="profile-info-row"><span class="profile-info-icon">📱</span><span class="profile-info-label">Điện thoại</span><span class="profile-info-val">0912 345 678</span></div>
-                                <div class="profile-info-row"><span class="profile-info-icon">📧</span><span class="profile-info-label">Email</span><span class="profile-info-val" style="font-size:12px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e68a8788c892948788a6838b878f8ac885898b">[email&#160;protected]</a></span></div>
-                                <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span class="profile-info-label">Ngày sinh</span><span class="profile-info-val">12/01/1995</span></div>
-                                <div class="profile-info-row"><span class="profile-info-icon">📅</span><span class="profile-info-label">Hết hạn</span><span class="profile-info-val">31/12/2026</span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📱</span><span class="profile-info-label">Điện thoại</span><span class="profile-info-val" id="val-phone">0912 345 678</span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📧</span><span class="profile-info-label">Email</span><span class="profile-info-val" style="font-size:12px;" id="val-email">
+                                    <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e68a8788c892948788a6838b878f8ac885898b" >[email&#160;protected]</a></span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span class="profile-info-label">Ngày sinh</span><span class="profile-info-val" id="val-date-birth">12/01/1995</span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📅</span><span class="profile-info-label">Hết hạn</span><span class="profile-info-val" id="val-date-issua">31/12/2026</span></div>
                             </div>
                             <div style="display:flex;gap:8px;margin-top:16px;">
-                                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;font-size:12px;">✏️ Chỉnh sửa</button>
-                                <button class="bl-btn bl-btn-secondary" style="font-size:12px;">🖨️ In thẻ</button>
+                                <button class="bl-btn bl-btn-primary" onclick="editReader()" style="flex:1;justify-content:center;font-size:12px;">✏️ Chỉnh sửa</button>
+                                <button class="bl-btn bl-btn-secondary" style="font-size:12px;" onclick="printCard()">🖨️ In thẻ</button>
                             </div>
                         </div>
                     </div>
@@ -106,20 +122,21 @@
     <div class="bl-modal" onclick="event.stopPropagation()">
         <div class="bl-modal-header">
             <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
-            <div><div class="bl-modal-book-title">Đăng ký hội viên mới</div><div class="bl-modal-book-author">Tạo tài khoản thẻ thư viện</div></div>
+            <div><div class="bl-modal-book-title" id="modalTitle">Đăng ký hội viên mới</div><div class="bl-modal-book-author">Tạo tài khoản thẻ thư viện</div></div>
             <button class="bl-modal-close" onclick="closeModal('add-member-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
-            <form th:action="@{/readers}" method="post">
+            <form th:action="@{/readers}" method="post" th:object="${reader}">
             <div class="bl-form-row">
                 <div class="bl-form-group">
+                    <input type="hidden" id="edit-id" name="id">
                    <div class="bl-form-label">Họ và tên *</div>
                    <input class="bl-form-input" required id="edit-name" name="name" placeholder="Nhập họ tên đầy đủ...">
                 </div>
                 <div class="bl-form-group">
                     <div class="bl-form-label">Giới tính *</div>
-                    <input class="" name="gender" type="radio" value="Nam" checked style="margin-top:10px;margin-right:5px;">Nam
-                    <input class="" name="gender" type="radio" value="Nữ" style="margin-left:13px;margin-right:5px;">Nữ
+                    <input class="" name="gender" id="gender-male" type="radio" value="Nam" checked style="margin-top:10px;margin-right:5px;">Nam
+                    <input class="" name="gender" id="gender-female" type="radio" value="Nữ" style="margin-left:13px;margin-right:5px;">Nữ
                 </div>
             </div>
             <div class="bl-form-row">
@@ -132,9 +149,16 @@
                     <input class="bl-form-input" required id="edit-phone" name="phone" placeholder="09xx xxx xxx">
                 </div>
             </div>
-            <div class="bl-form-group">
-                <div class="bl-form-label">Địa chỉ</div>
-                <input class="bl-form-input" required id="address" name="address" placeholder="Số nhà, đường, phường/xã, quận/huyện...">
+            <div class="" id="edit-row">
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Địa chỉ</div>
+                    <input class="bl-form-input" required id="edit-address" name="address" placeholder="Số nhà, đường, phường/xã, quận/huyện...">
+                </div>
+                <div class="bl-form-group" id="issua-group" >
+                    <input type="hidden" id="id-card" name="idCard">
+                    <div class="bl-form-label" >Ngày Tạo *</div>
+                    <input class="bl-form-input" required id="edit-issua" name="issuaDate" type="date">
+                </div>
             </div>
             <div class="bl-form-row">
                 <div class="bl-form-group">
@@ -143,7 +167,7 @@
                 </div>
                 <div class="bl-form-group">
                     <div class="bl-form-label">Đối tượng</div>
-                    <select class="bl-form-input" name="readerType" required>
+                    <select class="bl-form-input" id="edit-reader-type" name="readerType" required>
                         <option value="Khách">Khách</option>
                         <option value="Học sinh">Học Sinh</option>
                         <option value="Giáo viên">Giáo viên</option>
@@ -155,7 +179,7 @@
 
             </div>
             <div style="display:flex;gap:10px;">
-                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký &amp; In thẻ</button>
+                <button class="bl-btn bl-btn-primary" id="up-btn" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký &amp; In thẻ</button>
                 <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('add-member-modal')">Hủy</button>
             </div>
             </form>
@@ -163,5 +187,157 @@
     </div>
 </div>
 <script th:replace="layout/script :: script"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function confirmCardRenewal(element) {
+    const cId = element.dataset.idcard;
+    const name = element.dataset.name;
+    console.log("Card ID:", cId);
+    if (confirm("Bạn có chắc chắn muốn gia hạn độc giả " + name + " này?")) {
+        window.location.href = "/qltv/readers?id=" + cId;
+    }
+}
+    function editReader(){
+    document.getElementById('add-member-modal').classList.add('bl-open');
+    document.getElementById("modalTitle").innerText ="Cập nhật hội viên";
+    document.getElementById("up-btn").innerText ="Cập nhật";
+
+    const id = document.getElementById("id-reader").textContent;
+    const name = document.getElementById("prof-name").textContent;
+    const gender = document.getElementById("gender").textContent;
+    const address = document.getElementById("address-prof").textContent;
+    const readerType = document.getElementById("reader-type").textContent;
+    const phone = document.getElementById("val-phone").textContent;
+    const email = document.getElementById("val-email").textContent;
+    const dob = document.getElementById("birth-show").textContent;
+    const issua = document.getElementById("issua-date").textContent;
+    const idCard = document.getElementById("prof-id").textContent;
+
+    console.log("id:", id);
+    console.log("name:", name);
+    console.log("gender:", gender);
+    console.log("address:", address);
+    console.log("readerType:", readerType);
+    console.log("phone:", phone);
+    console.log("email:", email);
+    console.log("dob:", dob);
+
+    document.getElementById("edit-id").value = id;
+    document.getElementById("id-card").value = idCard;
+    if(id){
+        document.getElementById("edit-row").classList.add("bl-form-row");
+    }else{
+        document.getElementById("edit-row").classList.remove("bl-form-row");
+    }
+    document.getElementById("edit-issua").value = issua;
+    document.querySelector('input[name="gender"]:checked').value = gender;
+    document.getElementById("edit-address").value = address;
+    document.getElementById("edit-reader-type").value = readerType;
+    document.getElementById("edit-phone").value = phone;
+    document.getElementById("edit-email").value = email;
+    document.getElementById("edit-birthdate").value = dob;
+    document.getElementById("edit-name").value = name;
+}
+
+    function printCard(){
+    const avatar = document.getElementById("prof-avatar").textContent;
+    const name = document.getElementById("prof-name").textContent;
+    const cardId = document.getElementById("prof-id").textContent.replace("#", "");
+    const phone = document.getElementById("val-phone").textContent;
+    const birth = document.getElementById("val-date-birth").textContent;
+    const expiry = document.getElementById("val-date-issua").textContent;
+    const email = document.getElementById("val-email").textContent;
+    const printWindow = window.open("", "", "width=400,height=600");
+
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Thẻ thư viện</title>
+
+            <style>
+                body{
+                    font-family: Arial;
+                    padding:20px;
+                    display:flex;
+                    justify-content:center;
+                }
+                .card{
+                    width:320px;
+                    border-radius:20px;
+                    overflow:hidden;
+                    border:1px solid #ddd;
+                }
+                .top{
+                    background:#2b1607;
+                    color:white;
+                    padding:30px;
+                    text-align:center;
+                }
+                .avatar{
+                    width:90px;
+                    height:90px;
+                    border-radius:50%;
+                    background:#c57b39;
+                    color:white;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:36px;
+                    margin:auto;
+                    font-weight:bold;
+                }
+                .body{
+                    padding:20px;
+                }
+                .row{
+                    margin-bottom:14px;
+                    font-size:14px;
+                }
+            </style>
+        </head>
+
+        <body>
+
+            <div class="card">
+
+                <div class="top">
+
+                    <div class="avatar">
+                        ${avatar}
+                    </div>
+
+                    <h2>${name}</h2>
+
+                    <div>${cardId}</div>
+
+                </div>
+
+                <div class="body">
+
+                    <div class="row">
+                        📱 <span>Điện thoại</span> : ${phone}
+                    </div>
+                    <div class="row">
+                        📱 <span>Email :</span> ${email}
+                    </div>
+                    <div class="row">
+                        🎂 <span>Ngày sinh :</span> ${birth}
+                    </div>
+                    <div class="row">
+                        📅 <span>Ngày hết hạn :</span> ${expiry}
+                    </div>
+                    <div class="row" style="text-align:center;margin-top:20px;">
+                        <img src="/qltv/qr/${cardId}" width="120">
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.print();
+}
+</script>
 </body>
 </html>
