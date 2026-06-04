@@ -16,7 +16,7 @@
             <div class="circulation-tabs">
                 <button class="circ-tab active" id="tab-borrow-btn" onclick="showCircTab('borrow-tab')">↗ Cho mượn</button>
                 <button class="circ-tab" id="tab-return-btn" onclick="showCircTab('return-tab')">↙ Trả sách</button>
-                <button class="circ-tab" id="tab-overdue-btn" onclick="showCircTab('overdue-tab')">⚠️ Quá hạn (7)</button>
+                <button class="circ-tab" id="tab-overdue-btn" onclick="showCircTab('overdue-tab')">⚠️ Quá hạn (<span th:text="${overdueCount}"></span>)</button>
                 <button class="circ-tab" id="tab-history-btn" onclick="showCircTab('history-tab')">📋 Lịch sử</button>
             </div>
 
@@ -56,29 +56,19 @@
                                     <button class="bl-btn bl-btn-secondary" onclick="findBook()">Tìm</button>
                                 </div>
                             </div>
-                            <div class="confirm-card" style="border-color:var(--forest); display:none;" id="book-card">
-                                <div class="confirm-icon">📗</div>
-                                <div style="flex:1">
-                                    <input type="hidden" id="book-id-input">
-                                    <div class="confirm-title" id="book-title">Đắc Nhân Tâm</div>
-                                    <div class="confirm-sub" id="book-info">Dale Carnegie · ISBN 978-604-1-22345-6</div>
-                                    <div style="margin-top:6px;">
-                                        <span class="bl-badge bl-badge-available" id="book-status">Còn 3 quyển</span>
-                                    </div>
-                                </div>
-                                <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--rust);">✕</button>
-                            </div>
+                            <div id="selected-books-container"></div>
+                            <div id="hidden-book-inputs"></div>
                         </div>
                         <div class="circ-form-card">
                             <div class="circ-form-title">
                                 <span class="step-chip">3</span> Xác nhận &amp; Ngày hạn
                                 <div class="text-danger" id="error-input"></div>
                             </div>
-                            <form id="borrow-form" th:action="@{/borrowing}" method="post" >
+                            <form id="borrow-form" th:action="@{/quan-ly/borrowing}" method="post" >
                                 <div class="bl-form-row" style="margin-bottom:16px;">
                                     <div class="bl-form-group" style="margin-bottom:0;">
                                         <input type="hidden" name="cardId" id="hidden-card-id">
-                                        <input type="hidden" name="bookId" id="hidden-book-id">
+                                        <input type="hidden" name="bookIds" id="selected-books">
                                         <div class="bl-form-label" >Ngày mượn</div>
                                         <input class="bl-form-input" id="borrow-date" type="date" name="borrowDate">
                                     </div><div class="bl-form-group" style="margin-bottom:0;">
@@ -96,28 +86,25 @@
                     </div>
                     <div>
                         <div class="bl-panel">
+                            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-circle me-2"></i>
+                                <strong>Lỗi!</strong> <span th:text="${error}"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
                             <div class="bl-panel-header">
-                                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-                                    <i class="bi bi-check-circle me-2"></i>
-                                    <strong>Thành công!</strong> <span th:text="${success}"></span>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-
-                                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    <i class="bi bi-exclamation-circle me-2"></i>
-                                    <strong>Lỗi!</strong> <span th:text="${error}"></span>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
                                 <div class="bl-panel-title" id="borrow-count">Đang mượn </div>
                                 <span class="bl-badge bl-badge-borrowed" id="borrow-limit">Tối đa: </span>
                             </div>
                             <div class="borrow-list-item w-100" id="borrow-list">
+                                <span style="margin-left: 10rem;">Không có bản ghi nào</span>
                                 <div class="borrow-book-icon" ></div>
                                 <div class="borrow-info">
                                     <div class="borrow-title-text"></div>
                                     <div class="borrow-meta"></div>
                                 </div>
-                                <div class="due-date due-ok"></div>
+                                <div class="due-date due-ok">
+
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -129,25 +116,73 @@
                     <div>
                         <div class="circ-form-card">
                             <div class="circ-form-title"><span class="step-chip">1</span> Quét mã sách / thẻ trả</div>
-                            <div class="bl-form-group"><div class="bl-form-label">Mã phiếu mượn hoặc ISBN sách</div><div class="scan-input"><input class="bl-form-input" placeholder="Nhập hoặc quét mã..." value="BRW-20260301-0891"><button class="bl-btn bl-btn-primary">Tra cứu</button></div></div>
+                            <div class="bl-form-group">
+                                <div class="bl-form-label">Mã phiếu mượn </div>
+                                <div class="scan-input">
+                                    <input class="bl-form-input" placeholder="Nhập hoặc quét mã..." id="return-keyword">
+                                    <button class="bl-btn bl-btn-primary" onclick="findReturnBook()">Tra cứu</button>
+                                </div>
+                            </div>
                         </div>
                         <div class="circ-form-card">
-                            <div class="circ-form-title"><span class="step-chip">2</span> Thông tin phiếu mượn</div>
-                            <div class="overdue-alert">⚠️ Sách quá hạn 4 ngày — Phí phạt: 20,000đ</div>
-                            <div class="confirm-card" style="margin-bottom:14px;"><div class="confirm-icon">📕</div><div><div class="confirm-title">Tư Duy Nhanh Và Chậm</div><div class="confirm-sub">Phạm Hoàng Nam · Mượn 20/02 · Hạn 06/03/2026</div></div></div>
-                            <div class="bl-form-row" style="margin-bottom:14px;"><div class="bl-form-group" style="margin-bottom:0;"><div class="bl-form-label">Tình trạng sách</div><select class="bl-form-input"><option>Tốt (như lúc mượn)</option><option>Có hư hỏng nhẹ</option><option>Hư hỏng nặng</option><option>Mất sách</option></select></div><div class="bl-form-group" style="margin-bottom:0;"><div class="bl-form-label">Phí phạt (VNĐ)</div><input class="bl-form-input" value="20,000" style="font-family:'DM Mono',monospace;"></div></div>
-                            <div style="display:flex;gap:10px;"><button class="bl-btn bl-btn-forest" style="flex:1;justify-content:center;">✓ Xác nhận trả sách</button><button class="bl-btn bl-btn-secondary">🖨️ In biên lai</button></div>
+                            <div class="circ-form-title">
+                                <span class="step-chip">2</span> Thông tin phiếu mượn
+                                <span style="text-align:end;" id="errorId"></span>
+                            </div>
+                            <div class="overdue-alert" id="overdue-alert" style="display: none;">⚠️ Sách quá hạn 4 ngày — Phí phạt: 20,000đ</div>
+                            <form id="form-borrow" th:action="@{/quan-ly/return-book}" method="post" style="margin-top:20px;">
+                            <div class="" style="display:none;" id="return-card" ></div>
+                                <div class="" style="margin-top:15px;">
+                                    <div class="bl-form-group">
+                                        <div class="bl-form-label">Tổng phí phạt (VNĐ)</div>
+                                        <input class="bl-form-input" id="total-fine" readonly value="0"
+                                                style="font-family:'DM Mono',monospace;font-weight:700;">
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:10px;">
+                                    <button type="button" class="bl-btn bl-btn-forest" style="flex:1;justify-content:center;" onclick="confirmReturn()">✓ Xác nhận trả sách</button>
+                                </div>
+                            </form>
+
                         </div>
                     </div>
                     <div>
                         <div class="bl-panel">
-                            <div class="bl-panel-header"><div class="bl-panel-title">Trả sách hôm nay</div><span class="bl-badge bl-badge-available">12 lượt</span></div>
-                            <table class="bl-data-table"><thead><tr><th>Sách</th><th>Độc giả</th><th>Trạng thái</th><th>Giờ</th></tr></thead>
+                            <div class="bl-panel-header">
+                                <div class="bl-panel-title">Trả sách hôm nay</div>
+                                <span class="bl-badge bl-badge-available" th:text="${countReturnedToday + ' lượt'}"></span>
+                            </div>
+                            <table class="bl-data-table">
+                                <thead>
+                                <tr>
+                                    <th>Sách</th>
+                                    <th>Độc giả</th>
+                                    <th>Trạng thái</th
+                                    ><th>Giờ</th>
+                                </tr>
+                                </thead>
                                 <tbody>
-                                <tr><td style="font-weight:500;">Nhà Giả Kim</td><td style="color:var(--mist);">Lê Minh Tú</td><td><span class="bl-badge bl-badge-available">Đúng hạn</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">09:02</td></tr>
-                                <tr><td style="font-weight:500;">Atomic Habits</td><td style="color:var(--mist);">Nguyễn Thu Hà</td><td><span class="bl-badge bl-badge-available">Đúng hạn</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">08:45</td></tr>
-                                <tr><td style="font-weight:500;">1984</td><td style="color:var(--mist);">Trần Bảo Long</td><td><span class="bl-badge bl-badge-overdue">Quá 2 ngày</span></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">08:30</td></tr>
-                                </tbody></table>
+                                <tr th:if="${#lists.isEmpty(returnedToday)}">
+                                    <td colspan="4" style="text-align:center;padding:20px;color:var(--mist);">
+                                        Chưa có lượt trả sách trong hôm nay
+                                    </td>
+                                </tr>
+                                <tr th:each="borrow : ${returnedToday}">
+                                    <td style="font-weight:500;" th:text="${borrow.bookCopy.bookTitle.title}"></td>
+                                    <td style="color:var(--mist);" th:text="${borrow.borrowSlip.libraryCard.reader.name}">Lê Minh Tú</td>
+                                    <td>
+                                        <span th:if="${borrow.returnDate <= borrow.borrowSlip.dueDate}" class="bl-badge bl-badge-available">
+                                            Đúng hạn
+                                        </span>
+                                        <span th:if="${borrow.returnDate > borrow.borrowSlip.dueDate}" class="bl-badge bl-badge-overdue"
+                                              th:text="'Quá ' + ${T(java.time.temporal.ChronoUnit).DAYS.between(
+                                              borrow.borrowSlip.dueDate,borrow.returnDate)} + ' ngày'">
+                                        </span>
+                                    </td>
+                                    <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);" th:text="${borrow.returnHour}">09:02</td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -156,15 +191,69 @@
             <div class="circ-panel" id="overdue-tab">
                 <div class="overdue-alert" style="margin-bottom:20px;">⚠️ Có 7 phiếu mượn quá hạn. Hệ thống đã tự động gửi thông báo email cho 5 trường hợp.</div>
                 <div class="bl-panel">
-                    <div class="bl-panel-header"><div class="bl-panel-title">Danh sách sách quá hạn</div><div style="display:flex;gap:8px;"><button class="bl-btn bl-btn-secondary">📧 Gửi thông báo tất cả</button><button class="bl-btn bl-btn-primary">🖨️ In danh sách</button></div></div>
-                    <table class="bl-data-table">
-                        <thead><tr><th>Sách</th><th>Độc giả</th><th>Ngày mượn</th><th>Hạn trả</th><th>Số ngày trễ</th><th>Phí phạt</th><th>Thao tác</th></tr></thead>
-                        <tbody>
-                        <tr><td><div style="font-weight:500;">Tư Duy Nhanh Và Chậm</div></td><td><div style="display:flex;align-items:center;gap:8px;"><div class="member-table-avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,var(--forest),var(--forest-light));">PH</div>Phạm Hoàng Nam</div></td><td style="color:var(--mist);font-family:'DM Mono',monospace;font-size:12px;">20/02/2026</td><td style="color:var(--rust);font-family:'DM Mono',monospace;font-size:12px;">06/03/2026</td><td style="text-align:center;"><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);">+18</span></td><td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rust);">90,000đ</td><td><button class="action-btn">Nhắc nhở</button> <button class="action-btn">Nhận trả</button></td></tr>
-                        <tr><td><div style="font-weight:500;">1984</div></td><td><div style="display:flex;align-items:center;gap:8px;"><div class="member-table-avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,var(--blue),#5a8cd0);">TB</div>Trần Bảo Long</div></td><td style="color:var(--mist);font-family:'DM Mono',monospace;font-size:12px;">01/03/2026</td><td style="color:var(--rust);font-family:'DM Mono',monospace;font-size:12px;">15/03/2026</td><td style="text-align:center;"><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);">+9</span></td><td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rust);">45,000đ</td><td><button class="action-btn">Nhắc nhở</button> <button class="action-btn">Nhận trả</button></td></tr>
-                        <tr><td><div style="font-weight:500;">Sapiens</div></td><td><div style="display:flex;align-items:center;gap:8px;"><div class="member-table-avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,var(--gold),var(--rust));">TL</div>Trần Thị Lan</div></td><td style="color:var(--mist);font-family:'DM Mono',monospace;font-size:12px;">01/03/2026</td><td style="color:var(--rust);font-family:'DM Mono',monospace;font-size:12px;">15/03/2026</td><td style="text-align:center;"><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);">+9</span></td><td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rust);">45,000đ</td><td><button class="action-btn">Nhắc nhở</button> <button class="action-btn">Nhận trả</button></td></tr>
-                        </tbody>
-                    </table>
+                    <div class="bl-panel-header">
+                        <div class="bl-panel-title">Danh sách sách quá hạn</div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="bl-btn bl-btn-secondary" onclick="confirmRemindAll()">📧 Gửi thông báo tất cả</button>
+                            <button class="bl-btn bl-btn-primary" onclick="printBorrowList()">🖨️ In danh sách</button>
+                        </div>
+                    </div>
+                    <div id="print-area">
+                        <div class="print-title">DANH SÁCH TRẢ SÁCH HÔM NAY</div>
+                        <div class="print-subtitle">Ngày in:<span id="print-date"></span></div>
+                        <table class="bl-data-table" >
+                            <thead>
+                            <tr>
+                                <th>Sách</th>
+                                <th>Độc giả</th>
+                                <th>Ngày mượn</th>
+                                <th>Hạn trả</th>
+                                <th>Số ngày trễ</th>
+                                <th>Phí phạt</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="borrow : ${overdueBooks}">
+                                <td>
+                                    <div style="font-weight:500;" th:text="${borrow.bookCopy.bookTitle.title}">Tư Duy Nhanh Và Chậm</div>
+                                </td>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <div class="member-table-avatar"
+                                             style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,var(--forest),var(--forest-light));"
+                                             th:text="${#strings.toUpperCase(
+                                        #strings.substring(borrow.borrowSlip.libraryCard.reader.name.split(' ')[borrow.borrowSlip.libraryCard.reader.name.split(' ').length - 2],0,1) +
+                                        #strings.substring(borrow.borrowSlip.libraryCard.reader.name.split(' ')[borrow.borrowSlip.libraryCard.reader.name.split(' ').length - 1],0,1))}"></div>
+                                        <div th:text="${borrow.borrowSlip.libraryCard.reader.name}"></div>
+                                    </div>
+                                </td>
+                                <td style="color:var(--mist);font-family:'DM Mono',monospace;font-size:12px;"
+                                    th:text="${#temporals.format(borrow.borrowSlip.borrowDate,'dd/MM/yyyy')}"></td>
+                                <td style="color:var(--rust);font-family:'DM Mono',monospace;font-size:12px;"
+                                    th:text="${#temporals.format(borrow.borrowSlip.dueDate,'dd/MM/yyyy')}"></td>
+                                <td style="text-align:center;">
+                                <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--rust);"
+                                      th:text="'+' +${T(java.time.temporal.ChronoUnit).DAYS.between(borrow.borrowSlip.dueDate,T(java.time.LocalDate).now())}">
+                                </span>
+                                </td>
+                                <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rust);"
+                                    th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(borrow.borrowSlip.dueDate,
+                                T(java.time.LocalDate).now()) * 5000} + 'đ'"></td>
+                                <td>
+                                    <button class="action-btn" th:data-id="${borrow.id}"
+                                            th:data-name="${borrow.borrowSlip.libraryCard.reader.name}"
+                                            onclick="confirmRemind(this)">Nhắc nhở</button>
+                                    <button class="action-btn">Nhận trả</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div class="print-footer">
+                            Hệ thống quản lý thư viện
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -177,6 +266,17 @@
                     <button class="bl-btn bl-btn-secondary">📥 Xuất Excel</button>
                 </div>
                 <div class="bl-panel">
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Thành công!</strong> <span th:text="${success}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <strong>Lỗi!</strong> <span th:text="${error}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                     <table class="bl-data-table">
                         <thead>
                         <tr>
@@ -221,211 +321,61 @@
         </div >
 
     </div><!-- /content -->
-</div><!-- /main -->
+</div>
+
+<div th:if="${brs != null}" style="display:none">
+    <span id="borrow-slip-hidden" th:text="${brs.id}"></span>
+    <span id="borrow-reader-hidden" th:text="${brs.libraryCard.reader.name}"></span>
+    <span id="borrow-date-hidden" th:text="${brs.borrowDate}"></span>
+    <span id="borrow-due-hidden" th:text="${brs.dueDate}"></span>
+    <div id="borrow-books-hidden">
+        <div th:each="d,stat : ${details}">
+            <span class="stt" th:text="${stat.count}"></span>
+            <span class="id" th:text="${d.bookCopy.barcode}"></span>
+            <span class="title" th:text="${d.bookCopy.bookTitle.title}"></span>
+            <span class="tg" th:text="${d.bookCopy.bookTitle.author.authorName}"></span>
+            <span class="cate" th:text="${d.bookCopy.bookTitle.category.categoryName}"></span>
+        </div>
+    </div>
+</div>
+
+<div id="receipt-print-area" style="display:none;">
+    <h2 style="text-align:center;">BIÊN LAI TRẢ SÁCH</h2>
+    <p>Người trả:<span id="receipt-reader"></span></p>
+    <p>Ngày trả:<span id="receipt-date"></span></p>
+    <p>Phí phạt:<span id="receipt-fine"></span>đ</p>
+    <p>Sách:<div id="receipt-book"></div></p>
+</div>
+<div id="borrow-print-area" style="display: none;">
+    <h2 style="text-align:center;">PHIẾU MƯỢN SÁCH</h2>
+    <p><b>Mã phiếu:</b><span id="print-slip-id"></span></p>
+    <p><b>Độc giả:</b><span id="print-reader-name"></span></p>
+    <p><b>Ngày mượn:</b><span id="print-borrow-date"></span></p>
+    <p><b>Hạn trả:</b><span id="print-due-date"></span></p>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>STT</th>
+            <th>Mã bản sách</th>
+            <th>Tên sách</th>
+            <th>Tác giả</th>
+            <th>Thể loại</th>
+        </tr>
+        </thead>
+        <tbody id="print-book-list">
+        </tbody>
+    </table>
+    <p>Vui lòng cầm phiếu này khi đến trả sách</p>
+    <div style="text-align:center;margin-top:20px;">
+        <img id="print-qr" width="250" height="250">
+    </div>
+
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:replace="layout/script :: script"></script>
+<script th:src="@{/assets/borrow.js}"></script>
 <script>
-    window.addEventListener("DOMContentLoaded", () => {
-
-        const params =
-            new URLSearchParams(window.location.search);
-
-        const tab = params.get("tab");
-
-        if(tab){
-
-            showCircTab(tab + "-tab");
-
-        }
-
-    });
-
-    function findReader(){
-        const cardId =document.getElementById("card-id").value;
-        fetch(`/qltv/borrow/find-reader?cardId=${cardId}`)
-            .then(res => res.json())
-            .then(card => {
-                console.log(card);
-                if(card.found == false){
-                    document.getElementById("reader-card").style.display = "flex";
-                    document.getElementById("reader-name").textContent = "Không tìm thấy độc giả";
-                    document.getElementById("reader-info").textContent = "Không có hội viên hoặc sai mã thẻ";
-                    document.getElementById("reader-status").textContent = "Vui lòng kiểm tra lại";
-                    document.getElementById("borrow-list").innerHTML = "";
-                    return;
-                }
-                document.getElementById("reader-card").style.display = "flex";
-                document.getElementById("reader-name").textContent = card.name;
-                document.getElementById("reader-info").textContent =`Mã: ${card.id} · Còn hạn đến ${card.expiryDate}`;
-                document.getElementById("reader-status").textContent =card.status
-                    ? "Đủ điều kiện mượn" : "Thẻ đã hết hạn";
-
-                // LOAD SÁCH ĐANG MƯỢN
-                return fetch(`/qltv/borrow/current?cardId=${cardId}`);})
-            .then(res => {
-                if(!res) return;
-                return res.json();
-            })
-            .then(data => {
-                if(!data) return;
-                if(data.length > 0){
-                    document.getElementById("borrow-count").textContent =`Đang mượn (${data[0]["borrow-count"]} quyển)`;
-                    document.getElementById("borrow-limit").textContent =`Tối đa: ${data[0].maxBooksAllowed}`;
-                }
-                const borrowList = document.getElementById("borrow-list");
-                borrowList.innerHTML = "";
-                if(data.length === 0){
-                    borrowList.innerHTML = `<div style="padding:20px;text-align:center;color:#888;">
-                            Không có sách đang mượn</div>`;
-                    return;
-                }
-                data.forEach(book => {
-                    let dueClass = "due-ok";
-                    let dueText =`Hạn: ${book.dueDate}`;
-                    // quá hạn
-                    if(book.overdueDays > 0){
-                        dueClass = "due-over";
-                        dueText =`Quá ${book.overdueDays} ngày`;
-                    }
-                    // sắp tới hạn
-                    else {
-                        const dueDate = new Date(book.dueDate);
-                        const today =new Date();
-                        const diffDays =(dueDate - today)/ (1000 * 60 * 60 * 24);
-                        if(diffDays <= 3){
-                            dueClass = "due-warn";
-                        }
-                    }
-                    borrowList.innerHTML += `
-                        <div class="borrow-list-item w-100">
-                            <div class="borrow-book-icon" style="background:#e6f2ec;">📘</div>
-                            <div class="borrow-info">
-                                <div class="borrow-title-text">${book.title}</div>
-                                <div class="borrow-meta">Mượn: ${book.borrowDate}</div>
-                            </div>
-                            <div class="due-date ${dueClass}">${dueText}</div>
-                        </div>`;
-                });
-
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById("borrow-list")
-                    .innerHTML = `<div style="padding:20px;color:red;text-align:center;">
-                            Lỗi tải dữ liệu</div>`;
-            });
-    }
-
-    function findBook(){
-        const keyword =document.getElementById("book-id").value;
-        fetch(`/qltv/borrow/find-book?keyword=${keyword}`)
-            .then(res => res.json())
-            .then(book => {
-                if(book.available === 0){
-
-                    document.getElementById("book-card").style.display = "flex";
-
-                    document.getElementById("book-title").textContent = "Sách đã hết";
-
-                    document.getElementById("book-info").textContent ="Không còn quyển nào khả dụng";
-
-                    const statusEl =document.getElementById("book-status");
-
-                    statusEl.className ="bl-badge bl-badge-overdue";
-
-                    statusEl.textContent ="Đã được mượn hết";
-
-                    return;
-                }
-                console.log(book);
-                document.getElementById("book-id-input").value = book.id;
-
-                document.getElementById("book-card").style.display = "flex";
-
-                document.getElementById("book-title").textContent = book.title;
-
-                document.getElementById("book-info").textContent =`${book.author} · ISBN ${book.isbn}`;
-
-                const statusEl = document.getElementById("book-status");
-
-                statusEl.className = "bl-badge bl-badge-available";
-
-                statusEl.textContent = `Còn ${book.available} quyển`;
-            });
-    }
-
-    document.getElementById("borrow-form").addEventListener("submit", function (e) {
-
-        const errorDiv = document.getElementById("error-input");
-        errorDiv.textContent = "";
-
-        const cardId = document.getElementById("card-id").value;
-        const bookId = document.getElementById("book-id-input").value;
-        const isbn = document.getElementById("book-id").value;
-
-        const borrowDate = document.getElementById("borrow-date").value;
-        const returnDate = document.getElementById("return-date").value;
-
-
-        if (!cardId || !bookId || !borrowDate || !returnDate) {
-            errorDiv.textContent = "Vui lòng nhập đầy đủ thông tin";
-            e.preventDefault();
-            return;
-        }
-        document.getElementById("hidden-card-id").value = cardId;
-        document.getElementById("hidden-book-id").value = bookId;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const borrow = new Date(borrowDate + "T00:00:00");
-        if (borrow.getTime() !== today.getTime()) {
-            errorDiv.textContent = "Ngày mượn phải là hôm nay";
-            e.preventDefault();
-            return;
-        }
-
-        const returnD = new Date(returnDate + "T00:00:00");
-
-        const diffDays = (returnD - borrow) / (1000 * 60 * 60 * 24);
-
-        if (diffDays <= 0) {
-            errorDiv.textContent = "Ngày trả phải lớn hơn ngày mượn";
-            e.preventDefault();
-            return;
-        }
-
-        if (diffDays > 30) {
-            errorDiv.textContent = "Thời gian mượn tối đa 30 ngày";
-            e.preventDefault();
-            return;
-        }
-
-        Promise.all([
-            fetch(`/qltv/borrow/find-reader?cardId=${cardId}`).then(r => r.json()),
-            fetch(`/qltv/borrow/find-book?keyword=${isbn}`).then(r => r.json())
-        ])
-        .then(([reader, book]) => {
-
-            if (reader.found == false || !reader.status) {
-                errorDiv.textContent = "Thẻ không hợp lệ hoặc đã hết hạn";
-                return;
-            }
-
-            if (book.available === 0) {
-                errorDiv.textContent = "Sách đã hết, không thể mượn";
-                return;
-            }
-
-            document.getElementById("borrow-form").submit();
-
-        })
-        .catch(err => {
-            console.error(err);
-            errorDiv.textContent = "Có lỗi xảy ra";
-        });
-
-        e.preventDefault();
-    });
 </script>
 </body>
 </html>

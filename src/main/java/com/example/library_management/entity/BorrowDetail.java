@@ -28,4 +28,5 @@ public class BorrowDetail {
     LocalTime returnHour;
     double fineAmount;
     Integer status;
+    boolean overdueMailSent = false;
 }

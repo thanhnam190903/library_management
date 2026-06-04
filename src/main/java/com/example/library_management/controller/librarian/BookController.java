@@ -2,6 +2,7 @@ package com.example.library_management.controller.librarian;
 
 import com.example.library_management.entity.*;
 import com.example.library_management.repository.*;
+import com.example.library_management.service.CloudinaryService;
 import com.example.library_management.service.IdGeneratorService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -10,8 +11,10 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,7 @@ import java.util.Map;
 @Controller
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
+@RequestMapping("/quan-ly")
 public class BookController {
     BookTitleRepository bookTitleRepository;
     CategoryRepository categoryRepository;
@@ -27,19 +31,28 @@ public class BookController {
     IdGeneratorService idGeneratorService;
     BookCopyRepository bookCopyRepository;
     DigitalBookRepository digitalBookRepository;
+    CloudinaryService cloudinaryService;
 
     @GetMapping("/books")
     public String showBooks(Model model){
+        List<BookTitle> books = bookTitleRepository.getAllBookTitle();
+        Map<String, Long> availableMap = new HashMap<>();
+        for (BookTitle b : books) {
+            long available = bookCopyRepository.countAvailableBooks(b.getId());
+            availableMap.put(b.getId(), available);
+        }
         Map<String, Object> data = new HashMap<>();
         data.put("title", "Danh mục sách");
         data.put("sub", "Quản lý kho sách");
         data.put("activePage", "books");
-        data.put("books", bookTitleRepository.getAllBookTitle());
+        data.put("books", books);
         data.put("categories", categoryRepository.getAllCategory());
+        data.put("availableMap", availableMap);
         data.put("book", new BookTitle());
         model.addAllAttributes(data);
         return "librarian/book";
     }
+
     @GetMapping("/get-category")
     @ResponseBody
     public List<Category> getCategory(@RequestParam(required = false) String parent){
@@ -49,17 +62,18 @@ public class BookController {
                 System.out.println(category.getCategoryName());
             }
             return categoryRepository.findByParentIsNull();
-
         }
         for (Category category : categoryRepository.findByParent(parent)) {
             System.out.println(category.getCategoryName());
         }
         return categoryRepository.findByParent(parent);
     }
+
     @PostMapping("/books")
     public String saveBook(@Valid @ModelAttribute("book") BookTitle bookTitle,
-            RedirectAttributes redirectAttrs, @RequestParam String author,
-            @RequestParam String nxb, Model model) {
+                           RedirectAttributes redirectAttrs, @RequestParam String author,
+                           @RequestParam String nxb, @RequestParam(value = "image",required = false) MultipartFile image,
+                           Model model) throws IOException {
         Author authorEntity = authorRepository.findByAuthorName(author);
         if (authorEntity == null) {
             authorEntity = Author.builder()
@@ -83,6 +97,8 @@ public class BookController {
         if (bookTitle.getId() == null || bookTitle.getId().isEmpty()) {
 
             bookTitle.setId(idGeneratorService.generate("BOOK_TITLE", "BKT"));
+            Map uploadResult = cloudinaryService.uploadFile(image);
+            bookTitle.setCoverImage(uploadResult.get("secure_url").toString());
             bookTitle.setDeleted(false);
             bookTitleRepository.save(bookTitle);
 
@@ -93,6 +109,7 @@ public class BookController {
                         .barcode(bookTitle.getId() + "-" + (i + 1))
                         .bookTitle(bookTitle)
                         .circulationStatus("available")
+                        .status(true)
                         .build();
                 bookCopyRepository.save(bookCopy);
             }
@@ -112,7 +129,10 @@ public class BookController {
             oldBook.setQuantity(newQuantity);
             oldBook.setPrice(bookTitle.getPrice());
             oldBook.setNote(bookTitle.getNote());
-
+            if (!image.isEmpty()) {
+                Map uploadResult = cloudinaryService.uploadFile(image);
+                oldBook.setCoverImage(uploadResult.get("secure_url").toString());
+            }
             bookTitleRepository.save(oldBook);
 
             if (newQuantity > oldQuantity) {
@@ -136,7 +156,7 @@ public class BookController {
                 // không đủ available để xóa
                 if (availableCopies.size() < total) {
                     redirectAttrs.addFlashAttribute("error", "Không đủ sách khả dụng để giảm số lượng!");
-                    return "redirect:/books";
+                    return "redirect:/quan-ly/books";
                 }
                 for (int i = 0; i < total; i++) {
                     bookCopyRepository.delete(availableCopies.get(i));
@@ -144,13 +164,15 @@ public class BookController {
             }
             redirectAttrs.addFlashAttribute("success", "Cập nhật sách thành công!");
         }
-        return "redirect:/books";
+        return "redirect:/quan-ly/books";
     }
+
     @GetMapping(value = "/books",params = "id")
     public String deletebook(@RequestParam("id") String id){
         bookTitleRepository.deleteBookTitle(id);
-        return "redirect:/books";
+        return "redirect:/quan-ly/books";
     }
+
     @GetMapping("/books-management")
     public String showBooksManagement(@RequestParam("id") String id,  Model model){
         Map<String, Object> data = new HashMap<>();
@@ -161,5 +183,23 @@ public class BookController {
         data.put("digitalBook", digitalBookRepository.findByBookTitleId(id));
         model.addAllAttributes(data);
         return "librarian/book-copy";
+    }
+
+    @PostMapping("/book-copys/update-copy")
+    public String updateBookCopy(@RequestParam List<String> ids, @RequestParam String bookCondition,
+            @RequestParam String shelfLocation,RedirectAttributes redirectAttrs) {
+
+        String bookTitleId = null;
+        for (String id : ids) {
+            BookCopy copy = bookCopyRepository.findById(id).orElseThrow();
+            copy.setBookCondition(bookCondition);
+            copy.setShelfLocation(shelfLocation);
+            bookCopyRepository.save(copy);
+            if (bookTitleId == null) {
+                bookTitleId = copy.getBookTitle().getId();
+            }
+        }
+        redirectAttrs.addFlashAttribute("success", "Cập nhật thông tin sách thành công!");
+        return "redirect:/quan-ly/books-management?id=" + bookTitleId;
     }
 }

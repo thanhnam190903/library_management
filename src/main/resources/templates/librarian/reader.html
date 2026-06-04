@@ -126,7 +126,7 @@
             <button class="bl-modal-close" onclick="closeModal('add-member-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
-            <form th:action="@{/readers}" method="post" th:object="${reader}">
+            <form th:action="@{/quan-ly/readers}" method="post" th:object="${reader}">
             <div class="bl-form-row">
                 <div class="bl-form-group">
                     <input type="hidden" id="edit-id" name="id">
@@ -194,7 +194,7 @@
     const name = element.dataset.name;
     console.log("Card ID:", cId);
     if (confirm("Bạn có chắc chắn muốn gia hạn độc giả " + name + " này?")) {
-        window.location.href = "/qltv/readers?id=" + cId;
+        window.location.href = "/qltv/quan-ly/readers?id=" + cId;
     }
 }
     function editReader(){
@@ -327,7 +327,7 @@
                         📅 <span>Ngày hết hạn :</span> ${expiry}
                     </div>
                     <div class="row" style="text-align:center;margin-top:20px;">
-                        <img src="/qltv/qr/${cardId}" width="120">
+                        <img src="/qltv/quan-ly/qr/${cardId}" width="120">
                     </div>
                 </div>
             </div>

@@ -1,113 +1,199 @@
 <script th:fragment="script">
 
 
-function showCircTab(tabId) {
-  document.querySelectorAll('.circ-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.circ-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  const btnMap = {'borrow-tab':'tab-borrow-btn','return-tab':'tab-return-btn','overdue-tab':'tab-overdue-btn','history-tab':'tab-history-btn'};
-  if (btnMap[tabId]) document.getElementById(btnMap[tabId]).classList.add('active');
-}
-
-function setView(v) {
-  const grid = document.getElementById('books-grid-view');
-  const list = document.getElementById('books-list-view');
-  const list1 = document.getElementById('books-list');
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-  if (v === 'grid') {
-    list1.style.display = 'none';
-    grid.style.display = 'block'; list.style.display = 'none';
-    document.querySelectorAll('.view-btn')[0].classList.add('active');
-  } else {
-    list1.style.display = 'block';
-    grid.style.display = 'none'; list.style.display = 'block';
-    document.querySelectorAll('.view-btn')[1].classList.add('active');
-  }
-}
-
-function openBookDetail(title, author, icon, bg, genre, isbn, avail, total, year, pub) {
-  document.getElementById('bl-modal-book-title').textContent = title;
-  document.getElementById('bl-modal-book-author').textContent = author;
-  const iconEl = document.getElementById('bl-modal-book-icon');
-  iconEl.textContent = icon; iconEl.style.background = bg;
-  document.getElementById('modal-book-genre').textContent = genre;
-  document.getElementById('modal-isbn').textContent = isbn;
-  document.getElementById('modal-year').textContent = year;
-  document.getElementById('modal-publisher').textContent = pub;
-  document.getElementById('modal-qty').textContent = avail + ' / ' + total;
-  const statusEl = document.getElementById('modal-book-status');
-  const a = parseInt(avail), t = parseInt(total);
-  if (a === 0) { statusEl.textContent = 'Quá hạn'; statusEl.className = 'bl-badge bl-badge-overdue'; }
-  else if (a < t) { statusEl.textContent = 'Đang mượn'; statusEl.className = 'bl-badge bl-badge-borrowed'; }
-  else { statusEl.textContent = 'Còn sách'; statusEl.className = 'bl-badge bl-badge-available'; }
-  document.getElementById('book-modal').classList.add('bl-open');
-}
-
-function openAddBook() {
-    document.getElementById('add-book-modal').classList.add('bl-open');
-    document.querySelector("form").reset();
-    document.getElementById("edit-id").value = "";
-
-    document.getElementById("modalTitle").innerText =
-        "Thêm sách mới";
-
-
-}
-
-function openAddMember() {
-    document.getElementById('add-member-modal').classList.add('bl-open');
-    document.getElementById("edit-id").value = "";
-    const id = document.getElementById("edit-id").textContent;
-    console.log("ID in openAddMember:", id);
-    if(id){
-        document.getElementById("edit-row").classList.add("bl-form-row");
-    }else{
-        document.getElementById("edit-row").classList.remove("bl-form-row");
-
+    function showCircTab(tabId) {
+      document.querySelectorAll('.circ-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.circ-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      const btnMap = {'borrow-tab':'tab-borrow-btn','return-tab':'tab-return-btn','overdue-tab':'tab-overdue-btn','history-tab':'tab-history-btn'};
+      if (btnMap[tabId]) document.getElementById(btnMap[tabId]).classList.add('active');
     }
-    document.getElementById("modalTitle").innerText =
-        "Đăng ký hội viên mới";
 
-    document.querySelector("form").reset();
-}
-
-function openUpdateMember() {
-    document.getElementById('update-member-modal').classList.add('bl-open');
-}
-function closeModal(id) {
-    document.getElementById(id).classList.remove('bl-open');
-}
-
-function showMemberProfile(idReader,gender,address,birth,name, initials, gradient,readerType, id, phone, email,issua, dob, total, overdue, expiry) {
-  const av = document.getElementById('prof-avatar');
-  av.textContent = initials;
-  av.style.background = `linear-gradient(135deg,${gradient})`;
-  document.getElementById('issua-date').textContent = issua;
-  document.getElementById('birth-show').textContent = birth;
-  document.getElementById('id-reader').textContent = idReader;
-  document.getElementById('gender').textContent = gender;
-  document.getElementById('address-prof').textContent = address;
-  document.getElementById('reader-type').textContent = readerType;
-  document.getElementById('prof-name').textContent = name;
-  document.getElementById('prof-id').textContent = '#' + id;
-  document.getElementById('prof-total').textContent = total;
-  document.getElementById('prof-overdue').textContent = overdue;
-  document.getElementById('prof-info').innerHTML = `
-    <div class="profile-info-row"><span class="profile-info-icon">📱</span><span class="profile-info-label">Điện thoại</span><span class="profile-info-val" id="val-phone">${phone}</span></div>
-    <div class="profile-info-row"><span class="profile-info-icon">📧</span><span class="profile-info-label">Email</span><span class="profile-info-val" style="font-size:12px;" id="val-email">${email}</span></div>
-    <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span class="profile-info-label">Ngày sinh</span><span class="profile-info-val" id="val-date-birth">${dob}</span></div>
-    <div class="profile-info-row"><span class="profile-info-icon">📅</span><span class="profile-info-label">Hết hạn</span><span class="profile-info-val" id="val-date-issua">${expiry}</span></div>
-  `;
-}
-
-    const toggle = document.querySelector(".menu-toggle");
-    const menu = document.querySelector(".nav-content");
-
-    toggle.addEventListener("click", () => {
-
-        menu.classList.toggle("show");
-
-        toggle.classList.toggle("active");
-
+    window.addEventListener("DOMContentLoaded",() => {
+        const params = new URLSearchParams(window.location.search);
+        const open = params.get("open");
+        if(open === "add"){
+            openAddBook();
+        }
     });
+
+    function setView(v) {
+      const grid = document.getElementById('books-grid-view');
+      const list = document.getElementById('books-list-view');
+      const list1 = document.getElementById('books-list');
+      const editBook = document.getElementById('books-edit');
+
+      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      if (v === 'grid') {
+        list1.style.display = 'none'; editBook.style.display = 'block';
+        grid.style.display = 'block'; list.style.display = 'none';
+        document.querySelectorAll('.view-btn')[0].classList.add('active');
+      } else {
+        list1.style.display = 'block'; editBook.style.display = 'none';
+        grid.style.display = 'none'; list.style.display = 'block';
+        document.querySelectorAll('.view-btn')[1].classList.add('active');
+      }
+    }
+
+    function openBookDetail(title,author,image,category,isbn,avail,total,year,publisher,language,price,note) {
+
+    document.getElementById("modal-book-title").textContent = title;
+    document.getElementById("modal-book-author").textContent = author;
+    document.getElementById("modal-book-image").src =
+        image && image.trim() !== ""
+            ? image
+            : "/images/no-book.png";
+    document.getElementById("modal-book-genre").textContent =
+        category || "Chưa phân loại";
+    document.getElementById("modal-isbn").textContent =
+        isbn || "---";
+    document.getElementById("modal-year").textContent =
+        year || "---";
+    document.getElementById("modal-publisher").textContent =
+        publisher || "---";
+    document.getElementById("modal-language").textContent =
+        language || "---";
+    document.getElementById("modal-price").textContent =
+        Number(price || 0).toLocaleString("vi-VN") + " VNĐ";
+    document.getElementById("modal-note").textContent =
+        note || "Chưa có mô tả";
+    document.getElementById("modal-qty").textContent =
+        avail + " / " + total;
+    const statusEl = document.getElementById("modal-book-status");
+    const available = parseInt(avail);
+    const quantity = parseInt(total);
+    if (available === 0) {
+        statusEl.textContent = "Hết sách";
+        statusEl.className =
+            "bl-badge bl-badge-overdue";
+    } else if (available < quantity) {
+        statusEl.textContent = "Đang mượn";
+        statusEl.className =
+            "bl-badge bl-badge-borrowed";
+    } else {
+        statusEl.textContent = "Còn sách";
+        statusEl.className =
+            "bl-badge bl-badge-available";
+    }
+    document
+        .getElementById("book-modal")
+        .classList.add("bl-open");
+}
+
+    function openAddBook() {
+        document.getElementById('add-book-modal').classList.add('bl-open');
+        document.querySelector("form").reset();
+        document.getElementById("edit-id").value = "";
+
+        document.getElementById("modalTitle").innerText =
+            "Thêm sách mới";
+    }
+
+    function openEditBookCopy() {
+        document.getElementById('edit-bookcopy-modal').classList.add('bl-open');
+    }
+
+    function openAddMember() {
+        document.getElementById('add-member-modal').classList.add('bl-open');
+        document.getElementById("edit-id").value = "";
+        const id = document.getElementById("edit-id").textContent;
+        console.log("ID in openAddMember:", id);
+        if(id){
+            document.getElementById("edit-row").classList.add("bl-form-row");
+        }else{
+            document.getElementById("edit-row").classList.remove("bl-form-row");
+
+        }
+        document.getElementById("modalTitle").innerText =
+            "Đăng ký hội viên mới";
+
+        document.querySelector("form").reset();
+    }
+
+    function openUpdateMember() {
+        document.getElementById('update-member-modal').classList.add('bl-open');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('bl-open');
+    }
+
+    function showMemberProfile(idReader,gender,address,birth,name, initials, gradient,readerType, id, phone, email,issua, dob, total, overdue, expiry) {
+      const av = document.getElementById('prof-avatar');
+      av.textContent = initials;
+      av.style.background = `linear-gradient(135deg,${gradient})`;
+      document.getElementById('issua-date').textContent = issua;
+      document.getElementById('birth-show').textContent = birth;
+      document.getElementById('id-reader').textContent = idReader;
+      document.getElementById('gender').textContent = gender;
+      document.getElementById('address-prof').textContent = address;
+      document.getElementById('reader-type').textContent = readerType;
+      document.getElementById('prof-name').textContent = name;
+      document.getElementById('prof-id').textContent = id;
+      document.getElementById('prof-total').textContent = total;
+      document.getElementById('prof-overdue').textContent = overdue;
+      document.getElementById('prof-info').innerHTML = `
+        <div class="profile-info-row"><span class="profile-info-icon">📱</span><span class="profile-info-label">Điện thoại</span><span class="profile-info-val" id="val-phone">${phone}</span></div>
+        <div class="profile-info-row"><span class="profile-info-icon">📧</span><span class="profile-info-label">Email</span><span class="profile-info-val" style="font-size:12px;" id="val-email">${email}</span></div>
+        <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span class="profile-info-label">Ngày sinh</span><span class="profile-info-val" id="val-date-birth">${dob}</span></div>
+        <div class="profile-info-row"><span class="profile-info-icon">📅</span><span class="profile-info-label">Hết hạn</span><span class="profile-info-val" id="val-date-issua">${expiry}</span></div>
+      `;
+    }
+
+        const toggle = document.querySelector(".menu-toggle");
+        const menu = document.querySelector(".nav-content");
+
+        toggle.addEventListener("click", () => {
+
+            menu.classList.toggle("show");
+
+            toggle.classList.toggle("active");
+
+        });
+
+    const checkAll = document.getElementById("checkAll");
+    const rowChecks = document.querySelectorAll(".row-check");
+    const editBtn = document.getElementById("books-edit");
+
+    function updateButtonState() {
+        const anyChecked = [...rowChecks].some(c => c.checked);
+        if (anyChecked) {
+            editBtn.classList.add("active");
+            editBtn.disabled = false;
+        } else {
+            editBtn.classList.remove("active");
+            editBtn.disabled = true;
+        }
+    }
+    checkAll.addEventListener("change", function () {
+        rowChecks.forEach(c => c.checked = this.checked);
+        updateButtonState();
+    });
+    rowChecks.forEach(c => {
+        c.addEventListener("change", function () {
+            updateButtonState();
+            if (![...rowChecks].every(c => c.checked)) {
+                checkAll.checked = false;
+            }
+            if ([...rowChecks].every(c => c.checked)) {
+                checkAll.checked = true;
+            }
+        });
+    });
+    function getSelectedIds() {
+    return Array.from(document.querySelectorAll(".row-check:checked"))
+        .map(cb => cb.value);
+}
+function openEditMulti() {
+    const ids = getSelectedIds();
+    if (ids.length === 0) return;
+    document.getElementById("ids-input").value = ids.join(",");
+    document.getElementById("edit-mode").value = "multi";
+    openModal("edit-bookcopy-modal");
+}
+    function openEditSingle(el) {
+    document.getElementById("ids-input").value = el.dataset.id;
+    document.querySelector("[name='shelfLocation']").value = el.dataset.vt || "";
+    document.querySelector("[name='bookCondition']").value = el.dataset.tt || "";
+    document.getElementById('edit-bookcopy-modal').classList.add('bl-open');
+}
 </script>

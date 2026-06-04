@@ -1,0 +1,47 @@
+<div class="chat-widget" th:fragment="reader-chat">
+
+    <button class="chat-toggle" onclick="toggleChat()">
+        <i class="ti ti-message-circle" id="chatFabIcon"></i>
+    </button>
+
+    <div class="chat-box" id="chatBox">
+
+        <div class="chat-header">
+            <div>
+                <h6>Trợ lý thư viện</h6>
+                <span><span class="lib-chat-online-dot"></span> Đang hoạt động</span>
+            </div>
+            <button onclick="toggleChat()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+
+            <div class="message bot">
+                Xin chào 👋<br>
+                Tôi có thể hỗ trợ:
+                <ul>
+                    <li>Tìm sách</li>
+                    <li>Gia hạn sách</li>
+                    <li>Kiểm tra hạn trả</li>
+                    <li>Hướng dẫn mượn sách</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="chat-footer">
+            <input type="text"
+                   id="chatInput"
+                   placeholder="Nhập tin nhắn..."
+                   onkeypress="if(event.key==='Enter') sendMessage()">
+
+            <button onclick="sendMessage()">
+                <i class="ti ti-arrow-right"></i>
+            </button>
+        </div>
+
+    </div>
+
+</div>

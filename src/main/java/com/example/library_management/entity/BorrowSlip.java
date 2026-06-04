@@ -21,6 +21,13 @@ public class BorrowSlip {
     LocalDate borrowDate;
     @Column(name = "due_date")
     LocalDate dueDate;
+    @Column(name = "total_fine")
+    Double totalFine;
+    @Column(name = "old_due_date")
+    LocalDate oldDueDate;
+    @Column(name = "renewed")
+    Boolean renewed = false;
+    boolean status;
     @ManyToOne
     @JoinColumn(name = "card_id")
     LibraryCard libraryCard;

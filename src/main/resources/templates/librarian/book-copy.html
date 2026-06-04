@@ -12,66 +12,111 @@
     <header th:replace="layout/header :: header"></header>
     <div class="bl-content">
         <!-- ══════ PAGE: BOOKS ══════ -->
-        <div class="bl-page active" id="page-books" >
+        <div class="bl-page active" id="page-books">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-                <div class="bl-search-bar" style="flex:1;min-width:220px;"><span style="color:var(--mist);">🔍</span><input type="text" placeholder="Tìm theo tên sách, tác giả, ISBN..."></div>
-                <select class="bl-filter-select"><option>Tất cả thể loại</option><option>Văn học</option><option>Kỹ năng sống</option><option>Lịch sử</option><option>Tâm lý học</option><option>Công nghệ</option><option>Thiếu nhi</option></select>
-                <select class="bl-filter-select"><option>Tất cả trạng thái</option><option>Còn sách</option><option>Đang mượn</option><option>Quá hạn</option></select>
+                <div class="bl-search-bar" style="flex:1;min-width:220px;"><span
+                        style="color:var(--mist);">🔍</span><input type="text"
+                                                                  placeholder="Tìm theo tên sách, tác giả, ISBN...">
+                </div>
+                <select class="bl-filter-select">
+                    <option>Tất cả thể loại</option>
+                    <option>Văn học</option>
+                    <option>Kỹ năng sống</option>
+                    <option>Lịch sử</option>
+                    <option>Tâm lý học</option>
+                    <option>Công nghệ</option>
+                    <option>Thiếu nhi</option>
+                </select>
+                <select class="bl-filter-select">
+                    <option>Tất cả trạng thái</option>
+                    <option>Còn sách</option>
+                    <option>Đang mượn</option>
+                    <option>Quá hạn</option>
+                </select>
                 <div class="view-toggle">
                     <button class="view-btn active" onclick="setView('grid')">Sách vật lý</button>
                     <button class="view-btn" onclick="setView('list')">Tài liệu online</button>
                 </div>
-                <button class="bl-btn bl-btn-primary" style="display:none;" id="books-list" onclick="openAddBook()">➕ Thêm sách</button>
+                <button class="bl-btn bl-btn-primary" style="display:none;" id="books-list" onclick="openAddBook()">➕
+                    Thêm sách
+                </button>
+                <button class="bl-btn bl-btn-primary disabled" onclick="openEditBookCopy()" disabled id="books-edit">✏️
+                    Sửa nhanh
+                </button>
             </div>
 
             <div id="books-grid-view">
                 <div class="bl-panel">
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Thành công!</strong> <span th:text="${success}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                     <table class="bl-data-table">
                         <thead>
                         <tr>
+                            <th><input type="checkbox" id="checkAll"></th>
+                            <th>STT</th>
                             <th>Tên sách</th>
-                            <th>Mã barcode</th>
                             <th>Vị trí</th>
                             <th>Tình trạng</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
+
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="b : ${bookCopy}">
+                        <tr th:if="${#lists.isEmpty(bookCopy)}">
+                            <td colspan="10" style="text-align:center; padding:20px;">
+                                Chưa có bản ghi nào
+                            </td>
+                        </tr>
+                        <tr th:each="b,stt : ${bookCopy}">
+                            <td><input type="checkbox" class="row-check" th:value="${b.id}"></td>
+                            <td th:text="${stt.index + 1}"></td>
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
-                                    <div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📗</div>
-                                    <div style="font-weight:500;" th:text="${b.bookTitle != null ? b.bookTitle.title : 'Không rõ'}">
+                                    <div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
+                                        📗
+                                    </div>
+                                    <div style="font-weight:500;"
+                                         th:text="${b.bookTitle != null ? b.bookTitle.title : 'Không rõ'}">
                                         Đắc Nhân Tâm
                                     </div>
                                 </div>
                             </td>
-
-                            <td style="color:var(--mist);"
-                                th:text="${b.barcode != null ? b.barcode : 'Không rõ'}">
-                                Dale Carnegie
-                            </td>
-
                             <td>
-                                <span class="bl-badge bl-badge-silver"
+                                <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);"
                                       th:text="${b.shelfLocation != null ? b.shelfLocation : 'Chưa phân loại'}">
                                     Kỹ năng sống
                                 </span>
                             </td>
 
-                            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);"
-                                th:text="${b.bookCondition != null ? b.bookCondition : '---'}">
-                                978-604-1-22345-6
+                            <td >
+                                <span class="bl-badge bl-badge-gold" th:text="${b.bookCondition != null ? b.bookCondition : '---'}"></span>
+                            </td>
+                            <td th:switch="${b.circulationStatus}">
+                                <span th:case="'available'" class="bl-badge bl-badge-available">
+                                    Còn  sách
+                                </span>
+                                <span th:case="'borrowed'" class="bl-badge bl-badge-borrowed">
+                                    Đang mượn
+                                </span>
+                                <span th:case="'lost'" class="bl-badge bl-badge-overdue">
+                                    Mất sách
+                                </span>
+                                <span th:case="*"
+                                      class="bl-badge bl-badge-inactive">
+                                    Không xác định
+                                </span>
                             </td>
                             <td>
-                            <span class="bl-badge bl-badge-borrowed">
-                                Đang mượn
-                            </span>
-                            </td>
-                            <td>
-                                <a class="action-btn" th:href="@{/books-management(id=${b.id})}">Xem</a>
-                                <button class="action-btn">Sửa</button>
+                                <button class="action-btn" th:data-id="${b.id}" th:data-vt="${b.shelfLocation}"
+                                        th:data-tt="${b.bookCondition}" onclick="openEditSingle(this)">Sửa
+                                </button>
+                                <button class="action-btn" th:data-id="${b.id}"
+                                        onclick="deleteBook(this)">Xóa
+                                </button>
                             </td>
                         </tr>
                         </tbody>
@@ -81,7 +126,7 @@
 
             <div id="books-list-view" style="display:none;">
                 <div class="bl-panel">
-                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <div th:if="${succes}" class="alert alert-success alert-dismissible fade show" role="alert">
                         <i class="bi bi-check-circle me-2"></i>
                         <strong>Thành công!</strong> <span th:text="${success}"></span>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -95,6 +140,7 @@
                     <table class="bl-data-table">
                         <thead>
                         <tr>
+                            <th>STT</th>
                             <th>Tên sách</th>
                             <th>Tồn kho</th>
                             <th>Trạng thái</th>
@@ -102,10 +148,17 @@
                         </tr>
                         </thead>
                         <tbody>
+                        <tr th:if="${#lists.isEmpty(digitalBook)}">
+                            <td colspan="10" style="text-align:center; padding:20px;">
+                                Chưa có bản ghi nào
+                            </td>
+                        </tr>
                         <tr th:each="b : ${digitalBook}">
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
-                                    <div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📗</div>
+                                    <div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
+                                        📗
+                                    </div>
                                     <div style="font-weight:500;" th:text="${b.bookTitle.title}">
                                         Đắc Nhân Tâm
                                     </div>
@@ -151,139 +204,46 @@
 </div><!-- /main -->
 
 <!-- ════════ MODALS ════════ -->
-<div class="bl-modal-overlay" id="book-modal" onclick="closeModal('book-modal')">
+
+<div class="bl-modal-overlay" id="edit-bookcopy-modal" onclick="closeModal('edit-bookcopy-modal')">
     <div class="bl-modal" onclick="event.stopPropagation()">
         <div class="bl-modal-header">
-            <div class="bl-modal-book-icon" id="modal-book-icon" style="background:#fef3dc;">📗</div>
-            <div style="flex:1;">
-                <div class="bl-modal-book-title" id="modal-book-title">Đắc Nhân Tâm</div>
-                <div class="bl-modal-book-author" id="modal-book-author">Dale Carnegie</div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="bl-badge bl-badge-borrowed" id="modal-book-status">Đang mượn</span><span class="bl-badge bl-badge-silver" id="modal-book-genre">Kỹ năng sống</span></div>
+            <div class="bl-modal-book-icon" style="background:#e6f2ec;font-size:28px;">✏️</div>
+            <div>
+                <div class="bl-modal-book-title">Thay đổi thông tin sách</div>
+                <div class="bl-modal-book-author">Thay đổi thông tin sách</div>
             </div>
-            <button class="bl-modal-close" onclick="closeModal('book-modal')">✕</button>
+            <button class="bl-modal-close" onclick="openEditMulti()">✕</button>
         </div>
         <div class="bl-modal-body">
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <div class="detail-label">ISBN</div>
-                    <div class="detail-value" id="modal-isbn" style="font-family:'DM Mono',monospace;font-size:13px;">978-604-1-22345-6</div>
+            <form th:action="@{/quan-ly/book-copys/update-copy}" method="post">
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <input type="hidden" name="ids" id="ids-input">
+                        <div class="bl-form-label">Tình trạng *</div>
+                        <input name="bookCondition" required class="bl-form-input"
+                               placeholder="Nhập tình trạng sách...">
+                    </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Vị trí *</div>
+                        <input type="text" name="shelfLocation" required class="bl-form-input"
+                               placeholder="Nhập vị trí sách...">
+                    </div>
                 </div>
-                <div class="detail-item">
-                    <div class="detail-label">Năm xuất bản</div>
-                    <div class="detail-value" id="modal-year">1936</div>
+
+                <div style="display:flex;gap:10px;">
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Chỉnh
+                        sửa
+                    </button>
+                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('edit-bookcopy-modal')">
+                        Hủy
+                    </button>
                 </div>
-                <div class="detail-item"><div class="detail-label">Nhà xuất bản</div><div class="detail-value" id="modal-publisher">NXB Tổng Hợp</div></div>
-                <div class="detail-item"><div class="detail-label">Số lượng tồn</div><div class="detail-value" id="modal-qty" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--gold);">12 / 15</div></div>
-            </div>
-            <div style="font-size:13px;font-weight:600;color:var(--mist);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;">Lịch sử mượn gần đây</div>
-            <div class="borrow-history">
-                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rust));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">TL</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Trần Thị Lan</div><div style="font-size:11px;color:var(--mist);">Mượn 01/03/2026</div></div><span class="bl-badge bl-badge-borrowed">Đang mượn</span></div>
-                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#5a8cd0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">LM</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Lê Minh Tú</div><div style="font-size:11px;color:var(--mist);">15/02 – 01/03/2026</div></div><span class="bl-badge bl-badge-available">Đã trả</span></div>
-                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--forest),var(--forest-light));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">PH</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Phạm Hoàng Nam</div><div style="font-size:11px;color:var(--mist);">01/02 – 15/02/2026</div></div><span class="bl-badge bl-badge-available">Đã trả</span></div>
-            </div>
-            <div style="display:flex;gap:10px;margin-top:20px;">
-                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;" onclick="closeModal('book-modal');goPage('borrow');showCircTab('borrow-tab')">↗ Tạo phiếu mượn</button>
-                <button class="bl-btn bl-btn-secondary">✏️ Chỉnh sửa</button>
-                <button class="bl-btn bl-btn-danger">🗑️ Xóa</button>
-            </div>
+            </form>
+
         </div>
     </div>
 </div>
-
-<!--<div class="bl-modal-overlay" id="add-book-modal" onclick="closeModal('add-book-modal')">-->
-<!--    <div class="bl-modal" onclick="event.stopPropagation()">-->
-<!--        <div class="bl-modal-header">-->
-<!--            <div class="bl-modal-book-icon" style="background:#e6f2ec;font-size:28px;">➕</div>-->
-<!--            <div>-->
-<!--                <div class="bl-modal-book-title">Thêm sách mới</div>-->
-<!--                <div class="bl-modal-book-author">Nhập thông tin đầu sách mới vào hệ thống</div></div>-->
-<!--            <button class="bl-modal-close" onclick="closeModal('add-book-modal')">✕</button>-->
-<!--        </div>-->
-<!--        <div class="bl-modal-body">-->
-<!--            <form th:action="@{/books}" method="post" th:object="${book}">-->
-<!--                <div class="bl-form-row">-->
-<!--                    <div class="bl-form-group">-->
-<!--                        <div class="bl-form-label">Tên sách *</div>-->
-<!--                        <input th:field="*{title}" required class="bl-form-input" placeholder="Nhập tên sách...">-->
-<!--                    </div>-->
-<!--                    <div class="bl-form-group">-->
-<!--                        <div class="bl-form-label">Tác giả *</div>-->
-<!--                        <input type="text" name="author" required class="bl-form-input" placeholder="Tên tác giả...">-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="bl-form-row">-->
-<!--                    <div class="bl-form-group">-->
-<!--                        <div class="bl-form-label">ISBN</div>-->
-<!--                        <input id="isbnInput" th:field="*{isbn}" class="bl-form-input" placeholder="978-...">-->
-<!--                    </div>-->
-<!--                    <div class="bl-form-group">-->
-<!--                        <div class="bl-form-label">Ngôn ngữ</div>-->
-<!--                        <select class="bl-form-input" required th:field="*{language}">-->
-<!--                            <option value="vn">Tiếng Việt</option>-->
-<!--                            <option value="us">Tiếng Anh</option>-->
-<!--                            <option value="phap">Tiếng Pháp</option>-->
-<!--                            <option value="nhat">Tiếng Nhật</option>-->
-<!--                            <option value="china">Tiếng Trung</option>-->
-<!--                        </select>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="bl-form-row">-->
-<!--                    <div class="bl-form-group">-->
-<!--                        <div class="bl-form-label" >Nhà xuất bản</div>-->
-<!--                        <input type="text" name="nxb" required class="bl-form-input" placeholder="Tên NXB...">-->
-<!--                    </div>-->
-<!--                    <div class="bl-form-group">-->
-<!--                        <div class="bl-form-label">Năm xuất bản</div>-->
-<!--                        <input class="bl-form-input" required th:field="*{publishYear}" type="text" placeholder="2024">-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="bl-form-row">-->
-<!--                    <div class="bl-form-group">-->
-<!--                        <div class="bl-form-label">Chủ đề</div>-->
-<!--                        <select id="topicSelect" class="bl-form-input">-->
-<!--                            <option value="">&#45;&#45; Chọn chủ đề &#45;&#45;</option>-->
-<!--                            <option value="1">Văn học</option>-->
-<!--                            <option value="2">Kỹ năng sống</option>-->
-<!--                            <option value="3">Lịch sử</option>-->
-<!--                            <option value="4">Tâm lý học</option>-->
-<!--                            <option value="5">Công nghệ</option>-->
-<!--                            <option value="6">Kinh tế</option>-->
-<!--                            <option value="7">Giáo dục</option>-->
-<!--                            <option value="8">Thiếu nhi</option>-->
-<!--                            <option value="9">Khoa học</option>-->
-<!--                            <option value="10">Ngoại ngữ</option>-->
-<!--                            <option value="">Không có chủ đề</option>-->
-<!--                        </select>-->
-<!--                    </div>-->
-<!--                    <div class="bl-form-group">-->
-<!--                        <div class="bl-form-label">Thể loại</div>-->
-<!--                        <select id="categorySelect" required class="bl-form-input" th:field="*{category.id}">-->
-<!--                            <option value="">&#45;&#45; Chọn thể loại &#45;&#45;</option>-->
-<!--                        </select>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="bl-form-row"><div class="bl-form-group">-->
-<!--                    <div class="bl-form-label">Số lượng nhập *</div>-->
-<!--                    <input class="bl-form-input" required th:field="*{quantity}" type="number" placeholder="0" min="1">-->
-<!--                </div>-->
-<!--                    <div class="bl-form-group">-->
-<!--                        <div class="bl-form-label">Giá bìa (VNĐ)</div>-->
-<!--                        <input class="bl-form-input" required th:field="*{price}" placeholder="0" style="font-family:'DM Mono',monospace;">-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="bl-form-group">-->
-<!--                    <div class="bl-form-label">Mô tả / Tóm tắt</div>-->
-<!--                    <textarea class="bl-form-input" th:field="*{note}" rows="3" placeholder="Nội dung tóm tắt của sách..."></textarea>-->
-<!--                </div>-->
-<!--                <div style="display:flex;gap:10px;">-->
-<!--                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Thêm vào kho</button>-->
-<!--                    <button class="bl-btn bl-btn-secondary" onclick="closeModal('add-book-modal')">Hủy</button>-->
-<!--                </div>-->
-<!--            </form>-->
-
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:replace="layout/script :: script"></script>

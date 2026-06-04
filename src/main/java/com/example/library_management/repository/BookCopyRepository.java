@@ -17,10 +17,13 @@ public interface BookCopyRepository extends JpaRepository<BookCopy,String> {
                                                          String circulationStatus);
 
     @Query(" SELECT COUNT(b) FROM BookCopy b WHERE b.bookTitle.id = :bookTitleId " +
-           " AND b.circulationStatus = 'available'")
+           " AND b.circulationStatus = 'available' AND b.status = true")
     long countAvailableBooks(@Param("bookTitleId") String bookTitleId);
 
     @Query(" SELECT b FROM BookCopy b WHERE ( b.bookTitle.id = :keyword OR " +
-            " b.bookTitle.isbn = :keyword) AND b.circulationStatus = 'available'")
+            " b.bookTitle.isbn = :keyword) AND b.circulationStatus = 'available' AND b.status = true")
     List<BookCopy> findAvailableBooks(@Param("keyword") String keyword);
+
+//    @Query(" SELECT COUNT(bt) FROM BookCopy  ")
+//    long countNewBooksToday();
 }

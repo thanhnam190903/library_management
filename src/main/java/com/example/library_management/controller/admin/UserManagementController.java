@@ -11,10 +11,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
@@ -23,6 +20,7 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
+@RequestMapping("/quan-ly")
 public class UserManagementController {
     UserRepository userRepository;
     IdGeneratorService idGeneratorService;
@@ -67,7 +65,7 @@ public class UserManagementController {
         userRepository.save(newUser);
 
         redirectAttrs.addFlashAttribute("success", "Thêm người dùng thành công");
-        return "redirect:/users";
+        return "redirect:/quan-ly/users";
     }
 
     @PostMapping("/update-user")
@@ -87,11 +85,11 @@ public class UserManagementController {
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy nhân viên !");
         }
-        return "redirect:/users";
+        return "redirect:/quan-ly/users";
     }
     @GetMapping("/delete-user")
     public String deleteUser(@RequestParam("id") String id){
         userRepository.deleteUser(id);
-        return "redirect:/users";
+        return "redirect:/quan-ly/users";
     }
 }

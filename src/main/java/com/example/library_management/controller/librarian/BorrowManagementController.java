@@ -5,6 +5,7 @@ import com.example.library_management.repository.BookCopyRepository;
 import com.example.library_management.repository.BorrowDetailRepository;
 import com.example.library_management.repository.BorrowSlipRepository;
 import com.example.library_management.repository.LibraryCardRepository;
+import com.example.library_management.service.EmailService;
 import com.example.library_management.service.IdGeneratorService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import java.util.Map;
 @Controller
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
+@RequestMapping("/quan-ly")
 public class BorrowManagementController {
     LibraryCardRepository libraryCardRepository;
     BookCopyRepository bookCopyRepository;
@@ -32,11 +35,26 @@ public class BorrowManagementController {
     BorrowSlipRepository borrowSlipRepository;
 
     @GetMapping("/borrowing")
-    public String showBorrowing(Model model) {
-        model.addAttribute("title", "Quản lý lưu hành");
-        model.addAttribute("sub", "Cho mượn · Trả sách · Quá hạn");
-        model.addAttribute("activePage", "borrowing");
-        model.addAttribute("borrowTitle", borrowDetailRepository.findAll());
+    public String showBorrowing(@RequestParam(defaultValue = "borrow-tab") String tab,Model model) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("title", "Cho mượn · Trả sách · Quá hạn");
+        data.put("sub", "Quản lý lưu hành");
+        data.put("borrowTitle", borrowDetailRepository.findAll());
+        data.put("overdueCount", borrowDetailRepository.findOverdueBooks().size());
+        data.put("overdueBooks", borrowDetailRepository.findOverdueBooks());
+        data.put("returnedToday", borrowDetailRepository.findReturnedToday());
+        data.put("countReturnedToday", borrowDetailRepository.findReturnedToday().size());
+
+        if(tab.equals("borrow-tab")){
+            data.put("activePage", "borrow");
+        } else if(tab.equals("return-tab")){
+            data.put("activePage", "return");
+        } else if(tab.equals("overdue-tab")){
+            data.put("activePage", "overdue");
+        }else {
+            data.put("activePage", "borrow");
+        }
+        model.addAllAttributes(data);
         return "librarian/borrow";
     }
 
@@ -50,6 +68,7 @@ public class BorrowManagementController {
             data.put("found", false);
             return data;
         }
+        data.put("found", true);
         data.put("id", card.getId());
         data.put("expiryDate", card.getExpiryDate());
         data.put("status", card.isStatus());
@@ -78,6 +97,7 @@ public class BorrowManagementController {
         }
         return result;
     }
+
     @GetMapping("/borrow/find-book")
     @ResponseBody
     public Map<String,Object> findBook(@RequestParam String keyword){
@@ -86,6 +106,7 @@ public class BorrowManagementController {
         Map<String,Object> data = new HashMap<>();
         if(books.isEmpty()){
             data.put("available", 0);
+            data.put("title", keyword);
             return data;
         }
         BookCopy book = books.get(0);
@@ -99,30 +120,37 @@ public class BorrowManagementController {
 
     @PostMapping("/borrowing")
     public String createBorrowing(@ModelAttribute BorrowSlip borrowSlip, @RequestParam String cardId,
-                                  @RequestParam String bookId, Model model, RedirectAttributes attributes) {
+                                  @RequestParam List<String> bookIds, Model model, RedirectAttributes attributes) {
 
         LibraryCard card = libraryCardRepository.findById(cardId).orElse(null);
         long borrowingCount = borrowDetailRepository.countBorrowing(cardId);
-        if (borrowingCount >= card.getMaxBooksAllowed()) {
+        if (borrowingCount + bookIds.size() > card.getMaxBooksAllowed()) {
             attributes.addFlashAttribute("error", "Đã vượt quá số sách được mượn");
-            return "redirect:/qltv/borrowing";
+            return "redirect:/borrowing?tab=borrow-tab";
         }
-        card.setTotalBorrow(card.getTotalBorrow() + 1);
-        libraryCardRepository.save(card);
+
         borrowSlip.setId(idGeneratorService.generate("BORROW_SLIP", "BRS"));
         borrowSlip.setLibraryCard(card);
         borrowSlipRepository.save(borrowSlip);
-        BookCopy bookCopy = bookCopyRepository.findById(bookId).orElseThrow();
-        bookCopy.setCirculationStatus("borrowed");
-        bookCopyRepository.save(bookCopy);
-        BorrowDetail detail = BorrowDetail.builder()
-                .id(idGeneratorService.generate("BORROW_DETAIL", "BRD"))
-                .borrowSlip(borrowSlip)
-                .bookCopy(bookCopy)
-                .status(1)
-                .build();
-        borrowDetailRepository.save(detail);
-        attributes.addFlashAttribute("success", "Tạo phiếu mượn thành công!");
-        return "redirect:/borrowing?tab=history";
+        card.setTotalBorrow(card.getTotalBorrow() + bookIds.size());
+        libraryCardRepository.save(card);
+        for(String bookId : bookIds){
+            BookCopy bookCopy = bookCopyRepository.findById(bookId).orElseThrow();
+            bookCopy.setCirculationStatus("borrowed");
+            bookCopyRepository.save(bookCopy);
+            BorrowDetail detail = BorrowDetail.builder()
+                            .id(idGeneratorService.generate("BORROW_DETAIL", "BRD"))
+                            .borrowSlip(borrowSlip)
+                            .bookCopy(bookCopy)
+                            .status(1)
+                            .build();
+            borrowDetailRepository.save(detail);
+        }
+
+        attributes.addFlashAttribute("success", "Tạo phiếu mượn thành công");
+        model.addAttribute("brs", borrowSlip);
+        model.addAttribute("details", borrowDetailRepository.findByBorrowSlipId(borrowSlip.getId()));
+        return "redirect:/quan-ly/borrowing?tab=history-tab";
     }
+
 }

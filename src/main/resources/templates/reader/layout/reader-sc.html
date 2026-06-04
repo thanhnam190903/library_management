@@ -1,0 +1,492 @@
+<div th:fragment="reader-script">
+    <script >
+        /* ══════════════════════ DATA ══════════════════════ */
+        const BOOKS = [
+          {id:1,title:"Nhà Giả Kim",author:"Paulo Coelho",genre:"Tiểu thuyết",color:"#B71C1C",rating:4.8,pages:228,avail:true,digital:true,copies:3,shelf:"Kệ B-05 · Tầng 2",desc:"Cuốn tiểu thuyết huyền thoại của Paulo Coelho kể về Santiago — cậu bé chăn cừu theo đuổi giấc mơ tìm kho báu. Tác phẩm truyền cảm hứng về việc lắng nghe tiếng gọi trái tim và dũng cảm đi theo ước mơ."},
+          {id:2,title:"Đắc Nhân Tâm",author:"Dale Carnegie",genre:"Kỹ năng",color:"#1A237E",rating:4.9,pages:320,avail:true,digital:true,copies:5,shelf:"Kệ A-12 · Tầng 1",desc:"Cuốn sách kinh điển về nghệ thuật giao tiếp và tạo ảnh hưởng. Dale Carnegie chia sẻ những nguyên tắc đơn giản nhưng sâu sắc giúp cải thiện mối quan hệ và thành công trong cuộc sống."},
+          {id:3,title:"Sapiens",author:"Yuval Noah Harari",genre:"Lịch sử",color:"#004D40",rating:4.9,pages:512,avail:true,digital:false,copies:2,shelf:"Kệ C-08 · Tầng 2",desc:"Tác phẩm lịch sử của Yuval Noah Harari khám phá toàn bộ lịch sử loài người từ thời tiền sử đến hiện đại. Một cái nhìn đột phá về cách Homo Sapiens chinh phục thế giới."},
+          {id:4,title:"Tư Duy Nhanh Và Chậm",author:"Daniel Kahneman",genre:"Tâm lý",color:"#4A148C",rating:4.7,pages:499,avail:true,digital:true,copies:1,shelf:"Kệ D-03 · Tầng 1",desc:"Daniel Kahneman phân tích hai hệ thống tư duy: tư duy nhanh (trực giác) và tư duy chậm (lý trí), giúp độc giả hiểu cách não bộ đưa ra quyết định."},
+          {id:5,title:"Atomic Habits",author:"James Clear",genre:"Kỹ năng",color:"#0D47A1",rating:4.9,pages:320,avail:true,digital:true,copies:4,shelf:"Kệ A-15 · Tầng 1",desc:"James Clear trình bày hệ thống thực tế để xây dựng thói quen tốt và phá vỡ thói quen xấu thông qua những thay đổi nhỏ mang lại kết quả lớn."},
+          {id:6,title:"Chiến Tranh & Hòa Bình",author:"Lev Tolstoy",genre:"Tiểu thuyết",color:"#33691E",rating:4.8,pages:1225,avail:false,digital:true,copies:0,shelf:"Kệ E-01 · Tầng 3",desc:"Đại tác phẩm của Lev Tolstoy về tình yêu, chiến tranh và số phận con người trong bối cảnh nước Nga thời Napoleon. Một trong những tiểu thuyết vĩ đại nhất mọi thời đại."},
+          {id:7,title:"Người Đua Diều",author:"Khaled Hosseini",genre:"Tiểu thuyết",color:"#880E4F",rating:4.7,pages:372,avail:true,digital:false,copies:2,shelf:"Kệ B-11 · Tầng 2",desc:"Câu chuyện đầy cảm xúc về tình bạn, phản bội và chuộc lỗi tại Afghanistan. Một tác phẩm xúc động về sự tha thứ và lòng dũng cảm."},
+          {id:8,title:"Nhập Môn Python",author:"Al Sweigart",genre:"Khoa học",color:"#1B5E20",rating:4.6,pages:390,avail:true,digital:true,copies:5,shelf:"Kệ G-02 · Tầng 3",desc:"Giáo trình Python toàn diện từ cú pháp cơ bản đến các dự án thực tế. Phù hợp cho người mới bắt đầu học lập trình."},
+        ];
+
+        let activeLoans = [
+          {id:1,bookId:1,title:"Nhà Giả Kim",author:"Paulo Coelho",color:"#B71C1C",borrowed:"10/05/2024",due:"25/05/2024",daysLeft:-8,renewCount:0},
+          {id:2,bookId:2,title:"Đắc Nhân Tâm",author:"Dale Carnegie",color:"#1A237E",borrowed:"05/05/2024",due:"20/05/2024",daysLeft:-13,renewCount:1},
+        ];
+        let borrowedIds = [1,2];
+
+        let HIST = [
+          {id:10,title:"Sapiens",author:"Yuval Harari",borrowed:"01/03/2024",due:"15/03/2024",returned:"14/03/2024",status:"returned"},
+          {id:11,title:"Atomic Habits",author:"James Clear",borrowed:"01/02/2024",due:"15/02/2024",returned:"15/02/2024",status:"renewed"},
+          {id:12,title:"Người Đua Diều",author:"K. Hosseini",borrowed:"10/01/2024",due:"24/01/2024",returned:"28/01/2024",status:"late"},
+        ];
+
+        let borrowRequests = [
+          {id:201,bookId:5,title:"Atomic Habits",author:"James Clear",color:"#0D47A1",shelf:"Kệ A-15 · Tầng 1",type:"pickup",dur:14,sentAt:"01/06/2026 09:10",status:"pending",confirmedAt:null},
+          {id:202,bookId:3,title:"Sapiens",author:"Yuval Noah Harari",color:"#004D40",shelf:"Kệ C-08 · Tầng 2",type:"pickup",dur:7,sentAt:"30/05/2026 14:20",status:"confirmed",confirmedAt:"30/05/2026 16:00"},
+        ];
+
+        const NOTIFS = [
+          {id:1,icon:"ti-alert-triangle",bg:"var(--amber-lt)",color:"var(--amber)",title:"Sách sắp đến hạn trả",meta:"Nhà Giả Kim — quá hạn 8 ngày!",unread:true,time:"30 phút trước"},
+          {id:2,icon:"ti-check-circle",bg:"var(--green-lt)",color:"var(--green)",title:"Yêu cầu đặt mượn được xác nhận",meta:"Sapiens — đến thư viện lấy trước 17:00",unread:true,time:"2 giờ trước"},
+          {id:3,icon:"ti-star",bg:"var(--amber-lt)",color:"var(--amber)",title:"Bạn đạt 320 điểm tích lũy!",meta:"Còn 180 điểm nữa để lên Hạng Vàng",unread:false,time:"Hôm qua"},
+          {id:4,icon:"ti-books",bg:"var(--blue-lt)",color:"var(--blue)",title:"Sách mới bổ sung",meta:"Thư viện vừa nhập 15 đầu sách mới tháng 6",unread:false,time:"2 ngày trước"},
+        ];
+        const carousel = new bootstrap.Carousel(
+            document.getElementById("libraryBanner"),
+            {
+                interval: 4000,
+                ride: "carousel",
+                pause: false,
+                wrap: true
+            }
+        );
+        let pendingBorrow=null, pendingRenew=null, pendingReturn=null;
+        let currentGenre="Tất cả", searchQ="";
+
+        /* ══ NAV ══ */
+        function switchPage(page, btn) {
+          ['home','search','mybooks','history','renew','requests','digital','profile'].forEach(p => {
+            document.getElementById('page-'+p).style.display = p===page ? 'block' : 'none';
+          });
+          document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+          if(btn) btn.classList.add('active');
+          if(page==='mybooks') renderMyBooks();
+          if(page==='history') renderHist('all');
+          if(page==='renew') renderRenew();
+          if(page==='requests') renderRequests();
+          if(page==='digital') renderDigital();
+        }
+
+        /* ══ RENDER FEATURED ══ */
+        function renderFeatured() {
+          const grid = document.getElementById('featuredBooks');
+          grid.innerHTML = BOOKS.slice(0,4).map(b => bookCardHTML(b)).join('');
+        }
+
+<!--        function bookCardHTML(b) {-->
+<!--          const borrowed = borrowedIds.includes(b.id);-->
+<!--          return `<div class="book-card">-->
+<!--            <div class="book-cover" style="background:#f8f8f8;cursor:pointer" onclick="openDetail(${b.id})">-->
+<!--              <div class="book-cover-art" style="background:${b.color}">${b.title[0]}</div>-->
+<!--            </div>-->
+<!--            <div class="book-body">-->
+<!--              <div class="book-title" title="${b.title}" style="cursor:pointer" onclick="openDetail(${b.id})">${b.title}</div>-->
+<!--              <div class="book-author">${b.author}</div>-->
+<!--              <div class="book-avail">-->
+<!--                <div class="avail-dot" style="background:${b.avail?'var(&#45;&#45;green)':'var(&#45;&#45;red)'}"></div>-->
+<!--                <span style="font-size:11.5px;color:${b.avail?'var(&#45;&#45;green)':'var(&#45;&#45;red)'}">${b.avail?`Còn ${b.copies} bản`:'Hết sách'}</span>-->
+<!--              </div>-->
+<!--              <button class="btn-detail" onclick="openDetail(${b.id})">Xem chi tiết</button>-->
+<!--              <button class="btn-borrow" ${(!b.avail||borrowed)?'disabled':''} onclick="openBorrow(${b.id})">${borrowed?'Đang mượn':'Mượn sách'}</button>-->
+<!--            </div>-->
+<!--          </div>`;-->
+<!--        }-->
+
+        /* ══ LOANS TABLE HELPERS ══ */
+        function loanStatusHTML(l) {
+          if(l.daysLeft < 0) return `<span class="status-pill pill-late">Quá hạn ${Math.abs(l.daysLeft)} ngày</span>`;
+          if(l.daysLeft <= 5) return `<span class="status-pill pill-soon">Sắp đến hạn</span>`;
+          return `<span class="status-pill pill-ok">Còn ${l.daysLeft} ngày</span>`;
+        }
+
+        function renderHomeLoans() {
+          const tbody = document.getElementById('homeLoansBody');
+          tbody.innerHTML = activeLoans.map(l => `
+            <tr>
+              <td><div class="loan-book-cell">
+                <div class="loan-book-art" style="background:${l.color}">${l.title[0]}</div>
+                <div><div class="loan-book-title">${l.title}</div><div class="loan-book-author">${l.author}</div></div>
+              </div></td>
+              <td>${l.borrowed}</td>
+              <td style="color:${l.daysLeft<0?'var(--red)':l.daysLeft<=5?'var(--amber)':'inherit'}">${l.due}${l.daysLeft<0?`<br><small style="color:var(--red)">Quá hạn ${Math.abs(l.daysLeft)} ngày</small>`:l.daysLeft<=5?`<br><small style="color:var(--amber)">Còn ${l.daysLeft} ngày</small>`:''}</td>
+              <td>${loanStatusHTML(l)}</td>
+              <td><div style="display:flex;gap:6px">
+                ${l.renewCount<2?`<button class="btn-renew" onclick="openRenew(${l.id})">Gia hạn</button>`:'<span style="font-size:11px;color:var(--muted)">Hết lượt</span>'}
+              </div></td>
+            </tr>`).join('');
+        }
+
+        function renderMyBooks() {
+          const tbody = document.getElementById('myBooksBody');
+          const empty = document.getElementById('myBooksEmpty');
+          if(!activeLoans.length){tbody.innerHTML='';empty.style.display='block';return;}
+          empty.style.display='none';
+          tbody.innerHTML = activeLoans.map(l => `
+            <tr>
+              <td><div class="loan-book-cell">
+                <div class="loan-book-art" style="background:${l.color}">${l.title[0]}</div>
+                <div><div class="loan-book-title">${l.title}</div><div class="loan-book-author">${l.author}</div></div>
+              </div></td>
+              <td>${l.borrowed}</td>
+              <td style="color:${l.daysLeft<0?'var(--red)':l.daysLeft<=5?'var(--amber)':'inherit'}">${l.due}${l.daysLeft<0?`<br><small>Quá hạn ${Math.abs(l.daysLeft)} ngày</small>`:''}</td>
+              <td>${loanStatusHTML(l)}</td>
+              <td><div style="display:flex;gap:6px">
+                ${l.renewCount<2?`<button class="btn-renew" onclick="openRenew(${l.id})">Gia hạn</button>`:'<span style="font-size:11px;color:var(--muted)">Hết lượt</span>'}
+                <button class="btn-return" onclick="openReturn(${l.id})">Trả sách</button>
+              </div></td>
+            </tr>`).join('');
+        }
+
+        function renderRenew() {
+          const tbody = document.getElementById('renewBody');
+          const empty = document.getElementById('renewEmpty');
+          if(!activeLoans.length){tbody.innerHTML='';empty.style.display='block';return;}
+          empty.style.display='none';
+          tbody.innerHTML = activeLoans.map(l => `
+            <tr>
+              <td><div class="loan-book-cell">
+                <div class="loan-book-art" style="background:${l.color}">${l.title[0]}</div>
+                <div><div class="loan-book-title">${l.title}</div><div class="loan-book-author">${l.author}</div></div>
+              </div></td>
+              <td>${l.borrowed}</td>
+              <td style="color:${l.daysLeft<0?'var(--red)':l.daysLeft<=5?'var(--amber)':'inherit'}">${l.due}</td>
+              <td><span class="status-pill ${l.renewCount===0?'pill-ok':l.renewCount===1?'pill-soon':'pill-late'}">${l.renewCount}/2 lần</span></td>
+              <td>${loanStatusHTML(l)}</td>
+              <td>${l.renewCount<2?`<button class="btn-renew" onclick="openRenew(${l.id})"><i class="ti ti-refresh" style="font-size:12px"></i> Gia hạn ngay</button>`:'<span style="font-size:11px;color:var(--muted)">Hết lượt gia hạn</span>'}</td>
+            </tr>`).join('');
+        }
+
+        /* ══ HISTORY ══ */
+        function renderHist(filter) {
+          const tbody = document.getElementById('histBody');
+          const data = filter==='all'?HIST:HIST.filter(h=>h.status===filter);
+          const pillMap = {returned:'pill-done',renewed:'pill-pending',late:'pill-late'};
+          const lblMap = {returned:'Đã trả',renewed:'Đã gia hạn',late:'Trả trễ'};
+          tbody.innerHTML = data.map(h => `
+            <tr>
+              <td><strong>${h.title}</strong><br><small style="color:var(--muted)">${h.author}</small></td>
+              <td>${h.borrowed}</td><td>${h.due}</td><td>${h.returned||'—'}</td>
+              <td><span class="status-pill ${pillMap[h.status]}">${lblMap[h.status]}</span></td>
+              <td><button class="btn-return" onclick="showToast('Đang mở chi tiết')"><i class="ti ti-eye" style="font-size:12px"></i> Chi tiết</button></td>
+            </tr>`).join('');
+        }
+        function filterHist(f,btn){
+          document.querySelectorAll('.hist-chip').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active'); renderHist(f);
+        }
+
+        /* ══ REQUESTS ══ */
+        function renderRequests() {
+          const list = document.getElementById('reqList');
+          const empty = document.getElementById('reqEmpty');
+          if(!borrowRequests.length){list.innerHTML='';empty.style.display='block';return;}
+          empty.style.display='none';
+          list.innerHTML = borrowRequests.map(r => `
+            <div class="req-card">
+              <div style="width:46px;height:60px;border-radius:7px;background:${r.color};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:rgba(255,255,255,.85)">${r.title[0]}</div>
+              <div class="req-info">
+                <div class="req-title">${r.title}</div>
+                <div class="req-meta">
+                  <span><i class="ti ti-user" style="font-size:11px"></i> ${r.author}</span>
+                  <span><i class="ti ti-map-pin" style="font-size:11px;color:var(--blue)"></i> ${r.shelf}</span>
+                  <span><i class="ti ti-calendar" style="font-size:11px"></i> Gửi: ${r.sentAt}</span>
+                  <span><i class="ti ti-clock" style="font-size:11px"></i> ${r.dur} ngày</span>
+                  ${r.confirmedAt?`<span style="color:var(--green)"><i class="ti ti-check" style="font-size:11px"></i> XN: ${r.confirmedAt}</span>`:''}
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+                <span class="status-pill ${r.status==='pending'?'pill-soon':r.status==='confirmed'?'pill-confirmed':'pill-done'}">${r.status==='pending'?'⏳ Chờ xác nhận':r.status==='confirmed'?'✓ Đã xác nhận':'✕ Đã huỷ'}</span>
+                ${r.status==='pending'?`<button class="btn-cancel-req" onclick="cancelReq(${r.id})">Huỷ yêu cầu</button>`:''}
+              </div>
+            </div>`).join('');
+        }
+        function cancelReq(id) {
+          const r = borrowRequests.find(x=>x.id===id);
+          if(r){r.status='cancelled';renderRequests();showToast('Đã huỷ yêu cầu đặt mượn');}
+        }
+
+        /* ══ DIGITAL ══ */
+        function renderDigital() {
+          const grid = document.getElementById('digiTab-ebook');
+          const digital = BOOKS.filter(b=>b.digital);
+          grid.innerHTML = digital.map(b => `
+            <div class="book-card">
+              <div class="book-cover" style="background:#f8f8f8;cursor:pointer" onclick="openReader(${b.id})">
+                <div class="book-cover-art" style="background:${b.color}">${b.title[0]}</div>
+              </div>
+              <div class="book-body">
+                <div class="book-title">${b.title}</div>
+                <div class="book-author">${b.author}</div>
+                <div class="book-avail"><i class="ti ti-device-tablet" style="font-size:12px;color:var(--blue)"></i><span style="font-size:11.5px;color:var(--blue)">E-Book</span></div>
+                <button class="btn-borrow" onclick="openReader(${b.id})"><i class="ti ti-book-open" style="font-size:12px"></i> Đọc ngay</button>
+              </div>
+            </div>`).join('');
+        }
+
+        /* ══ SEARCH ══ */
+        function renderSearchGrid() {
+          const grid = document.getElementById('searchGrid');
+          const avail = document.getElementById('fAvail').value;
+          const format = document.getElementById('fFormat').value;
+          const sort = document.getElementById('fSort').value;
+          let data = BOOKS.filter(b =>
+            (currentGenre==='Tất cả'||b.genre===currentGenre) &&
+            (b.title.toLowerCase().includes(searchQ)||b.author.toLowerCase().includes(searchQ)) &&
+            (avail==='all'||(avail==='avail'&&b.avail)||(avail==='unavail'&&!b.avail)) &&
+            (format==='all'||(format==='digital'&&b.digital)||(format==='physical'&&!b.digital))
+          );
+          if(sort==='rating') data.sort((a,b)=>b.rating-a.rating);
+          if(sort==='pages_asc') data.sort((a,b)=>a.pages-b.pages);
+          grid.innerHTML = data.length ? data.map(b=>bookCardHTML(b)).join('') : '<p style="color:var(--muted);grid-column:1/-1;padding:40px 0;text-align:center">Không tìm thấy kết quả phù hợp.</p>';
+        }
+        function searchBooks() { searchQ=document.getElementById('searchInput').value.toLowerCase(); renderSearchGrid(); }
+        function setGenre(g,el) {
+          currentGenre=g;
+          document.querySelectorAll('#genreChips .chip').forEach(c=>c.classList.remove('active'));
+          el.classList.add('active'); renderSearchGrid();
+        }
+        function resetSearch() {
+          currentGenre='Tất cả'; searchQ='';
+          document.getElementById('searchInput').value='';
+          document.getElementById('fAvail').value='all';
+          document.getElementById('fFormat').value='all';
+          document.getElementById('fSort').value='default';
+          document.querySelectorAll('#genreChips .chip').forEach((c,i)=>c.classList.toggle('active',i===0));
+          renderSearchGrid(); showToast('Đã đặt lại bộ lọc');
+        }
+        function doSearch(q) {
+          searchQ = q.toLowerCase();
+          switchPage('search', document.querySelectorAll('.nav-item')[1]);
+          document.getElementById('searchInput').value = q;
+          renderSearchGrid();
+        }
+
+
+async function openDetail(id) {
+
+    const response = await fetch(`/qltv/home/book-featured/${id}`);
+
+    if (!response.ok) {
+        alert("Không lấy được thông tin sách");
+        return;
+    }
+
+    const b = await response.json();
+
+    document.getElementById('dArt').src = b.coverImage;
+    document.getElementById('dTitle').textContent = b.title;
+    document.getElementById('dAuthor').textContent = b.author;
+    document.getElementById('dDesc').textContent = b.note;
+    document.getElementById('dBadges').innerHTML = `
+        <span class="status-pill ${b.availableCopies ? 'pill-ok': 'pill-late'}">
+        ${b.availableCopies ?`Còn ${b.availableCopies} bản`:'Hết sách'}</span>
+        ${b.hasDigitalBook?'<span class="status-pill pill-confirmed">E-Book</span>':''}
+    `;
+    const readBtn = document.getElementById('dReadBtn');
+    if (b.hasDigitalBook) {
+        readBtn.style.display = 'block';
+    } else {
+        readBtn.style.display = 'none';
+    }
+
+    document.getElementById('dMeta').innerHTML = `
+        <div class="detail-meta-item">
+            <div class="detail-meta-label">Thể loại</div>
+            <div class="detail-meta-val">${b.category}</div>
+        </div>
+        <div class="detail-meta-item">
+            <div class="detail-meta-label">Ngôn ngữ</div>
+            <div class="detail-meta-val">${b.language}</div>
+        </div>
+        <div class="detail-meta-item">
+            <div class="detail-meta-label">Vị trí</div>
+            <div class="detail-meta-val">${b.shelfLocation}</div>
+        </div>
+        <div class="detail-meta-item">
+            <div class="detail-meta-label">Số bản</div>
+            <div class="detail-meta-val">${b.totalCopies}</div>
+        </div>
+    `;
+
+    document.getElementById('detailModal').style.display = 'flex';
+}
+
+        /* ══ BORROW ══ */
+        function openBorrow(id) {
+          const b = BOOKS.find(x=>x.id===id);
+          pendingBorrow = b;
+          document.getElementById('mBorrowArt').style.background = b.color;
+          document.getElementById('mBorrowArt').style.borderRadius = '7px';
+          document.getElementById('mBorrowArt').textContent = b.title[0];
+          document.getElementById('mBorrowArt').style.color = 'rgba(255,255,255,.85)';
+          document.getElementById('mBorrowArt').style.fontSize = '22px';
+          document.getElementById('mBorrowArt').style.fontWeight = '800';
+          document.getElementById('mBorrowTitle').textContent = b.title;
+          document.getElementById('mBorrowAuthor').textContent = b.author;
+          document.getElementById('mBorrowAvail').innerHTML = `<span class="status-pill ${b.avail?'pill-ok':'pill-late'}">${b.avail?`Còn ${b.copies} bản`:'Hết sách'}</span>`;
+          document.getElementById('mBorrowShelfText').textContent = b.shelf;
+          document.getElementById('borrowModal').style.display = 'flex';
+        }
+        function openBorrowQuick() { openBorrow(BOOKS.find(b=>b.avail&&!borrowedIds.includes(b.id))?.id || 1); }
+        function confirmBorrow() {
+          if(!pendingBorrow) return;
+          const type = document.getElementById('mBorrowType').value;
+          const dur = parseInt(document.getElementById('mBorrowDur').value);
+          const due = new Date(); due.setDate(due.getDate()+dur);
+          const dueStr = due.toLocaleDateString('vi-VN');
+          const now = new Date().toLocaleString('vi-VN');
+          if(type==='ebook') {
+            activeLoans.push({id:pendingBorrow.id,bookId:pendingBorrow.id,title:pendingBorrow.title,author:pendingBorrow.author,color:pendingBorrow.color,borrowed:now.split(',')[0],due:dueStr,daysLeft:dur,renewCount:0});
+            borrowedIds.push(pendingBorrow.id);
+            document.getElementById('myBooksBadge').textContent = activeLoans.length;
+            renderHomeLoans();
+          } else {
+            borrowRequests.unshift({id:Date.now(),bookId:pendingBorrow.id,title:pendingBorrow.title,author:pendingBorrow.author,color:pendingBorrow.color,shelf:pendingBorrow.shelf,type,dur,sentAt:now,status:'pending',confirmedAt:null});
+            const badge = parseInt(document.getElementById('reqNavBadge').textContent||'0');
+            document.getElementById('reqNavBadge').textContent = badge+1;
+          }
+          closeModal('borrowModal');
+          renderFeatured(); renderSearchGrid();
+          showToast(`✓ Đã gửi yêu cầu đặt mượn "${pendingBorrow.title}"`);
+          pendingBorrow = null;
+        }
+
+        /* ══ RENEW ══ */
+        function openRenew(id) {
+          pendingRenew = id;
+          const l = activeLoans.find(x=>x.id===id);
+          document.getElementById('mRenewSub').textContent = `Sách: ${l.title} · Hạn hiện tại: ${l.due}`;
+          document.getElementById('renewModal').style.display = 'flex';
+        }
+        function confirmRenew() {
+          const l = activeLoans.find(x=>x.id===pendingRenew);
+          const extra = parseInt(document.getElementById('mRenewDur').value);
+          l.renewCount++; l.daysLeft = Math.max(l.daysLeft,0)+extra;
+          const d = new Date(); d.setDate(d.getDate()+l.daysLeft);
+          l.due = d.toLocaleDateString('vi-VN');
+          closeModal('renewModal');
+          renderHomeLoans(); renderMyBooks(); renderRenew();
+          showToast(`✓ Đã gia hạn "${l.title}" thêm ${extra} ngày`);
+        }
+
+        /* ══ RETURN ══ */
+        function openReturn(id) {
+          pendingReturn = id;
+          const l = activeLoans.find(x=>x.id===id);
+          document.getElementById('mReturnSub').textContent = `Bạn xác nhận trả "${l.title}"?`;
+          document.getElementById('returnModal').style.display = 'flex';
+        }
+        function confirmReturn() {
+          const l = activeLoans.find(x=>x.id===pendingReturn);
+          activeLoans = activeLoans.filter(x=>x.id!==pendingReturn);
+          borrowedIds = borrowedIds.filter(id=>id!==pendingReturn);
+          HIST.unshift({id:l.id,title:l.title,author:l.author,borrowed:l.borrowed,due:l.due,returned:new Date().toLocaleDateString('vi-VN'),status:'returned'});
+          document.getElementById('myBooksBadge').textContent = activeLoans.length;
+          closeModal('returnModal');
+          renderHomeLoans(); renderMyBooks(); renderFeatured(); renderSearchGrid();
+          showToast(`✓ Đã trả "${l.title}" · +10 điểm tích lũy`);
+        }
+
+        /* ══ READER ══ */
+        function openReader(id) {
+          const b = BOOKS.find(x=>x.id===id);
+          document.getElementById('readerTitle').textContent = `${b.title} — ${b.author}`;
+          const chapters = ['Chương 1: Mở đầu','Chương 2: Cuộc gặp gỡ','Chương 3: Hành trình','Chương 4: Thử thách','Chương 5: Kết'];
+          document.getElementById('readerToc').innerHTML = chapters.map((c,i) => `<div class="reader-toc-item ${i===0?'active':''}" onclick="loadChap(this,${i})">${c}</div>`).join('');
+          document.getElementById('readerContent').innerHTML = `<h1>${b.title}</h1><p style="color:var(--muted);font-size:13px;margin-bottom:24px">${b.author} · ${b.pages} trang · ★ ${b.rating}</p><p>${b.desc}</p><p>Santiago đứng nhìn đàn cừu của mình đang ngủ say. Cậu ta tự hỏi về ý nghĩa của giấc mơ kỳ lạ đêm qua — một đứa trẻ tóc vàng kéo tay cậu đến kim tự tháp ở Ai Cập, nơi có một kho báu chờ đợi.</p><blockquote>"Khi bạn khao khát điều gì đó, toàn thể vũ trụ sẽ hợp lực giúp bạn đạt được nó."</blockquote><p>Cậu quyết định lên đường. Chuyến hành trình không ai biết trước kết quả, nhưng cậu tin vào "huyền thoại cá nhân" của mình — con đường mà số phận đã vạch ra từ thuở ấu thơ.</p>`;
+          document.getElementById('readerOverlay').style.display = 'flex';
+        }
+        function loadChap(el,idx) {
+          document.querySelectorAll('.reader-toc-item').forEach(i=>i.classList.remove('active'));
+          el.classList.add('active');
+        }
+        function closeReader() { document.getElementById('readerOverlay').style.display='none'; }
+
+        /* ══ NOTIFICATIONS ══ */
+        function renderNotifPanel() {
+          document.getElementById('notifPanelList').innerHTML = NOTIFS.map(n => `
+            <div onclick="readNotif(${n.id})" style="display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer;background:${n.unread?'var(--blue-lt)':'#fff'};transition:background .13s">
+              <div style="width:36px;height:36px;border-radius:50%;background:${n.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${n.icon}" style="color:${n.color};font-size:16px"></i></div>
+              <div style="flex:1"><div style="font-size:13px;font-weight:500;margin-bottom:2px;color:var(--ink)">${n.title}</div><div style="font-size:11.5px;color:var(--muted)">${n.meta} · ${n.time}</div></div>
+              ${n.unread?'<div style="width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:5px;flex-shrink:0"></div>':''}
+            </div>`).join('');
+          document.getElementById('notifDot').textContent = NOTIFS.filter(n=>n.unread).length;
+          document.getElementById('notifDot').style.display = NOTIFS.filter(n=>n.unread).length ? 'flex' : 'none';
+        }
+        function toggleNotifPanel() {
+          const p = document.getElementById('notifPanel');
+          const open = p.style.display==='block';
+          p.style.display = open?'none':'block';
+          document.getElementById('notifBackdrop').style.display = open?'none':'block';
+          if(!open) renderNotifPanel();
+        }
+        function closeNotifPanel() {
+          document.getElementById('notifPanel').style.display='none';
+          document.getElementById('notifBackdrop').style.display='none';
+        }
+        function readNotif(id) { const n=NOTIFS.find(x=>x.id===id); if(n) n.unread=false; renderNotifPanel(); }
+        function markAllRead() { NOTIFS.forEach(n=>n.unread=false); renderNotifPanel(); showToast('Đã đánh dấu tất cả đã đọc'); }
+
+        /* ══ CHAT ══ */
+        function toggleChat(){
+            const box = document.getElementById("chatBox");
+
+            if(box.style.display === "flex"){
+                box.style.display = "none";
+            }else{
+                box.style.display = "flex";
+            }
+        }
+
+        function sendMessage(){
+
+            const input = document.getElementById("chatInput");
+            const messages = document.getElementById("chatMessages");
+
+            let text = input.value.trim();
+
+            if(text === "") return;
+
+            messages.innerHTML += `
+                <div class="message user">
+                    ${text}
+                </div>
+            `;
+
+            input.value = "";
+
+            setTimeout(() => {
+
+                let reply = "Xin lỗi, tôi chưa hiểu câu hỏi.";
+
+                if(text.toLowerCase().includes("gia hạn")){
+                    reply = "Bạn vào mục Gia hạn sách để thực hiện gia hạn.";
+                }
+
+                if(text.toLowerCase().includes("mượn")){
+                    reply = "Bạn có thể tìm kiếm sách và nhấn nút Mượn sách.";
+                }
+
+                if(text.toLowerCase().includes("trả")){
+                    reply = "Vào mục Sách của tôi và chọn Trả sách.";
+                }
+
+                messages.innerHTML += `
+                    <div class="message bot">
+                        ${reply}
+                    </div>
+                `;
+
+                messages.scrollTop = messages.scrollHeight;
+
+            }, 500);
+        }
+        /* ══ UTILS ══ */
+        function closeModal(id) { document.getElementById(id).style.display='none'; }
+        function showToast(msg) {
+          const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
+          clearTimeout(t._to); t._to=setTimeout(()=>t.style.display='none',3000);
+        }
+        document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});});
+
+        /* ══ INIT ══ */
+        renderFeatured();
+        renderHomeLoans();
+        renderSearchGrid();
+    </script>
+</div>
+

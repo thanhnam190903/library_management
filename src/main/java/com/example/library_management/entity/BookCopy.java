@@ -20,17 +20,20 @@ public class BookCopy {
     @Id
     String id;
     @Column(unique = true, nullable = false)
-    private String barcode;
-    private String shelfLocation;
+    String barcode;
+    String shelfLocation;
     // Trạng thái mượn trả
-    private String circulationStatus;
+    String circulationStatus;
     // Tình trạng vật lý
-    private String bookCondition;
+    String bookCondition;
     @CreationTimestamp
-    private LocalDateTime importDate;
+    LocalDateTime importDate;
     @ManyToOne
     @JoinColumn(name = "book_title_id")
     BookTitle bookTitle;
     @OneToMany(mappedBy = "bookCopy")
     List<BorrowDetail> borrowDetails;
+    boolean status ;
+
+
 }

@@ -54,7 +54,6 @@
                     <table class="bl-data-table">
                         <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Chủ đề</th>
                             <th>Thể loại</th>
                             <th>Trạng thái</th>
@@ -68,7 +67,7 @@
                             </td>
                         </tr>
                         <tr th:each="c : ${categories}">
-                            <td><span style="font-family:'DM Mono',monospace;font-weight:600;" th:text="${c.id}"></span></td>
+
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <div style="font-weight:500;" th:switch="${c.parent}">

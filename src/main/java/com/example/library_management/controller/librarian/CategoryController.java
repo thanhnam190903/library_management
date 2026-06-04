@@ -20,6 +20,7 @@ import java.util.Map;
 @Controller
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
+@RequestMapping("/quan-ly")
 public class CategoryController {
     CategoryRepository categoryRepository;
     IdGeneratorService idGeneratorService;
@@ -52,12 +53,12 @@ public class CategoryController {
         category.setId(idGeneratorService.generate("CATEGORY", "CAT"));
 
         categoryRepository.save(category);
-        return "redirect:/categories";
+        return "redirect:/quan-ly/categories";
     }
     @GetMapping(value = "/categories",params = "id")
     public String deleteCategory(@RequestParam("id") String id){
         categoryRepository.deleteCategory(id);
-        return "redirect:/categories";
+        return "redirect:/quan-ly/categories";
     }
 
 }

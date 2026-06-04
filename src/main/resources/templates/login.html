@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Thư Viện Số — Đăng nhập / Đăng ký</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;1,300;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+          min-height: 100vh;
+          display: flex; align-items: center; justify-content: center;
+          background: #F5F1E8;
+          font-family: 'DM Sans', sans-serif;
+          padding: 24px;
+        }
+        .lx-btn:disabled{
+            opacity:.6;
+            cursor:not-allowed;
+        }
+        .lx-card {
+          display: flex;
+          width: 100%; max-width: 820px;
+          min-height: 540px;
+          border-radius: 18px;
+          overflow: hidden;
+          box-shadow: 0 4px 40px rgba(26,25,22,0.13);
+        }
+
+        /* LEFT */
+        .lx-left {
+          width: 40%;
+          background: #1A1916;
+          display: flex; flex-direction: column;
+          padding: 32px 28px;
+          position: relative; overflow: hidden;
+        }
+        .lx-grid {
+          position: absolute; inset: 0; pointer-events: none;
+          background-image:
+            repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px),
+            repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px);
+        }
+        .lx-brand {
+          display: flex; align-items: center; gap: 10px;
+          position: relative; z-index: 1;
+        }
+        .lx-brand-icon {
+          width: 34px; height: 34px; border-radius: 9px;
+          background: #2A6B4F;
+          display: flex; align-items: center; justify-content: center;
+          color: #fff; font-size: 17px;
+        }
+        .lx-brand-name {
+          font-family: 'Fraunces', serif;
+          font-size: 15px; font-weight: 500; color: #F5F1E8;
+        }
+        .lx-mid {
+          flex: 1; display: flex; flex-direction: column;
+          justify-content: center; position: relative; z-index: 1;
+        }
+        .lx-tagline {
+          font-family: 'Fraunces', serif;
+          font-size: 32px; font-weight: 300; font-style: italic;
+          color: #F5F1E8; line-height: 1.35; margin-bottom: 50px;
+        }
+        .lx-tagline strong { font-weight: 500; font-style: normal; }
+
+        .lx-footer {
+          font-size: 11px; color: rgba(245,241,232,0.2);
+          position: relative; z-index: 1;
+        }
+
+        /* RIGHT */
+        .lx-right {
+          width: 60%;
+          background: #fff;
+          display: flex; align-items: center; justify-content: center;
+          padding: 32px 40px;
+        }
+        #panel-login{max-width: 310px;}
+        .lx-panel { display: none; width: 100%;  flex-direction: column; }
+        .lx-panel.active { display: flex; }
+
+        .lx-title {
+          font-family: 'Fraunces', serif;
+          font-size: 20px; font-weight: 500;
+          color: #1A1916; margin-bottom: 3px;
+        }
+        .lx-sub { font-size: 12.5px; color: #7A7668; margin-bottom: 20px; }
+
+        /* Error / Success */
+        .lx-err {
+          display: none; align-items: center; gap: 7px;
+          background: #FCEBEB; border: 1px solid #F09595;
+          border-radius: 8px; padding: 9px 12px;
+          font-size: 12px; color: #791F1F; margin-bottom: 12px;
+        }
+        .lx-err.show { display: flex; }
+        .lx-ok {
+          display: none; align-items: center; gap: 7px;
+          background: #EAF3DE; border: 1px solid #97C459;
+          border-radius: 8px; padding: 9px 12px;
+          font-size: 12px; color: #27500A; margin-bottom: 12px;
+        }
+        .lx-ok.show { display: flex; }
+
+        /* Fields */
+        .lx-field { margin-bottom: 12px; }
+        .lx-label {
+          display: flex; justify-content: space-between; align-items: center;
+          font-size: 12px; font-weight: 500;
+          color: #1A1916; margin-bottom: 5px;
+        }
+        .lx-label a { font-weight: 400; font-size: 11.5px; color: #2A6B4F; text-decoration: none; }
+        .lx-label a:hover { text-decoration: underline; }
+        .lx-iw { position: relative; }
+        .lx-ico {
+          position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+          font-size: 14px; color: #888780; pointer-events: none;
+        }
+        .lx-input {
+          width: 100%;
+          background: #F5F1E8;
+          border: 1px solid #D8D2C4;
+          border-radius: 8px;
+          padding: 9px 11px 9px 32px;
+          font-size: 13px; color: #1A1916;
+          font-family: 'DM Sans', sans-serif; outline: none;
+          transition: border-color 0.15s, background 0.15s;
+        }
+        .lx-input:focus {
+          border-color: #2A6B4F; background: #fff;
+          box-shadow: 0 0 0 3px rgba(42,107,79,0.08);
+        }
+        .lx-eye {
+          position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+          background: none; border: none; cursor: pointer;
+          color: #888780; font-size: 14px; padding: 2px;
+          transition: color 0.13s;
+        }
+        .lx-eye:hover { color: #1A1916; }
+
+        /* 2-col grid */
+        .lx-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* Checkbox */
+        .lx-check { display: flex; align-items: center; gap: 7px; margin-bottom: 16px; }
+        .lx-check input { accent-color: #2A6B4F; cursor: pointer; width: 14px; height: 14px; }
+        .lx-check label { font-size: 12px; color: #7A7668; cursor: pointer; }
+
+        /* Submit */
+        .lx-btn {
+          width: 100%; padding: 10px 0;
+          background: #1A1916; color: #F5F1E8;
+          border: none; border-radius: 8px;
+          font-size: 13.5px; font-weight: 500;
+          font-family: 'DM Sans', sans-serif; cursor: pointer;
+          display: flex; align-items: center; justify-content: center; gap: 7px;
+          transition: background 0.15s;
+          margin-bottom: 14px;
+        }
+        .lx-btn:hover { background: #2C2C2A; }
+
+        /* Hint link */
+        .lx-hint { text-align: center; font-size: 12.5px; color: #7A7668; }
+        .lx-hint a { color: #2A6B4F; text-decoration: none; font-weight: 500; cursor: pointer; }
+        .lx-hint a:hover { text-decoration: underline; }
+
+        /* Terms */
+        .lx-agree { font-size: 11.5px; color: #7A7668; line-height: 1.6; margin-bottom: 14px; }
+        .lx-agree a { color: #2A6B4F; text-decoration: none; }
+        .lx-agree a:hover { text-decoration: underline; }
+
+        /* Password strength */
+        .lx-sbars { display: flex; gap: 3px; margin-top: 5px; }
+        .lx-sbar { flex: 1; height: 3px; border-radius: 2px; background: #D8D2C4; transition: background 0.2s; }
+        .pw-weak  .lx-sbar:nth-child(1) { background: #E24B4A; }
+        .pw-fair  .lx-sbar:nth-child(1), .pw-fair  .lx-sbar:nth-child(2) { background: #EF9F27; }
+        .pw-good  .lx-sbar:nth-child(1), .pw-good  .lx-sbar:nth-child(2), .pw-good  .lx-sbar:nth-child(3) { background: #639922; }
+        .pw-strong .lx-sbar { background: #2A6B4F; }
+        .lx-slbl { font-size: 11px; color: #7A7668; margin-top: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="lx-card">
+
+    <!-- LEFT -->
+    <div class="lx-left">
+        <div class="lx-grid"></div>
+        <div class="lx-brand">
+            <div class="lx-brand-icon"><i class="ti ti-book"></i></div>
+            <span class="lx-brand-name">Hệ thống thư viện</span>
+        </div>
+        <div class="lx-mid">
+            <div class="lx-tagline">Tri thức trong<br><strong>tầm tay bạn.</strong></div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="lx-right">
+
+        <!-- ĐĂNG NHẬP -->
+        <div class="lx-panel active" id="panel-login">
+            <div class="lx-title">Đăng nhập</div>
+            <div class="lx-sub">Chào mừng trở lại — nhập thông tin tài khoản.</div>
+
+            <div class="lx-err" id="lerr">
+                <i class="ti ti-alert-circle" style="font-size:14px;flex-shrink:0"></i>
+                <span id="lerr-txt"></span>
+            </div>
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${param.error}">
+                <span style="color:red">Đăng nhập không thành công! Hãy kiểm tra lại tài khoản hoặc mật khẩu</span>
+            </div>
+            <form th:action="@{/authenticateTheUser}" method="post">
+                <div class="lx-field">
+                    <div class="lx-label">Email hoặc tên đăng nhập</div>
+                    <div class="lx-iw">
+                        <i class="ti ti-mail lx-ico"></i>
+                        <input class="lx-input" name="username" id="l-user" type="text" placeholder="email@example.com" autocomplete="username"/>
+                    </div>
+                </div>
+
+                <div class="lx-field">
+                    <div class="lx-label">
+                        Mật khẩu
+                        <a href="#" onclick="return false">Quên mật khẩu?</a>
+                    </div>
+                    <div class="lx-iw">
+                        <i class="ti ti-lock lx-ico"></i>
+                        <input class="lx-input" name="password" id="l-pass" type="password" placeholder="Nhập mật khẩu..." style="padding-right:33px" autocomplete="current-password"/>
+                        <button class="lx-eye" onclick="tp('l-pass','l-eye')" aria-label="Hiện/ẩn mật khẩu">
+                            <i class="ti ti-eye" id="l-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="lx-check">
+                    <input type="checkbox" id="l-rem"/>
+                    <label for="l-rem">Ghi nhớ đăng nhập</label>
+                </div>
+
+                <button class="lx-btn" onclick="doLogin()">
+                    <i class="ti ti-login" style="font-size:14px"></i>
+                    <span>Đăng nhập</span>
+                </button>
+            </form>
+
+            <div class="lx-hint">Chưa có tài khoản? <a onclick="show('register')">Đăng ký ngay</a></div>
+        </div>
+
+        <!-- ĐĂNG KÝ -->
+        <div class="lx-panel"  id="panel-register">
+            <div class="lx-title">Tạo tài khoản</div>
+            <div class="lx-sub">Điền thông tin để đăng ký thành viên thư viện.</div>
+
+            <div class="lx-err" id="rerr">
+                <i class="ti ti-alert-circle" style="font-size:14px;flex-shrink:0"></i>
+                <span id="rerr-txt"></span>
+            </div>
+            <div class="lx-ok" id="rok">
+                <i class="ti ti-circle-check" style="font-size:14px;flex-shrink:0"></i>
+                <span>Đăng ký thành công! Kiểm tra email để xác nhận.</span>
+            </div>
+
+            <div class="lx-row2">
+                <div class="lx-field">
+                    <div class="lx-label">Họ và tên</div>
+                    <div class="lx-iw">
+                        <i class="ti ti-user lx-ico"></i>
+                        <input class="lx-input" id="r-ln" type="text" placeholder="Nhập họ tên"/>
+                    </div>
+                </div>
+                <div class="lx-field">
+                    <div class="lx-label">Giới tính</div>
+                    <div class="lx-iw" style="margin-top: 14px;">
+                        <input class="" name="gender" type="radio" value="Nam"/>Nam
+                        <input class="" name="gender" type="radio" value="Nữ" style="margin-left: 4px;"/>Nữ
+                    </div>
+                </div>
+            </div>
+
+            <div class="lx-row2">
+                <div class="lx-field">
+                    <div class="lx-label">Email</div>
+                    <div class="lx-iw">
+                        <i class="ti ti-mail lx-ico"></i>
+                        <input class="lx-input" id="r-em" type="email" placeholder="email@example.com" autocomplete="email"/>
+                    </div>
+                </div>
+                <div class="lx-field">
+                    <div class="lx-label">Địa chỉ</div>
+                    <div class="lx-iw">
+                        <i class="ti ti-map-pin lx-ico"></i>
+                        <input class="lx-input" type="text" placeholder="Nhập địa chỉ..." />
+                    </div>
+                </div>
+            </div>
+
+            <div class="lx-row2">
+                <div class="lx-field">
+                    <div class="lx-label">Ngày sinh</div>
+                    <div class="lx-iw">
+                        <i class="ti ti-mail lx-ico"></i>
+                        <input class="lx-input" type="date" />
+                    </div>
+                </div>
+                <div class="lx-field">
+                    <div class="lx-label">Số điện thoại</div>
+                    <div class="lx-iw">
+                        <i class="ti ti-map-pin lx-ico"></i>
+                        <input class="lx-input" type="text" placeholder="Nhập số điện thoại..." />
+                    </div>
+                </div>
+            </div>
+
+            <div class="lx-row2">
+
+                <!-- Mật khẩu -->
+                <div class="lx-field">
+                    <div class="lx-label">Mật khẩu</div>
+                    <div class="lx-iw">
+                        <i class="ti ti-lock lx-ico"></i>
+                        <input class="lx-input"
+                               id="password"
+                               type="password"
+                               placeholder="Tối thiểu 8 ký tự"
+                               style="padding-right:33px"
+                               oninput="chkPw(this.value);checkPasswordMatch()"
+                               autocomplete="new-password"/>
+
+                        <button type="button"
+                                class="lx-eye"
+                                onclick="tp('password','eye1')">
+                            <i class="ti ti-eye" id="eye1"></i>
+                        </button>
+                    </div>
+                    <div class="lx-sbars" id="sbars">
+                        <div class="lx-sbar"></div>
+                        <div class="lx-sbar"></div>
+                        <div class="lx-sbar"></div>
+                        <div class="lx-sbar"></div>
+                    </div>
+                    <div class="lx-slbl" id="slbl"></div>
+                </div>
+
+                <!-- Nhập lại mật khẩu -->
+                <div class="lx-field">
+                    <div class="lx-label">Nhập lại mật khẩu</div>
+                    <div class="lx-iw">
+                        <i class="ti ti-lock lx-ico"></i>
+                        <input class="lx-input"
+                               id="confirmPassword"
+                               type="password"
+                               placeholder="Nhập lại mật khẩu"
+                               style="padding-right:33px"
+                               oninput="checkPasswordMatch()"
+                               autocomplete="new-password"/>
+
+                        <button type="button"
+                                class="lx-eye"
+                                onclick="tp('confirmPassword','eye2')">
+                            <i class="ti ti-eye" id="eye2"></i>
+                        </button>
+                    </div>
+
+                    <small id="passwordError"
+                           style="display:none;color:#dc3545">
+                        Mật khẩu nhập lại không khớp
+                    </small>
+                </div>
+
+            </div>
+
+            <div class="lx-agree">
+                Bằng cách đăng ký, bạn đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a> của thư viện.
+            </div>
+
+            <button class="lx-btn" id="registerBtn" type="submit" disabled>
+                <i class="ti ti-user-plus" style="font-size:14px"></i>
+                <span>Tạo tài khoản</span>
+            </button>
+
+            <div class="lx-hint">Đã có tài khoản? <a onclick="show('login')">Đăng nhập</a></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function show(id) {
+      document.querySelectorAll('.lx-panel').forEach(function(p) { p.classList.remove('active'); });
+      document.getElementById('panel-' + id).classList.add('active');
+      clearErr();
+    }
+
+    function tp(iid, eid) {
+      var i = document.getElementById(iid);
+      var vis = i.type === 'text';
+      i.type = vis ? 'password' : 'text';
+      document.getElementById(eid).className = vis ? 'ti ti-eye' : 'ti ti-eye-off';
+    }
+
+    function showErr(id, msg) {
+      document.getElementById(id + '-txt').textContent = msg;
+      document.getElementById(id).classList.add('show');
+    }
+
+    function clearErr() {
+      ['lerr', 'rerr'].forEach(function(id) { document.getElementById(id).classList.remove('show'); });
+      document.getElementById('rok').classList.remove('show');
+    }
+
+    document.querySelectorAll('.lx-input').forEach(function(el) {
+      el.addEventListener('input', clearErr);
+    });
+
+    document.getElementById('l-user').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('l-pass').focus();
+    });
+    document.getElementById('l-pass').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    function doLogin() {
+      var u = document.getElementById('l-user').value.trim();
+      var p = document.getElementById('l-pass').value;
+      if (!u) { showErr('lerr', 'Vui lòng nhập email hoặc tên đăng nhập.'); return; }
+      if (!p) { showErr('lerr', 'Vui lòng nhập mật khẩu.'); return; }
+      // TODO: gọi API đăng nhập
+    }
+    function checkPasswordMatch() {
+
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        const btn = document.getElementById("registerBtn");
+        const error = document.getElementById("passwordError");
+
+        if (confirmPassword === "") {
+            error.style.display = "none";
+            btn.disabled = true;
+            return;
+        }
+
+        if (password === confirmPassword) {
+            error.style.display = "none";
+            btn.disabled = false;
+        } else {
+            error.style.display = "block";
+            btn.disabled = true;
+        }
+    }
+
+    function chkPw(v) {
+      var bars = document.getElementById('sbars');
+      var lbl = document.getElementById('slbl');
+      bars.className = 'lx-sbars';
+      if (!v) { lbl.textContent = ''; return; }
+      var s = 0;
+      if (v.length >= 8) s++;
+      if (/[A-Z]/.test(v)) s++;
+      if (/[0-9]/.test(v)) s++;
+      if (/[^A-Za-z0-9]/.test(v)) s++;
+      var cls = ['', 'pw-weak', 'pw-fair', 'pw-good', 'pw-strong'];
+      var nm  = ['', 'Yếu', 'Trung bình', 'Tốt', 'Mạnh'];
+      if (s > 0) { bars.classList.add(cls[s]); lbl.textContent = 'Độ mạnh: ' + nm[s]; }
+    }
+</script>
+</body>
+</html>

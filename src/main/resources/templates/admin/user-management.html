@@ -47,7 +47,6 @@
                     <table class="bl-data-table">
                         <thead>
                          <tr>
-                            <th>ID</th>
                             <th>Tên</th>
                             <th>Email</th>
                             <th>Ngày sinh</th>
@@ -64,7 +63,6 @@
                             </td>
                         </tr>
                         <tr th:each="u : ${listUser}">
-                            <td><span style="font-family:'DM Mono',monospace;font-weight:600;" th:text="${u.id}"></span></td>
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <div style="font-weight:500;" th:text="${u.name}"></div>
@@ -108,7 +106,7 @@
             <button class="bl-modal-close" onclick="closeModal('add-member-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
-            <form th:action="@{/add-user}" th:object="${user}" method="post">
+            <form th:action="@{/quan-ly/add-user}" th:object="${user}" method="post">
                 <div class="bl-form-row">
                     <div style="color:red" th:if="${error}" th:text="${error}">
                     </div>
@@ -156,7 +154,7 @@
 
                 <div style="display:flex;gap:10px;">
                     <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký &amp; In thẻ</button>
-                    <button class="bl-btn bl-btn-secondary" onclick="closeModal('add-member-modal')">Hủy</button>
+                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('add-member-modal')">Hủy</button>
                 </div>
             </form>
 
@@ -172,7 +170,7 @@
             <button class="bl-modal-close" onclick="closeModal('update-member-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
-            <form th:action="@{/update-user}" method="post">
+            <form th:action="@{/quan-ly/update-user}" method="post">
                 <div class="bl-form-row">
                     <div class="bl-form-group">
                         <input type="hidden" name="id" id="edit-id">
@@ -217,12 +215,14 @@
 
                 <div style="display:flex;gap:10px;">
                     <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">Cập nhật</button>
+                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('update-member-modal')">Hủy</button>
                 </div>
             </form>
 
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:replace="layout/script :: script"></script>
 <script th:if="${showModal}">
      window.addEventListener("load", function () {
@@ -233,7 +233,7 @@
     function confirmDelete(element) {
     const userId = element.dataset.id;
     if (confirm("Bạn có chắc chắn muốn xóa nhân viên " + userId + " này?")) {
-        window.location.href = "/qltv/delete-user?id=" + userId;
+        window.location.href = "/qltv/quan-ly/delete-user?id=" + userId;
     }
 }
     document.querySelectorAll(".btn-edit").forEach(btn => {

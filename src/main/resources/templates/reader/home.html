@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="reader/layout/reader-head :: reader-head">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════ -->
+<div th:replace="reader/layout/reader-sidebar :: reader-sidebar"></div>
+
+<!-- ══════════════════════════════════════════
+     APP BODY
+══════════════════════════════════════════ -->
+<div class="app-body">
+    <!-- TOPBAR -->
+   <div th:replace="reader/layout/reader-header :: reader-header"></div>
+
+    <div class="content-wrap">
+        <!-- MAIN SCROLL -->
+        <div class="main-scroll" id="mainScroll">
+
+            <!-- ════ PAGE: HOME ════ -->
+            <div id="page-home">
+                <!-- Banner -->
+                <div class="banner">
+                    <div id="libraryBanner" class="carousel slide banner" data-bs-ride="carousel">
+
+                        <!-- dots -->
+                        <div class="carousel-indicators">
+                            <button type="button" data-bs-target="#libraryBanner" data-bs-slide-to="0" class="active"></button>
+                            <button type="button" data-bs-target="#libraryBanner" data-bs-slide-to="1"></button>
+                            <button type="button" data-bs-target="#libraryBanner" data-bs-slide-to="2"></button>
+                        </div>
+
+                        <div class="carousel-inner">
+
+                            <!-- Slide 1 -->
+                            <div class="carousel-item active">
+                                <div class="banner-content">
+                                    <div class="banner-left">
+                                        <h2>📚 Đọc sách hôm nay<br>Thành công ngày mai</h2>
+                                        <p>Tri thức là chìa khóa mở ra mọi cánh cửa</p>
+                                    </div>
+
+                                    <div class="banner-books">
+                                        <div class="banner-book bg-danger"></div>
+                                        <div class="banner-book bg-primary"></div>
+                                        <div class="banner-book bg-success"></div>
+                                        <div class="banner-book bg-warning"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Slide 2 -->
+                            <div class="carousel-item">
+                                <div class="banner-content">
+                                    <div class="banner-left">
+                                        <h2>✨ Khám phá kho tàng tri thức</h2>
+                                        <p>Hơn 50.000 đầu sách đang chờ bạn</p>
+                                    </div>
+
+                                    <div class="banner-books">
+                                        <div class="banner-book bg-info"></div>
+                                        <div class="banner-book bg-secondary"></div>
+                                        <div class="banner-book bg-primary"></div>
+                                        <div class="banner-book bg-success"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Slide 3 -->
+                            <div class="carousel-item">
+                                <div class="banner-content">
+                                    <div class="banner-left">
+                                        <h2>🚀 Mượn sách dễ dàng</h2>
+                                        <p>Đặt mượn trực tuyến chỉ với vài thao tác</p>
+                                    </div>
+
+                                    <div class="banner-books">
+                                        <div class="banner-book bg-dark"></div>
+                                        <div class="banner-book bg-danger"></div>
+                                        <div class="banner-book bg-warning"></div>
+                                        <div class="banner-book bg-success"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Quick features -->
+                <div class="section-title">Tính năng nhanh</div>
+                <div class="quick-grid">
+                    <div class="quick-card" onclick="switchPage('search', document.querySelectorAll('.nav-item')[1])">
+                        <div class="quick-icon" style="background:#EFF6FF"><i class="ti ti-books" style="color:#3B82F6"></i></div>
+                        <div><div class="quick-title">Tìm kiếm sách</div><div class="quick-sub">Khám phá kho sách</div></div>
+                    </div>
+                    <div class="quick-card" onclick="openBorrowQuick()">
+                        <div class="quick-icon" style="background:#F5F3FF"><i class="ti ti-bookmark" style="color:#8B5CF6"></i></div>
+                        <div><div class="quick-title">Mượn sách</div><div class="quick-sub">Đặt mượn sách</div></div>
+                    </div>
+                    <div class="quick-card" onclick="switchPage('renew', document.querySelectorAll('.nav-item')[4])">
+                        <div class="quick-icon" style="background:#ECFDF5"><i class="ti ti-clock" style="color:#10B981"></i></div>
+                        <div><div class="quick-title">Gia hạn mượn</div><div class="quick-sub">Gia hạn sách đang mượn</div></div>
+                    </div>
+                    <div class="quick-card" onclick="switchPage('history', document.querySelectorAll('.nav-item')[3])">
+                        <div class="quick-icon" style="background:#FFF7ED"><i class="ti ti-history" style="color:#F59E0B"></i></div>
+                        <div><div class="quick-title">Lịch sử mượn</div><div class="quick-sub">Xem lịch sử mượn sách</div></div>
+                    </div>
+                </div>
+
+                <!-- Featured books -->
+                <div class="section-hdr">
+                    <div class="section-title" style="margin-bottom:0">Sách nổi bật</div>
+                    <a class="section-link" onclick="switchPage('search', document.querySelectorAll('.nav-item')[1])">Xem tất cả</a>
+                </div>
+                <div class="books-row" >
+                    <div class="book-card" th:each="b : ${bookFeature}">
+                        <div class="book-cover" th:attr="onclick=|openDetail('${b.id}')|">
+                            <img th:src="${b.coverImage}" alt="Book Cover" class="book-cover-art" />
+                        </div>
+                        <div class="book-body">
+                            <div class="book-title" th:text="${b.title}" style="cursor:pointer" th:attr="onclick=|openDetail('${b.id}')|"></div>
+                            <div class="book-author" th:text="${b.author.authorName}"></div>
+                            <div class="book-avail">
+                                <div class="avail-dot" th:style="${availableMap[b.id] > 0} ? 'background:var(--green)' : 'background:var(--red)'"></div>
+                                <span th:if="${availableMap[b.id] > 0}" th:text="|Còn ${availableMap[b.id]} bản|"
+                                      style="color:var(--green);font-size: 15px;"></span>
+                                <span th:if="${availableMap[b.id] == 0}" style="color:var(--red);font-size: 15px;">
+                                Hết sách</span>
+                            </div>
+                            <button class="btn-detail" th:attr="onclick=|openDetail('${b.id}')|">Xem chi tiết</button>
+                            <button class="btn-borrow" >Mượn sách</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current loans -->
+                <div >
+                    <div class="section-hdr" >
+                        <div class="section-title" style="margin-bottom:0">Sách đang mượn</div>
+                    </div>
+                    <div class="loans-table-wrap">
+                        <table class="loans-table">
+                            <thead>
+                            <tr>
+                                <th>Tên sách</th>
+                                <th>Ngày mượn</th>
+                                <th>Ngày đến hạn</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+<!--                            th:if="${reader != null}"-->
+                            <tbody >
+                            <tr th:each="b,stat : ${borrowBooks}">
+                                <td>
+                                    <div class="loan-book-cell">
+                                        <div class="loan-book-art" th:style="${stat.index % 2 == 0}
+                                                 ? 'background:#4f46e5'
+                                                 : 'background:#10b981'">
+                                        </div>
+                                        <div>
+                                            <div class="loan-book-title" th:text="${b.bookCopy.bookTitle.title}"></div>
+                                            <div class="loan-book-author" th:text="${b.bookCopy.bookTitle.author.authorName}"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td th:text="${#temporals.format(b.borrowSlip.borrowDate,'dd/MM/yyyy')}"></td>
+                                <td >
+                                    <span th:text="${#temporals.format(b.borrowSlip.dueDate,'dd/MM/yyyy')}"
+                                          th:style="${b.borrowSlip.dueDate.isBefore(T(java.time.LocalDate).now())}
+                                             ? 'color:#dc2626;font-weight:600' : 'color:#16a34a;font-weight:600'"></span>
+                                    <br th:if="${b.borrowSlip.dueDate.isBefore(T(java.time.LocalDate).now())}">
+                                    <small style="color:var(--red)"
+                                           th:if="${b.borrowSlip.dueDate.isBefore(T(java.time.LocalDate).now())}"
+                                           th:text="${'Quá hạn ' + T(java.time.temporal.ChronoUnit).DAYS.between(b.borrowSlip.dueDate, T(java.time.LocalDate).now()) + ' ngày'}">
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="loan-status overdue" th:if="${b.borrowSlip.dueDate.isBefore(T(java.time.LocalDate).now())}"
+                                      th:text="${'Quá hạn ' + T(java.time.temporal.ChronoUnit).DAYS.between(b.borrowSlip.dueDate,
+                                                T(java.time.LocalDate).now()) + ' ngày'}"></span>
+                                    <span class="loan-status borrowing"
+                                          th:unless="${b.borrowSlip.dueDate.isBefore(T(java.time.LocalDate).now())}">Đang mượn</span>
+                                </td>
+                                <td>
+                                    <div style="display:flex;gap:6px">
+                                        <button class="btn-renew" th:if="${!b.borrowSlip.renewed}" onclick="openRenew(${b.})">
+                                            Gia hạn
+                                        </button>
+                                        <span style="font-size:11px;color:var(--muted)" th:if="${b.borrowSlip.renewed}">
+                                            Hết lượt
+                                        </span>
+                                   </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="view-all-link" onclick="switchPage('mybooks', document.querySelectorAll('.nav-item')[2])">
+                        <span>Xem tất cả sách đang mượn</span><i class="ti ti-chevron-right" style="font-size:14px"></i>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ════ PAGE: SEARCH ════ -->
+            <div id="page-search" style="display:none">
+                <div class="page-hdr"><div class="page-title">Tìm kiếm sách</div><div class="page-sub">Khám phá kho sách của thư viện</div></div>
+                <div class="search-bar-big">
+                    <input type="text" id="searchInput" placeholder="Nhập tên sách, tác giả, thể loại..." onkeydown="if(event.key==='Enter')searchBooks()"/>
+                    <button onclick="searchBooks()"><i class="ti ti-search" style="font-size:15px"></i> Tìm kiếm</button>
+                </div>
+                <div class="filter-row" id="genreChips">
+                    <span class="chip active" onclick="setGenre('Tất cả',this)">Tất cả</span>
+                    <span class="chip" onclick="setGenre('Kỹ năng',this)">Kỹ năng sống</span>
+                    <span class="chip" onclick="setGenre('Tiểu thuyết',this)">Tiểu thuyết</span>
+                    <span class="chip" onclick="setGenre('Lịch sử',this)">Lịch sử</span>
+                    <span class="chip" onclick="setGenre('Tâm lý',this)">Tâm lý học</span>
+                    <span class="chip" onclick="setGenre('Kinh tế',this)">Kinh tế</span>
+                    <span class="chip" onclick="setGenre('Khoa học',this)">Khoa học</span>
+                </div>
+                <div class="filter-row">
+                    <select class="filter-select" id="fAvail" onchange="renderSearchGrid()">
+                        <option value="all">Tình trạng: Tất cả</option>
+                        <option value="avail">Còn sách</option>
+                        <option value="unavail">Hết sách</option>
+                    </select>
+                    <select class="filter-select" id="fFormat" onchange="renderSearchGrid()">
+                        <option value="all">Định dạng: Tất cả</option>
+                        <option value="digital">Có E-Book</option>
+                        <option value="physical">Sách in</option>
+                    </select>
+                    <select class="filter-select" id="fSort" onchange="renderSearchGrid()">
+                        <option value="default">Sắp xếp: Mặc định</option>
+                        <option value="rating">Đánh giá cao nhất</option>
+                        <option value="pages_asc">Ít trang nhất</option>
+                    </select>
+                    <button class="chip" onclick="resetSearch()" style="border-color:var(--red);color:var(--red)"><i class="ti ti-refresh" style="font-size:12px"></i> Đặt lại</button>
+                </div>
+                <div class="books-row" id="searchGrid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))"></div>
+            </div>
+
+            <!-- ════ PAGE: MY BOOKS ════ -->
+<!--            <div id="page-mybooks" style="display:none">-->
+<!--                <div class="page-hdr"><div class="page-title">Sách của tôi</div><div class="page-sub">Quản lý sách đang mượn, gia hạn và trả sách</div></div>-->
+<!--                <div class="loans-table-wrap">-->
+<!--                    <table class="loans-table">-->
+<!--                        <thead><tr><th>Tên sách</th><th>Ngày mượn</th><th>Ngày đến hạn</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>-->
+<!--                        <tbody id="myBooksBody"></tbody>-->
+<!--                    </table>-->
+<!--                </div>-->
+<!--                <div id="myBooksEmpty" class="empty-state" style="display:none"><i class="ti ti-bookmark-off"></i><p>Bạn chưa mượn sách nào</p></div>-->
+<!--            </div>-->
+
+            <!-- ════ PAGE: HISTORY ════ -->
+<!--            <div id="page-history" style="display:none">-->
+<!--                <div class="page-hdr"><div class="page-title">Lịch sử mượn trả</div><div class="page-sub">Toàn bộ giao dịch mượn, trả và gia hạn của bạn</div></div>-->
+<!--                <div class="hist-filter-row">-->
+<!--                    <button class="hist-chip active" onclick="filterHist('all',this)">Tất cả</button>-->
+<!--                    <button class="hist-chip" onclick="filterHist('returned',this)">Đã trả</button>-->
+<!--                    <button class="hist-chip" onclick="filterHist('renewed',this)">Đã gia hạn</button>-->
+<!--                    <button class="hist-chip" onclick="filterHist('late',this)">Trả trễ</button>-->
+<!--                </div>-->
+<!--                <div class="loans-table-wrap">-->
+<!--                    <table class="loans-table">-->
+<!--                        <thead><tr><th>Tên sách</th><th>Ngày mượn</th><th>Hạn trả</th><th>Ngày trả thực tế</th><th>Trạng thái</th><th></th></tr></thead>-->
+<!--                        <tbody id="histBody"></tbody>-->
+<!--                    </table>-->
+<!--                </div>-->
+<!--            </div>-->
+
+            <!-- ════ PAGE: RENEW ════ -->
+<!--            <div id="page-renew" style="display:none">-->
+<!--                <div class="page-hdr"><div class="page-title">Gia hạn mượn</div><div class="page-sub">Gia hạn các sách đang mượn trực tiếp tại đây</div></div>-->
+<!--                <div class="loans-table-wrap">-->
+<!--                    <table class="loans-table">-->
+<!--                        <thead><tr><th>Tên sách</th><th>Ngày mượn</th><th>Hạn hiện tại</th><th>Lượt gia hạn</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>-->
+<!--                        <tbody id="renewBody"></tbody>-->
+<!--                    </table>-->
+<!--                </div>-->
+<!--                <div id="renewEmpty" class="empty-state" style="display:none"><i class="ti ti-refresh-off"></i><p>Không có sách nào cần gia hạn</p></div>-->
+<!--            </div>-->
+
+            <!-- ════ PAGE: REQUESTS ════ -->
+<!--            <div id="page-requests" style="display:none">-->
+<!--                <div class="page-hdr"><div class="page-title">Yêu cầu đặt mượn</div><div class="page-sub">Danh sách yêu cầu đặt mượn đang chờ xác nhận từ thủ thư</div></div>-->
+<!--                <div id="reqList"></div>-->
+<!--                <div id="reqEmpty" class="empty-state" style="display:none"><i class="ti ti-clipboard-off"></i><p>Chưa có yêu cầu nào</p></div>-->
+<!--            </div>-->
+
+            <!-- ════ PAGE: DIGITAL ════ -->
+<!--            <div id="page-digital" style="display:none">-->
+<!--                <div class="page-hdr"><div class="page-title">Đọc trực tuyến</div><div class="page-sub">E-Book và tài liệu số — đọc ngay trên trình duyệt</div></div>-->
+<!--                <div class="hist-filter-row">-->
+<!--                    <button class="hist-chip active" onclick="switchDigiTab('ebook',this)">E-Book</button>-->
+<!--                    <button class="hist-chip" onclick="switchDigiTab('doc',this)">Tài liệu học thuật</button>-->
+<!--                </div>-->
+<!--                <div id="digiTab-ebook" class="books-row" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))"></div>-->
+<!--                <div id="digiTab-doc" style="display:none"></div>-->
+<!--            </div>-->
+
+            <!-- ════ PAGE: PROFILE ════ -->
+<!--            <div id="page-profile" style="display:none">-->
+<!--                <div class="page-hdr"><div class="page-title">Tài khoản của tôi</div><div class="page-sub">Thông tin thẻ thư viện và thống kê hoạt động</div></div>-->
+<!--                <div class="profile-card">-->
+<!--                    <div class="profile-card-content">-->
+<!--                        <div class="profile-avatar"><span>TV</span></div>-->
+<!--                        <div class="profile-name">Nguyễn Thảo Vy</div>-->
+<!--                        <div class="profile-id">Mã độc giả: DG000123 · Thẻ hiệu lực đến 31/12/2026</div>-->
+<!--                        <div class="profile-meta-row">-->
+<!--                            <div class="profile-meta-item"><div class="label">Hạng thành viên</div><div class="val">🥈 Hạng Bạc</div></div>-->
+<!--                            <div class="profile-meta-item"><div class="label">Điểm tích lũy</div><div class="val">320 điểm</div></div>-->
+<!--                            <div class="profile-meta-item"><div class="label">Tổng sách đã mượn</div><div class="val">18 cuốn</div></div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="stats-grid">-->
+<!--                    <div class="stat-card"><div class="stat-icon" style="background:var(&#45;&#45;blue-lt)"><i class="ti ti-books" style="color:var(&#45;&#45;blue)"></i></div><div><div class="stat-val">18</div><div class="stat-lbl">Đã mượn</div></div></div>-->
+<!--                    <div class="stat-card"><div class="stat-icon" style="background:var(&#45;&#45;green-lt)"><i class="ti ti-check" style="color:var(&#45;&#45;green)"></i></div><div><div class="stat-val">16</div><div class="stat-lbl">Đã đọc xong</div></div></div>-->
+<!--                    <div class="stat-card"><div class="stat-icon" style="background:var(&#45;&#45;amber-lt)"><i class="ti ti-star" style="color:var(&#45;&#45;amber)"></i></div><div><div class="stat-val">320</div><div class="stat-lbl">Điểm tích lũy</div></div></div>-->
+<!--                    <div class="stat-card"><div class="stat-icon" style="background:var(&#45;&#45;red-lt)"><i class="ti ti-alert-triangle" style="color:var(&#45;&#45;red)"></i></div><div><div class="stat-val">1</div><div class="stat-lbl">Lần trả trễ</div></div></div>-->
+<!--                </div>-->
+<!--                <div style="background:#fff;border:1px solid var(&#45;&#45;border);border-radius:14px;padding:22px;margin-bottom:20px">-->
+<!--                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">-->
+<!--                        <div style="font-size:15px;font-weight:700;color:var(&#45;&#45;ink)">Thông tin cá nhân</div>-->
+<!--                        <button class="btn-renew" onclick="showToast('Chức năng chỉnh sửa đang phát triển')"><i class="ti ti-edit" style="font-size:12px"></i> Chỉnh sửa</button>-->
+<!--                    </div>-->
+<!--                    <div class="info-grid">-->
+<!--                        <div class="info-item"><div class="info-label">Họ và tên</div><div class="info-val">Nguyễn Thảo Vy</div></div>-->
+<!--                        <div class="info-item"><div class="info-label">Ngày sinh</div><div class="info-val">20/08/2001</div></div>-->
+<!--                        <div class="info-item"><div class="info-label">Email</div><div class="info-val">thaovy@email.com</div></div>-->
+<!--                        <div class="info-item"><div class="info-label">Số điện thoại</div><div class="info-val">0987 654 321</div></div>-->
+<!--                        <div class="info-item"><div class="info-label">Địa chỉ</div><div class="info-val">45 Đinh Tiên Hoàng, Hà Nội</div></div>-->
+<!--                        <div class="info-item"><div class="info-label">Nghề nghiệp</div><div class="info-val">Sinh viên</div></div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div style="background:#fff;border:1px solid var(&#45;&#45;border);border-radius:14px;padding:22px">-->
+<!--                    <div style="font-size:15px;font-weight:700;color:var(&#45;&#45;ink);margin-bottom:12px">Tiến trình thăng hạng 🥇</div>-->
+<!--                    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(&#45;&#45;muted);margin-bottom:6px"><span>320 điểm hiện tại</span><span>500 điểm → Hạng Vàng</span></div>-->
+<!--                    <div style="height:10px;background:var(&#45;&#45;border);border-radius:5px;overflow:hidden"><div style="height:100%;width:64%;background:linear-gradient(90deg,var(&#45;&#45;blue),#60A5FA);border-radius:5px"></div></div>-->
+<!--                    <div style="font-size:12px;color:var(&#45;&#45;muted);margin-top:6px">Còn 180 điểm nữa để đạt Hạng Vàng</div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+        </div><!-- /main-scroll -->
+
+    </div><!-- /content-wrap -->
+</div><!-- /app-body -->
+
+<!-- ══ NOTIFICATION PANEL ══ -->
+<div id="notifPanel" style="position:fixed;top:64px;right:12px;width:340px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);z-index:150;display:none;overflow:hidden;animation:modalIn .18s ease">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:15px;font-weight:700;color:var(--ink)">Thông báo</div>
+        <button onclick="markAllRead()" style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:500">Đánh dấu đã đọc</button>
+    </div>
+    <div id="notifPanelList"></div>
+</div>
+<div id="notifBackdrop" style="position:fixed;inset:0;z-index:149;display:none" onclick="closeNotifPanel()"></div>
+
+<!-- ══ BORROW MODAL ══ -->
+<div class="modal-overlay" id="borrowModal">
+    <div class="modal-box">
+        <div class="modal-title">Đặt mượn sách</div>
+        <div class="modal-sub">Gửi yêu cầu — thủ thư xác nhận và giữ sách 48 giờ</div>
+        <div class="modal-cover-row">
+            <div class="modal-book-art" id="mBorrowArt"></div>
+            <div style="flex:1">
+                <div class="modal-book-title" id="mBorrowTitle">—</div>
+                <div class="modal-book-author" id="mBorrowAuthor">—</div>
+                <div id="mBorrowAvail" style="font-size:12.5px;margin-bottom:4px"></div>
+                <div id="mBorrowShelf" style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px"><i class="ti ti-map-pin" style="color:var(--blue);font-size:12px"></i><span id="mBorrowShelfText">—</span></div>
+            </div>
+        </div>
+        <div class="modal-info-box"><i class="ti ti-info-circle" style="font-size:15px"></i><span>Sau khi gửi yêu cầu, thủ thư sẽ xác nhận và giữ sách trong <strong>48 giờ</strong>. Bạn đến thư viện lấy trực tiếp.</span></div>
+        <div class="form-field"><label class="form-label">Hình thức nhận</label>
+            <select class="form-select" id="mBorrowType">
+                <option value="pickup">Đến thư viện lấy trực tiếp</option>
+                <option value="ebook">Đọc E-Book online</option>
+            </select></div>
+        <div class="form-field"><label class="form-label">Thời hạn mượn</label>
+            <select class="form-select" id="mBorrowDur">
+                <option value="7">7 ngày</option><option value="14" selected>14 ngày</option>
+                <option value="21">21 ngày</option><option value="30">30 ngày</option>
+            </select></div>
+        <div class="form-field"><label class="form-label">Ghi chú cho thủ thư (tuỳ chọn)</label>
+            <input class="form-input" id="mBorrowNote" placeholder="Ví dụ: tôi sẽ đến vào buổi chiều..."/></div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal('borrowModal')">Huỷ</button>
+            <button class="btn-confirm" onclick="confirmBorrow()"><i class="ti ti-send" style="font-size:13px"></i>Gửi yêu cầu</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ RENEW MODAL ══ -->
+<div class="modal-overlay" id="renewModal">
+    <div class="modal-box" style="width:420px">
+        <div class="modal-title">Gia hạn mượn sách</div>
+        <div class="modal-sub" id="mRenewSub">—</div>
+        <div class="modal-info-box"><i class="ti ti-info-circle" style="font-size:15px"></i><span>Mỗi cuốn sách được gia hạn tối đa <strong>2 lần</strong>. Gia hạn có hiệu lực ngay.</span></div>
+        <div class="form-field"><label class="form-label">Gia hạn thêm</label>
+            <select class="form-select" id="mRenewDur">
+                <option value="7" selected>7 ngày</option><option value="14">14 ngày</option>
+            </select></div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal('renewModal')">Huỷ</button>
+            <button class="btn-confirm" onclick="confirmRenew()"><i class="ti ti-check" style="font-size:13px"></i>Xác nhận gia hạn</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ RETURN MODAL ══ -->
+<div class="modal-overlay" id="returnModal">
+    <div class="modal-box" style="width:400px">
+        <div class="modal-title">Trả sách</div>
+        <div class="modal-sub" id="mReturnSub">—</div>
+        <div style="background:var(--green-lt);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:var(--green);display:flex;gap:8px"><i class="ti ti-star" style="font-size:15px;flex-shrink:0"></i><span>Trả đúng hạn bạn nhận được <strong>+10 điểm tích lũy</strong>!</span></div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal('returnModal')">Huỷ</button>
+            <button class="btn-confirm" style="background:var(--green)" onclick="confirmReturn()"><i class="ti ti-check" style="font-size:13px"></i>Xác nhận trả</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ BOOK DETAIL MODAL ══ -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-box" style="width:520px">
+        <div style="display:flex;gap:16px;margin-bottom:16px">
+            <img id="dArt" style="width:100px;height:125px;border-radius:8px;flex-shrink:0"></img>
+            <div style="flex:1">
+                <div id="dTitle" style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--ink);margin-bottom:4px"></div>
+                <div id="dAuthor" style="font-size:13px;color:var(--muted);margin-bottom:8px"></div>
+                <div id="dBadges" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            </div>
+        </div>
+        <div class="detail-meta-grid" id="dMeta"></div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Mô tả</div>
+            <div id="dDesc" style="font-size:13.5px;line-height:1.75;color:var(--ink2)"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal('detailModal')">Đóng</button>
+            <button class="btn-renew" id="dReadBtn" style="display:none" onclick="closeModal('detailModal')">Đọc online</button>
+            <button class="btn-confirm" id="dBorrowBtn"><i class="ti ti-send" style="font-size:13px"></i>Đặt mượn</button>
+        </div>
+    </div>
+</div>
+
+<div class="chat-widget" th:replace="reader/layout/reader-chat :: reader-chat"></div>
+<!-- ══ READER OVERLAY ══ -->
+<div class="reader-overlay" id="readerOverlay">
+    <div class="reader-topbar">
+        <button class="reader-btn" onclick="closeReader()"><i class="ti ti-x" style="font-size:13px"></i> Đóng</button>
+        <div class="reader-title" id="readerTitle">—</div>
+        <button class="reader-btn"><i class="ti ti-settings" style="font-size:13px"></i></button>
+    </div>
+    <div class="reader-body">
+        <div class="reader-toc">
+            <div class="reader-toc-title">Mục lục</div>
+            <div id="readerToc"></div>
+        </div>
+        <div class="reader-content" id="readerContent"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="reader/layout/reader-sc :: reader-script"></div>
+</body>
+</html>

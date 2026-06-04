@@ -1,0 +1,34 @@
+<div class="sidebar" th:fragment="reader-sidebar">
+    <div class="sidebar-logo">
+        <div class="sidebar-logo-icon"><i class="ti ti-book"></i></div>
+        <div class="sidebar-logo-text">
+            <div class="sidebar-logo-title">LIBRARY SYSTEM</div>
+            <div class="sidebar-logo-sub">Hệ thống quản lý thư viện</div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="switchPage('home',this)"><i class="ti ti-home"></i>Trang chủ</button>
+        <button class="nav-item" onclick="switchPage('search',this)"><i class="ti ti-search"></i>Tìm kiếm sách</button>
+        <button class="nav-item" onclick="switchPage('mybooks',this)"><i class="ti ti-bookmark"></i>Sách của tôi<span class="nav-badge" id="myBooksBadge">2</span></button>
+        <button class="nav-item" onclick="switchPage('history',this)">
+            <i class="bi bi-clock-history"></i>Lịch sử mượn</button>
+        <button class="nav-item" onclick="switchPage('renew',this)"><i class="ti ti-refresh"></i>Gia hạn mượn</button>
+        <button class="nav-item" onclick="switchPage('requests',this)"><i class="ti ti-clipboard-list"></i>Yêu cầu đặt mượn<span class="nav-badge" id="reqNavBadge">1</span></button>
+
+        <button class="nav-item" onclick="switchPage('profile',this)"><i class="ti ti-user"></i>Tài khoản</button>
+    </nav>
+
+
+
+    <div class="sidebar-user">
+        <div class="user-card" onclick="switchPage('profile', document.querySelectorAll('.nav-item')[7])">
+            <div class="user-avatar"><span>TV</span></div>
+            <div>
+                <div class="user-name">Nguyễn Thảo Vy</div>
+                <div class="user-id">Mã độc giả: DG000123</div>
+            </div>
+            <i class="ti ti-chevron-right user-arrow"></i>
+        </div>
+    </div>
+</div>

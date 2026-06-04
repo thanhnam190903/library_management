@@ -18,15 +18,29 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: namthanh12303@gmail.com
-    password: usqjzriijlverwmo
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
+      file-size-threshold: 2KB
+
 server:
+  tomcat:
+    max-part-count: 50
   servlet:
     context-path: /qltv
     port: 8080
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}

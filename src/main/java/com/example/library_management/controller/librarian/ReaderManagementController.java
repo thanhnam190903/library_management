@@ -24,6 +24,7 @@ import java.util.Map;
 @Controller
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
+@RequestMapping("/quan-ly")
 public class ReaderManagementController {
     ReaderRepository readerRepository;
     BorrowDetailRepository borrowDetailRepository;
@@ -98,7 +99,7 @@ public class ReaderManagementController {
                     .build();
             libraryCardRepository.save(card);
             redirectAttrs.addFlashAttribute("success", "Thêm độc giả thành công!");
-            return "redirect:/readers";
+            return "redirect:/quan-ly/readers";
         }else {
             Reader existingReader = readerRepository.findById(reader.getId()).orElse(null);
             if (existingReader != null) {
@@ -120,10 +121,10 @@ public class ReaderManagementController {
                 }else {
                     redirectAttrs.addFlashAttribute("error", "Thẻ thư viện không tồn tại!");
                 }
-                return "redirect:/readers";
+                return "redirect:/quan-ly/readers";
             } else {
                 redirectAttrs.addFlashAttribute("error", "Độc giả không tồn tại!");
-                return "redirect:/readers";
+                return "redirect:/quan-ly/readers";
             }
         }
     }
@@ -137,7 +138,7 @@ public class ReaderManagementController {
         }else {
             redirectAttrs.addFlashAttribute("error", "Thẻ thư viện không tồn tại!");
         }
-        return "redirect:/readers";
+        return "redirect:/quan-ly/readers";
     }
 
 }

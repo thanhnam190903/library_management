@@ -46,7 +46,19 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="b : ${books}">
+                        <tr th:each="b : ${books}" th:data-title="${b.title}"
+                            th:data-author="${b.author.authorName}"
+                            th:data-image="${b.coverImage}"
+                            th:data-category="${b.category.categoryName}"
+                            th:data-isbn="${b.isbn}"
+                            th:data-avail="${availableMap[b.id]}"
+                            th:data-total="${b.quantity}"
+                            th:data-year="${b.publishYear}"
+                            th:data-publisher="${b.publisher.publisherName}"
+                            th:data-language="${b.language}"
+                            th:data-price="${b.price}"
+                            th:data-note="${b.note}"
+                            onclick="openBookDetailRow(this)">
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📗</div>
@@ -74,7 +86,7 @@
                                 978-604-1-22345-6
                             </td>
                             <td>
-                            <span style="font-family:'DM Mono',monospace;font-weight:600;" th:text="${b.quantity}">
+                            <span style="font-family:'DM Mono',monospace;font-weight:600;" th:text="${availableMap[b.id]} + '/' + ${b.quantity}">
                                 12/15
                             </span>
                             </td>
@@ -85,7 +97,7 @@
                             </span>
                             </td>
                             <td>
-                                <a class="action-btn" th:href="@{/books-management(id=${b.id})}">Xem</a>
+                                <a class="action-btn" onclick="event.stopPropagation()" th:href="@{/quan-ly/books-management(id=${b.id})}">Xem</a>
                                 <button class="action-btn" th:data-id="${b.id}"
                                         th:data-title="${b.title}"
                                         th:data-author="${b.author.authorName}"
@@ -98,6 +110,7 @@
                                         th:data-note="${b.note}"
                                         th:data-topic="${b.category.parent}"
                                         th:data-category="${b.category.id}"
+                                        th:data-image="${b.coverImage}"
                                         th:data-categoryname="${b.category.categoryName}"
                                         onclick="openEditBook(this)">Sửa</button>
                                 <a class="action-btn" th:data-id="${b.id}" onclick="confirmDelete(this)">Xóa</a>
@@ -114,13 +127,17 @@
 
 <!-- ════════ MODALS ════════ -->
 <div class="bl-modal-overlay" id="book-modal" onclick="closeModal('book-modal')">
-    <div class="bl-modal" onclick="event.stopPropagation()">
+    <div class="bl-modal book-detail-modal"
+         onclick="event.stopPropagation()">
         <div class="bl-modal-header">
-            <div class="bl-modal-book-icon" id="modal-book-icon" style="background:#fef3dc;">📗</div>
-            <div style="flex:1;">
+            <img id="modal-book-image" src="" alt="Ảnh bìa sách">
+            <div class="book-header-content">
                 <div class="bl-modal-book-title" id="modal-book-title">Đắc Nhân Tâm</div>
                 <div class="bl-modal-book-author" id="modal-book-author">Dale Carnegie</div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="bl-badge bl-badge-borrowed" id="modal-book-status">Đang mượn</span><span class="bl-badge bl-badge-silver" id="modal-book-genre">Kỹ năng sống</span></div>
+                <div class="book-badge-group">
+                    <span class="bl-badge" id="modal-book-status">Còn sách</span>
+                    <span class="bl-badge bl-badge-silver" id="modal-book-genre">Kỹ năng sống</span>
+                </div>
             </div>
             <button class="bl-modal-close" onclick="closeModal('book-modal')">✕</button>
         </div>
@@ -128,30 +145,41 @@
             <div class="detail-grid">
                 <div class="detail-item">
                     <div class="detail-label">ISBN</div>
-                    <div class="detail-value" id="modal-isbn" style="font-family:'DM Mono',monospace;font-size:13px;">978-604-1-22345-6</div>
+                    <div class="detail-value" id="modal-isbn"></div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Năm xuất bản</div>
-                    <div class="detail-value" id="modal-year">1936</div>
+                    <div class="detail-value" id="modal-year"></div>
                 </div>
-                <div class="detail-item"><div class="detail-label">Nhà xuất bản</div><div class="detail-value" id="modal-publisher">NXB Tổng Hợp</div></div>
-                <div class="detail-item"><div class="detail-label">Số lượng tồn</div><div class="detail-value" id="modal-qty" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--gold);">12 / 15</div></div>
+                <div class="detail-item">
+                    <div class="detail-label">Nhà xuất bản</div>
+                    <div class="detail-value" id="modal-publisher"></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Số lượng tồn</div>
+                    <div class="detail-value qty-value" id="modal-qty"></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Ngôn ngữ</div>
+                    <div class="detail-value" id="modal-language"></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Giá bìa</div>
+                    <div class="detail-value" id="modal-price"></div>
+                </div>
             </div>
-            <div style="font-size:13px;font-weight:600;color:var(--mist);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;">Lịch sử mượn gần đây</div>
-            <div class="borrow-history">
-                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rust));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">TL</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Trần Thị Lan</div><div style="font-size:11px;color:var(--mist);">Mượn 01/03/2026</div></div><span class="bl-badge bl-badge-borrowed">Đang mượn</span></div>
-                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#5a8cd0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">LM</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Lê Minh Tú</div><div style="font-size:11px;color:var(--mist);">15/02 – 01/03/2026</div></div><span class="bl-badge bl-badge-available">Đã trả</span></div>
-                <div class="borrow-history-item"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--forest),var(--forest-light));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">PH</div><div style="flex:1;margin-left:8px;"><div style="font-weight:500;">Phạm Hoàng Nam</div><div style="font-size:11px;color:var(--mist);">01/02 – 15/02/2026</div></div><span class="bl-badge bl-badge-available">Đã trả</span></div>
+            <div class="book-note-card">
+                <div class="detail-label">Mô tả sách</div>
+                <div id="modal-note" class="book-note"></div>
             </div>
-            <div style="display:flex;gap:10px;margin-top:20px;">
-                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;" onclick="closeModal('book-modal');goPage('borrow');showCircTab('borrow-tab')">↗ Tạo phiếu mượn</button>
-                <button class="bl-btn bl-btn-secondary">✏️ Chỉnh sửa</button>
+            <div style="display:flex;gap:12px;margin-top:20px;">
+                <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;"
+                        onclick="closeModal('book-modal');goPage('borrow');showCircTab('borrow-tab')">↗ Tạo phiếu mượn</button>
                 <button class="bl-btn bl-btn-danger">🗑️ Xóa</button>
             </div>
         </div>
     </div>
 </div>
-
 <div class="bl-modal-overlay" id="add-book-modal" onclick="closeModal('add-book-modal')">
     <div class="bl-modal" onclick="event.stopPropagation()">
         <div class="bl-modal-header">
@@ -162,7 +190,7 @@
             <button class="bl-modal-close" onclick="closeModal('add-book-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
-            <form th:action="@{/books}" method="post" th:object="${book}">
+            <form th:action="@{/books}" method="post" th:object="${book}" enctype="multipart/form-data">
                 <div class="bl-form-row">
                     <div class="bl-form-group">
                         <input type="hidden" id="edit-id" name="id">
@@ -197,7 +225,7 @@
                     </div>
                     <div class="bl-form-group">
                         <div class="bl-form-label">Năm xuất bản</div>
-                        <input class="bl-form-input" required name="publishyear" id="edit-publishyear" type="text" placeholder="2024">
+                        <input class="bl-form-input" required name="publishYear" id="edit-publishyear" type="text" placeholder="2024">
                     </div>
                 </div>
                 <div class="bl-form-row">
@@ -225,14 +253,21 @@
                         </select>
                     </div>
                 </div>
-                <div class="bl-form-row"><div class="bl-form-group">
-                    <div class="bl-form-label">Số lượng nhập *</div>
-                    <input class="bl-form-input" required id="edit-quantity" name="quantity" type="number" placeholder="0" min="1">
-                </div>
-                    <div class="bl-form-group">
+                <div class="row">
+                    <div class="bl-form-group col-6">
+                        <div class="bl-form-label">File ảnh</div>
+                        <input class="bl-form-input" type="file" name="image"  >
+                        <p id="edit-image"></p>
+                    </div>
+                    <div class="bl-form-group col-3">
+                        <div class="bl-form-label">Số lượng nhập *</div>
+                        <input class="bl-form-input" required id="edit-quantity" name="quantity" type="number" placeholder="0" min="1">
+                    </div>
+                    <div class="bl-form-group col-3">
                         <div class="bl-form-label">Giá bìa (VNĐ)</div>
                         <input class="bl-form-input" required id="edit-price" name="price" placeholder="0" style="font-family:'DM Mono',monospace;">
                     </div>
+
                 </div>
                 <div class="bl-form-group">
                     <div class="bl-form-label">Mô tả / Tóm tắt</div>
@@ -255,13 +290,29 @@
 function confirmDelete(element) {
     const cId = element.dataset.id;
     if (confirm("Bạn có chắc chắn muốn xóa đầu sách " + cId + " này?")) {
-        window.location.href = "/qltv/books?id=" + cId;
+        window.location.href = "/qltv/quan-ly/books?id=" + cId;
     }
 }
+function openBookDetailRow(row) {
 
+    const title = row.dataset.title || "";
+    const author = row.dataset.author || "";
+    const image = row.dataset.image || "";
+    const category = row.dataset.category || "";
+    const isbn = row.dataset.isbn || "";
+    const avail = row.dataset.avail || "0";
+    const total = row.dataset.total || "0";
+    const year = row.dataset.year || "";
+    const publisher = row.dataset.publisher || "";
+    const language = row.dataset.language || "";
+    const price = row.dataset.price || "0";
+    const note = row.dataset.note || "";
+
+    openBookDetail(title,author,image,category,isbn,avail,total,year,publisher,language,price,note);
+}
 function loadCategory(parent, selectedCategory = null) {
 
-    fetch("/qltv/get-category?parent=" + parent)
+    fetch("/qltv/quan-ly/get-category?parent=" + parent)
 
         .then(response => response.json())
 
@@ -312,12 +363,15 @@ document.getElementById('add-book-modal').classList.add('bl-open');
         document.getElementById("up-btn").innerText ="Cập nhật";
 console.log("quantity:", btn.dataset.quantity);
 console.log("price:", btn.dataset.price);
+console.log("image:", btn.dataset.publishyear);
         document.getElementById("edit-id").value = btn.dataset.id;
         document.getElementById("edit-title").value = btn.dataset.title;
         document.getElementById("edit-author").value = btn.dataset.author;
         document.getElementById("edit-isbn").value = btn.dataset.isbn;
         document.getElementById("edit-language").value = btn.dataset.language;
         document.getElementById("edit-nxb").value = btn.dataset.publisher;
+        document.getElementById("edit-image").innerText =
+        'File: ' + btn.dataset.image;
         document.getElementById("edit-publishyear").value = btn.dataset.publishyear;
         document.getElementById("edit-quantity").value = btn.dataset.quantity;
         document.getElementById("edit-price").value = btn.dataset.price;
