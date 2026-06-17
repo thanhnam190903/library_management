@@ -1,12 +1,7 @@
 package com.example.library_management.controller.librarian;
 
-import com.example.library_management.entity.BookCopy;
-import com.example.library_management.entity.BorrowDetail;
-import com.example.library_management.entity.BorrowSlip;
-import com.example.library_management.repository.BookCopyRepository;
-import com.example.library_management.repository.BorrowDetailRepository;
-import com.example.library_management.repository.BorrowSlipRepository;
-import com.example.library_management.repository.LibraryCardRepository;
+import com.example.library_management.entity.*;
+import com.example.library_management.repository.*;
 import com.example.library_management.service.EmailService;
 import com.example.library_management.service.IdGeneratorService;
 import lombok.AccessLevel;
@@ -32,6 +27,8 @@ public class BookReturnManagement {
     BookCopyRepository bookCopyRepository;
     BorrowDetailRepository borrowDetailRepository;
     BorrowSlipRepository borrowSlipRepository;
+    LibraryCardRepository libraryCardRepository;
+    LibararyRuleRepository libararyRuleRepository;
     EmailService mailService;
 
     @GetMapping("/find-return-slip")
@@ -46,13 +43,24 @@ public class BookReturnManagement {
         BorrowSlip slip = details.get(0).getBorrowSlip();
         long overdueDays = ChronoUnit.DAYS.between(slip.getDueDate(), LocalDate.now());
         overdueDays = Math.max(overdueDays, 0);
-        double fine = overdueDays * 5000;
+
+        double overdueRate = libararyRuleRepository.findByRuleKey("OVERDUE_FINE_PER_DAY")
+                .orElseThrow()
+                .getRuleValue();
+        System.out.println("quá hạn:" + overdueRate);
+        double lightDamageFine = libararyRuleRepository.findByRuleKey("LIGHT_DAMAGE_FINE")
+                .orElseThrow()
+                .getRuleValue();
+        System.out.println("Hỏng nhẹ:"+ lightDamageFine);
+
+        double fine = overdueDays * overdueRate;
         res.put("found", true);
         res.put("borrowDate", slip.getBorrowDate());
         res.put("readerName", slip.getLibraryCard().getReader().getName());
         res.put("dueDate", slip.getDueDate());
         res.put("overdueDays", overdueDays);
         res.put("fine", fine);
+        res.put("lightDamageFine",lightDamageFine);
         List<Map<String, Object>> list = new ArrayList<>();
         for (BorrowDetail d : details) {
             Map<String, Object> item = new HashMap<>();
@@ -63,6 +71,16 @@ public class BookReturnManagement {
         }
         res.put("details", list);
         return res;
+    }
+
+    @PostMapping("/update-rule")
+    public String updateRule(@RequestParam("rule-id") Integer id,
+                             @RequestParam("ruleValue") Double ruleValue, RedirectAttributes attributes){
+        LibraryRule libraryRule = libararyRuleRepository.findById(id).orElseThrow();
+        libraryRule.setRuleValue(ruleValue);
+        libararyRuleRepository.save(libraryRule);
+        attributes.addFlashAttribute("s", "Thay đổi phí phạt thành công!");
+        return "redirect:/quan-ly/borrowing?tab=return-tab";
     }
 
     @PostMapping("/return-book")
@@ -92,7 +110,19 @@ public class BookReturnManagement {
         }
         long overdueDays = ChronoUnit.DAYS.between(slip.getDueDate(), LocalDate.now());
         overdueDays = Math.max(overdueDays, 0);
-        double overdueFine = overdueDays * 5000;
+        if (overdueDays > 0) {
+            LibraryCard card = slip.getLibraryCard();
+            Integer overdueCount = card.getOverdueCount();
+            if (overdueCount == null) {
+                overdueCount = 0;
+            }
+            card.setOverdueCount(overdueCount + 1);
+            libraryCardRepository.save(card);
+        }
+        double overdueRate = libararyRuleRepository.findByRuleKey("OVERDUE_FINE_PER_DAY")
+                .orElseThrow()
+                .getRuleValue();
+        double overdueFine = overdueDays * overdueRate;
         double totalFine = overdueFine + totalPrice;
 
         slip.setTotalFine(totalFine);
@@ -158,5 +188,26 @@ public class BookReturnManagement {
             }
             default -> bookCopy.setCirculationStatus("available");
         }
+    }
+
+    @GetMapping("/renew-approve/{id}")
+    public String approveRenew(@PathVariable String id, RedirectAttributes redirectAttributes) {
+
+        BorrowSlip borrowSlip = borrowSlipRepository.findById(id).orElseThrow();
+        borrowSlip.setStatusRenewed(1);
+        borrowSlip.setOldDueDate(borrowSlip.getDueDate());
+        borrowSlip.setDueDate(borrowSlip.getDueDate().plusDays(borrowSlip.getRenewDays()));
+        borrowSlipRepository.save(borrowSlip);
+        redirectAttributes.addFlashAttribute("succe", "Gia hạn thành công");
+        return "redirect:/quan-ly/borrowing?tab=renewed-tab";
+    }
+    @GetMapping("/renew-reject/{id}")
+    public String rejectRenew(@PathVariable String id,
+                              RedirectAttributes redirectAttributes) {
+        BorrowSlip borrowSlip = borrowSlipRepository.findById(id).orElseThrow();
+        borrowSlip.setStatusRenewed(2);
+        borrowSlipRepository.save(borrowSlip);
+        redirectAttributes.addFlashAttribute("succe", "Đã từ chối yêu cầu gia hạn");
+        return "redirect:/quan-ly/borrowing?tab=renewed-tab";
     }
 }

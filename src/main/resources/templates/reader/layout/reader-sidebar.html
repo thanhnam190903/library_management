@@ -8,25 +8,31 @@
     </div>
 
     <nav class="sidebar-nav">
-        <button class="nav-item active" onclick="switchPage('home',this)"><i class="ti ti-home"></i>Trang chủ</button>
-        <button class="nav-item" onclick="switchPage('search',this)"><i class="ti ti-search"></i>Tìm kiếm sách</button>
-        <button class="nav-item" onclick="switchPage('mybooks',this)"><i class="ti ti-bookmark"></i>Sách của tôi<span class="nav-badge" id="myBooksBadge">2</span></button>
-        <button class="nav-item" onclick="switchPage('history',this)">
-            <i class="bi bi-clock-history"></i>Lịch sử mượn</button>
-        <button class="nav-item" onclick="switchPage('renew',this)"><i class="ti ti-refresh"></i>Gia hạn mượn</button>
-        <button class="nav-item" onclick="switchPage('requests',this)"><i class="ti ti-clipboard-list"></i>Yêu cầu đặt mượn<span class="nav-badge" id="reqNavBadge">1</span></button>
+        <a class="nav-item" th:href="@{/home}" th:classappend="${activePage == 'home'} ? 'active' : ''">
+            <i class="ti ti-home"></i>Trang chủ</a>
+        <a class="nav-item" th:href="@{/home/search}" th:classappend="${activePage == 'search'} ? 'active' : ''">
+            <i class="ti ti-search"></i>Tìm kiếm sách</a>
+        <a class="nav-item" sec:authorize="hasRole('READER')" th:href="@{/home/my-book}" th:classappend="${activePage == 'my-book'} ? 'active' : ''">
+            <i class="ti ti-bookmark"></i>Sách của tôi
+            <span class="nav-badge" id="myBooksBadge" th:if="${readerBorrowingCount != null}" th:text="${readerBorrowingCount}">2</span>
+        </a>
+        <a class="nav-item" sec:authorize="hasRole('READER')" th:href="@{/home/history}" th:classappend="${activePage == 'history'} ? 'active' : ''">
+            <i class="bi bi-clock-history"></i>Lịch sử mượn</a>
+        <a class="nav-item" sec:authorize="hasRole('READER')" th:href="@{/home/borrow-request}" th:classappend="${activePage == 'request'} ? 'active' : ''">
+            <i class="ti ti-clipboard-list"></i>Yêu cầu đặt
+            mượn<span class="nav-badge" id="reqNavBadge" th:if="${readerBorrowingRequest != null}" th:text="${readerBorrowingRequest}">1</span></a>
 
-        <button class="nav-item" onclick="switchPage('profile',this)"><i class="ti ti-user"></i>Tài khoản</button>
+        <a class="nav-item" sec:authorize="hasRole('READER')" th:href="@{/home/profile}" th:classappend="${activePage == 'profile'} ? 'active' : ''">
+            <i class="ti ti-user"></i>Tài khoản</a>
     </nav>
 
 
-
-    <div class="sidebar-user">
+    <div class="sidebar-user" th:if="${reader != null}">
         <div class="user-card" onclick="switchPage('profile', document.querySelectorAll('.nav-item')[7])">
             <div class="user-avatar"><span>TV</span></div>
             <div>
-                <div class="user-name">Nguyễn Thảo Vy</div>
-                <div class="user-id">Mã độc giả: DG000123</div>
+                <div class="user-name" th:text="${reader.name}">Nguyễn Thảo Vy</div>
+                <div class="user-id" th:text="${'Mã độc giả: ' + reader.cards[0].id}">Mã độc giả: DG000123</div>
             </div>
             <i class="ti ti-chevron-right user-arrow"></i>
         </div>

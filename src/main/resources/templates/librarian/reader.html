@@ -15,12 +15,37 @@
         <div class="bl-page" id="page-members" style="display:block;">
             <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
                 <div>
-                    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
-                        <div class="bl-search-bar" style="flex:1;min-width:220px;"><span style="color:var(--mist);">🔍</span><input type="text" placeholder="Tìm theo tên, mã thẻ, số điện thoại..."></div>
-                        <select class="bl-filter-select"><option>Tất cả hạng thẻ</option><option>Hội viên Vàng</option><option>Hội viên Bạc</option><option>Hội viên Thường</option></select>
-                        <select class="bl-filter-select"><option>Tất cả trạng thái</option><option>Đang hoạt động</option><option>Hết hạn</option><option>Khóa</option></select>
-                        <button class="bl-btn bl-btn-primary" onclick="openAddMember()">➕ Đăng ký mới</button>
+                    <div style="gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+                        <form method="get" th:action="@{/quan-ly/readers}"
+                              style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+
+                            <div class="bl-search-bar" style="flex:1;min-width:220px;">
+                                <span style="color:var(--mist);">🔍</span>
+                                <input type="text" name="keyword" id="searchInput"
+                                       th:value="${keyword}"
+                                       placeholder="Tìm theo tên, mã thẻ, số điện thoại..."
+                                       autocomplete="off">
+                            </div>
+
+                            <select class="bl-filter-select" name="status"
+                                    onchange="this.form.submit()">
+                                <option value="all"
+                                        th:selected="${status == 'all'}">Tất cả trạng thái</option>
+                                <option value="active"
+                                        th:selected="${status == 'active'}">Đang hoạt động</option>
+                                <option value="expired"
+                                        th:selected="${status == 'expired'}">Hết hạn</option>
+                            </select>
+
+                            <!-- giữ nguyên page = 0 khi search mới -->
+                            <input type="hidden" name="page" value="0">
+
+                            <button type="submit" class="bl-btn bl-btn-secondary">Tìm</button>
+                            <button type="button" class="bl-btn bl-btn-primary"
+                                    onclick="openAddMember()">➕ Đăng ký mới</button>
+                        </form>
                     </div>
+
                     <div class="bl-panel">
                         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
                             <i class="bi bi-check-circle me-2"></i>
@@ -38,44 +63,96 @@
                             <tr>
                                 <th>Đọc giả</th>
                                 <th>Liên hệ</th>
-                                <th>Đang mượn</th>
+                                <th>Địa chỉ</th>
                                 <th>Hết hạn</th>
                                 <th>Trạng thái</th>
                                 <th></th>
                             </tr>
                             </thead>
                             <tbody>
-                            <th:block th:each="r : ${readerList}">
-                            <tr th:each="c :${r.cards}"  th:attr="onclick=|showMemberProfile('${r.id}','${r.gender}','${r.address}','${r.birthDate}','${r.name}',
+                            <th:block th:each="r : ${readerPage.content}">
+                                <tr th:each="c :${r.cards}" th:attr="onclick=|showMemberProfile('${borrowingMap[r.id]}','${overdueMap[r.id]}','${r.id}','${r.gender}','${r.address}','${r.birthDate}','${r.name}',
                                                             '${#strings.toUpperCase(#strings.substring(r.name.split(' ')[r.name.split(' ').length - 2],0,1) +
                                                              #strings.substring(r.name.split(' ')[r.name.split(' ').length - 1],0,1))}',
                                                             '#c9963a,#e8c06a','${r.readerType}','${c.id}','${r.phone}','${r.email}','${c.issueDate}',
                                                             '${#temporals.format(r.birthDate, 'dd-MM-yyyy')}','${c.totalBorrow}',
-                                                            '${c.overdueCount}','${#temporals.format(c.expiryDate, 'dd-MM-yyyy')}')|" style="cursor:pointer;">
-                                <td>
-                                    <div style="display:flex;align-items:center;gap:10px;">
-                                        <div class="member-table-avatar" style="background:linear-gradient(135deg,var(--gold),var(--rust));" th:text="${#strings.toUpperCase(
+                                                            '${c.overdueCount}','${#temporals.format(c.expiryDate, 'dd-MM-yyyy')}')|"
+                                    style="cursor:pointer;">
+                                    <td>
+                                        <div style="display:flex;align-items:center;gap:10px;">
+                                            <div class="member-table-avatar"
+                                                 style="background:linear-gradient(135deg,var(--gold),var(--rust));"
+                                                 th:text="${#strings.toUpperCase(
                                 #strings.substring(r.name.split(' ')[r.name.split(' ').length - 2],0,1) +
                                 #strings.substring(r.name.split(' ')[r.name.split(' ').length - 1],0,1))}"></div>
-                                        <div>
-                                            <div style="font-weight:500;" th:text="${r.name}">Trần Thị Lan</div>
-                                            <div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;" th:text="${c.id}">#1042</div>
+                                            <div>
+                                                <div style="font-weight:500;" th:text="${r.name}">Trần Thị Lan</div>
+                                                <div style="font-size:11px;color:var(--mist);font-family:'DM Mono',monospace;"
+                                                     th:text="${c.id}">#1042
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td style="font-size:12px;color:var(--mist);" th:text="${r.phone}">0912 345 678</td>
-                                <td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;" th:text="${borrowingMap[r.id]}"></td>
-                                <td style="font-size:12px;font-family:'DM Mono',monospace;" th:text="${#temporals.format(c.expiryDate, 'dd-MM-yyyy')}">31/12/2026</td>
-                                <td><span class="bl-badge bl-badge-active" th:classappend="${c.status} ? ' bl-badge-active' : ' bl-badge-inactive'" th:text="${c.status} ? 'Hoạt động' : 'Hết hạn'">Hoạt động</span></td>
-                                <td>
-                                    <button th:if="${!c.status}" th:data-idcard="${c.id}" th:data-name="${r.name}" class="action-btn" onclick="confirmCardRenewal(this)">Gia Hạn</button>
-                                    <button class="action-btn">Xem</button>
-                                </td>
-                            </tr>
+                                    </td>
+                                    <td style="font-size:12px;color:var(--mist);" th:text="${r.phone}">0912 345 678</td>
+                                    <td style="font-size:12px;color:var(--mist);"
+                                        th:text="${r.address}"></td>
+                                    <td style="font-size:12px;font-family:'DM Mono',monospace;"
+                                        th:text="${#temporals.format(c.expiryDate, 'dd-MM-yyyy')}">31/12/2026
+                                    </td>
+                                    <td><span class="bl-badge bl-badge-active"
+                                              th:classappend="${c.status} ? ' bl-badge-active' : ' bl-badge-inactive'"
+                                              th:text="${c.status} ? 'Hoạt động' : 'Hết hạn'">Hoạt động</span></td>
+                                    <td>
+                                        <button th:if="${!c.status}" th:data-idcard="${c.id}" th:data-name="${r.name}"
+                                                class="action-btn" onclick="confirmCardRenewal(this)">Gia Hạn
+                                        </button>
+                                        <button class="action-btn">Xem</button>
+                                    </td>
+                                </tr>
                             </th:block>
                             </tbody>
                         </table>
-                        <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;"><div style="font-size:13px;color:var(--mist);">Hiển thị 6 / 1,584 hội viên</div><div style="display:flex;gap:6px;"><button class="action-btn">‹</button><button class="action-btn" style="border-color:var(--gold);color:var(--gold);">1</button><button class="action-btn">2</button><button class="action-btn">3</button><button class="action-btn">›</button></div></div>
+                        <div style="padding:14px 18px;border-top:1px solid var(--border);
+                                    display:flex;align-items:center;justify-content:space-between;">
+
+                            <div style="font-size:13px;color:var(--mist);"
+                                 th:text="'Hiển thị ' + ${readerPage.numberOfElements}
+                                          + ' / ' + ${totalElements} + ' hội viên'">
+                            </div>
+
+                            <div style="display:flex;gap:6px;align-items:center;">
+
+                                <!-- Prev -->
+                                <a th:if="${currentPage > 0}"
+                                   th:href="@{/quan-ly/readers(keyword=${keyword},status=${status},page=${currentPage-1})}"
+                                   class="action-btn">‹</a>
+                                <span th:if="${currentPage == 0}"
+                                      class="action-btn" style="opacity:.4;cursor:default;">‹</span>
+
+                                <!-- Page numbers (hiện tối đa 5 trang quanh trang hiện tại) -->
+                                <th:block th:with="
+                                    start=${T(java.lang.Math).max(0, currentPage-2)},
+                                    end=${T(java.lang.Math).min(totalPages-1, currentPage+2)}">
+                                    <th:block th:each="i : ${#numbers.sequence(start, end)}">
+                                        <a th:if="${i != currentPage}"
+                                           th:href="@{/quan-ly/readers(keyword=${keyword},status=${status},page=${i})}"
+                                           class="action-btn"
+                                           th:text="${i+1}">1</a>
+                                        <span th:if="${i == currentPage}"
+                                              class="action-btn"
+                                              style="border-color:var(--gold);color:var(--gold);font-weight:600;"
+                                              th:text="${i+1}">1</span>
+                                    </th:block>
+                                </th:block>
+
+                                <!-- Next -->
+                                <a th:if="${currentPage < totalPages-1}"
+                                   th:href="@{/quan-ly/readers(keyword=${keyword},status=${status},page=${currentPage+1})}"
+                                   class="action-btn">›</a>
+                                <span th:if="${currentPage >= totalPages-1}"
+                                      class="action-btn" style="opacity:.4;cursor:default;">›</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -95,20 +172,47 @@
                         </div>
                         <div class="profile-body">
                             <div class="profile-stat-row">
-                                <div class="profile-stat"><div class="profile-stat-num" style="color:var(--gold);" id="prof-total">24</div><div class="profile-stat-lbl">Tổng mượn</div></div>
-                                <div class="profile-stat"><div class="profile-stat-num" style="color:var(--rust);" id="prof-overdue">2</div><div class="profile-stat-lbl">Quá hạn</div></div>
-                                <div class="profile-stat"><div class="profile-stat-num" style="color:var(--forest);" id="prof-current">3</div><div class="profile-stat-lbl">Đang mượn</div></div>
+                                <div class="profile-stat">
+                                    <div class="profile-stat-num" style="color:var(--gold);" id="prof-total">24</div>
+                                    <div class="profile-stat-lbl">Tổng mượn</div>
+                                </div>
+                                <div class="profile-stat">
+                                    <div class="profile-stat-num" style="color:var(--rust);" id="prof-overdue">2</div>
+                                    <div class="profile-stat-lbl">Quá hạn</div>
+                                </div>
+                                <div class="profile-stat">
+                                    <div class="profile-stat-num" style="color:var(--forest);" id="prof-current">3</div>
+                                    <div class="profile-stat-lbl">Đang mượn</div>
+                                </div>
                             </div>
                             <div id="prof-info">
-                                <div class="profile-info-row"><span class="profile-info-icon">📱</span><span class="profile-info-label">Điện thoại</span><span class="profile-info-val" id="val-phone">0912 345 678</span></div>
-                                <div class="profile-info-row"><span class="profile-info-icon">📧</span><span class="profile-info-label">Email</span><span class="profile-info-val" style="font-size:12px;" id="val-email">
-                                    <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e68a8788c892948788a6838b878f8ac885898b" >[email&#160;protected]</a></span></div>
-                                <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span class="profile-info-label">Ngày sinh</span><span class="profile-info-val" id="val-date-birth">12/01/1995</span></div>
-                                <div class="profile-info-row"><span class="profile-info-icon">📅</span><span class="profile-info-label">Hết hạn</span><span class="profile-info-val" id="val-date-issua">31/12/2026</span></div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📱</span><span
+                                        class="profile-info-label">Điện thoại</span><span class="profile-info-val"
+                                                                                          id="val-phone">0912 345 678</span>
+                                </div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📧</span><span
+                                        class="profile-info-label">Email</span><span class="profile-info-val"
+                                                                                     style="font-size:12px;"
+                                                                                     id="val-email">
+                                    <a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                                       data-cfemail="e68a8788c892948788a6838b878f8ac885898b">[email&#160;protected]</a></span>
+                                </div>
+                                <div class="profile-info-row"><span class="profile-info-icon">🎂</span><span
+                                        class="profile-info-label">Ngày sinh</span><span class="profile-info-val"
+                                                                                         id="val-date-birth">12/01/1995</span>
+                                </div>
+                                <div class="profile-info-row"><span class="profile-info-icon">📅</span><span
+                                        class="profile-info-label">Hết hạn</span><span class="profile-info-val"
+                                                                                       id="val-date-issua">31/12/2026</span>
+                                </div>
                             </div>
                             <div style="display:flex;gap:8px;margin-top:16px;">
-                                <button class="bl-btn bl-btn-primary" onclick="editReader()" style="flex:1;justify-content:center;font-size:12px;">✏️ Chỉnh sửa</button>
-                                <button class="bl-btn bl-btn-secondary" style="font-size:12px;" onclick="printCard()">🖨️ In thẻ</button>
+                                <button class="bl-btn bl-btn-primary" onclick="editReader()"
+                                        style="flex:1;justify-content:center;font-size:12px;">✏️ Chỉnh sửa
+                                </button>
+                                <button class="bl-btn bl-btn-secondary" style="font-size:12px;" onclick="printCard()">
+                                    🖨️ In thẻ
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -118,74 +222,96 @@
     </div><!-- /content -->
 </div><!-- /main -->
 
-<div class="bl-modal-overlay" id="add-member-modal" onclick="closeModal('add-member-modal')">
+<div class="bl-modal-overlay" id="add-member-modal"
+     onclick="closeModal('add-member-modal')">
     <div class="bl-modal" onclick="event.stopPropagation()">
         <div class="bl-modal-header">
-            <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
-            <div><div class="bl-modal-book-title" id="modalTitle">Đăng ký hội viên mới</div><div class="bl-modal-book-author">Tạo tài khoản thẻ thư viện</div></div>
-            <button class="bl-modal-close" onclick="closeModal('add-member-modal')">✕</button>
+            <div class="bl-modal-book-icon"
+                 style="background:#e8f0fb;font-size:28px;">👤</div>
+            <div>
+                <div class="bl-modal-book-title" id="modalTitle">Đăng ký hội viên mới</div>
+                <div class="bl-modal-book-author">Tạo tài khoản thẻ thư viện</div>
+            </div>
+            <button class="bl-modal-close"
+                    onclick="closeModal('add-member-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
-            <form th:action="@{/quan-ly/readers}" method="post" th:object="${reader}">
-            <div class="bl-form-row">
-                <div class="bl-form-group">
-                    <input type="hidden" id="edit-id" name="id">
-                   <div class="bl-form-label">Họ và tên *</div>
-                   <input class="bl-form-input" required id="edit-name" name="name" placeholder="Nhập họ tên đầy đủ...">
-                </div>
-                <div class="bl-form-group">
-                    <div class="bl-form-label">Giới tính *</div>
-                    <input class="" name="gender" id="gender-male" type="radio" value="Nam" checked style="margin-top:10px;margin-right:5px;">Nam
-                    <input class="" name="gender" id="gender-female" type="radio" value="Nữ" style="margin-left:13px;margin-right:5px;">Nữ
-                </div>
-            </div>
-            <div class="bl-form-row">
-                <div class="bl-form-group">
-                    <div class="bl-form-label" >Ngày sinh *</div>
-                    <input class="bl-form-input" required id="edit-birthdate" name="birthDate" type="date">
-                </div>
-                <div class="bl-form-group">
-                    <div class="bl-form-label">Số điện thoại *</div>
-                    <input class="bl-form-input" required id="edit-phone" name="phone" placeholder="09xx xxx xxx">
-                </div>
-            </div>
-            <div class="" id="edit-row">
-                <div class="bl-form-group">
-                    <div class="bl-form-label">Địa chỉ</div>
-                    <input class="bl-form-input" required id="edit-address" name="address" placeholder="Số nhà, đường, phường/xã, quận/huyện...">
-                </div>
-                <div class="bl-form-group" id="issua-group" >
-                    <input type="hidden" id="id-card" name="idCard">
-                    <div class="bl-form-label" >Ngày Tạo *</div>
-                    <input class="bl-form-input" required id="edit-issua" name="issuaDate" type="date">
-                </div>
-            </div>
-            <div class="bl-form-row">
-                <div class="bl-form-group">
-                    <div class="bl-form-label">Email</div>
-                    <input class="bl-form-input" required id="edit-email" name="email" type="email" placeholder="email@domain.com">
-                </div>
-                <div class="bl-form-group">
-                    <div class="bl-form-label">Đối tượng</div>
-                    <select class="bl-form-input" id="edit-reader-type" name="readerType" required>
-                        <option value="Khách">Khách</option>
-                        <option value="Học sinh">Học Sinh</option>
-                        <option value="Giáo viên">Giáo viên</option>
-                        <option value="Cán bộ">Cán bộ</option>
-                        <option value="Hưu chí">Hưu Chí</option>
-                        <option value="Nhân dân">Nhân dân</option>
-                    </select>
+            <form id="reader-form" th:action="@{/quan-ly/readers}" method="post" >
+                <!-- ID -->
+                <input type="hidden" id="edit-id" name="id">
+
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Họ và tên *</div>
+                        <input class="bl-form-input" name="name" id="edit-name" required>
+                    </div>
+
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Giới tính *</div>
+                        <div style="margin-top:10px;">
+                            <label>
+                                <input type="radio" name="gender" value="Nam" checked> Nam
+                            </label>
+                            <label style="margin-left:15px;">
+                                <input type="radio" name="gender" value="Nữ"> Nữ
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
-            </div>
-            <div style="display:flex;gap:10px;">
-                <button class="bl-btn bl-btn-primary" id="up-btn" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký &amp; In thẻ</button>
-                <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('add-member-modal')">Hủy</button>
-            </div>
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Ngày sinh *</div>
+                        <input class="bl-form-input" type="date" name="birthDate" id="edit-birthdate" required>
+                    </div>
+
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Số điện thoại *</div>
+                        <input class="bl-form-input" name="phone" id="edit-phone" required>
+                    </div>
+                </div>
+
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Địa chỉ</div>
+                    <input class="bl-form-input" name="address" id="edit-address" required>
+                </div>
+
+                <div class="bl-form-row">
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Email</div>
+                        <input class="bl-form-input" type="email" name="email" id="edit-email">
+                    </div>
+
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Đối tượng</div>
+                        <select class="bl-form-input" name="readerType" id="edit-reader-type">
+                            <option value="Khách">Khách</option>
+                            <option value="Học sinh">Học sinh</option>
+                            <option value="Giáo viên">Giáo viên</option>
+                            <option value="Cán bộ">Cán bộ</option>
+                            <option value="Hưu chí">Hưu chí</option>
+                            <option value="Nhân dân">Nhân dân</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                    <button type="submit" class="bl-btn bl-btn-primary" id="up-btn" style="flex:1;">
+                        ✓ Đăng ký & In thẻ
+                    </button>
+
+                    <button type="button"
+                            class="bl-btn bl-btn-secondary"
+                            onclick="closeModal('add-member-modal')">
+                        Hủy
+                    </button>
+                </div>
+
             </form>
         </div>
     </div>
 </div>
+
 <script th:replace="layout/script :: script"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -197,46 +323,40 @@
         window.location.href = "/qltv/quan-ly/readers?id=" + cId;
     }
 }
-    function editReader(){
-    document.getElementById('add-member-modal').classList.add('bl-open');
-    document.getElementById("modalTitle").innerText ="Cập nhật hội viên";
-    document.getElementById("up-btn").innerText ="Cập nhật";
+    function editReader() {
 
-    const id = document.getElementById("id-reader").textContent;
-    const name = document.getElementById("prof-name").textContent;
-    const gender = document.getElementById("gender").textContent;
-    const address = document.getElementById("address-prof").textContent;
-    const readerType = document.getElementById("reader-type").textContent;
-    const phone = document.getElementById("val-phone").textContent;
-    const email = document.getElementById("val-email").textContent;
-    const dob = document.getElementById("birth-show").textContent;
-    const issua = document.getElementById("issua-date").textContent;
-    const idCard = document.getElementById("prof-id").textContent;
-
-    console.log("id:", id);
-    console.log("name:", name);
-    console.log("gender:", gender);
-    console.log("address:", address);
-    console.log("readerType:", readerType);
-    console.log("phone:", phone);
-    console.log("email:", email);
-    console.log("dob:", dob);
-
-    document.getElementById("edit-id").value = id;
-    document.getElementById("id-card").value = idCard;
-    if(id){
-        document.getElementById("edit-row").classList.add("bl-form-row");
-    }else{
-        document.getElementById("edit-row").classList.remove("bl-form-row");
+    const id = document.getElementById('id-reader')?.value;
+    if (!id) {
+        alert('Vui lòng chọn một độc giả trước!');
+        return;
     }
-    document.getElementById("edit-issua").value = issua;
-    document.querySelector('input[name="gender"]:checked').value = gender;
-    document.getElementById("edit-address").value = address;
-    document.getElementById("edit-reader-type").value = readerType;
-    document.getElementById("edit-phone").value = phone;
-    document.getElementById("edit-email").value = email;
-    document.getElementById("edit-birthdate").value = dob;
-    document.getElementById("edit-name").value = name;
+
+    const name = document.getElementById('prof-name')?.textContent || '';
+    const gender = document.getElementById('hidden-gender')?.value || 'Nam';
+    const address = document.getElementById('address-prof')?.value || '';
+    const readerType = document.getElementById('reader-type')?.textContent || 'Khách';
+    const phone = document.getElementById('val-phone')?.textContent || '';
+    const email = document.getElementById('val-email')?.textContent || '';
+    const dob = document.getElementById('birth-show')?.textContent || '';
+
+    // fill form
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-phone').value = phone;
+    document.getElementById('edit-email').value = email;
+    document.getElementById('edit-address').value = address;
+    document.getElementById('edit-birthdate').value = dob;
+    document.getElementById('edit-reader-type').value = readerType;
+
+    const genderRadio =
+        document.querySelector(`input[name="gender"][value="${gender}"]`);
+    if (genderRadio) genderRadio.checked = true;
+
+    document.getElementById('modalTitle').innerText = 'Cập nhật hội viên';
+    document.getElementById('up-btn').innerText = '✓ Cập nhật';
+
+    document.getElementById('add-member-modal')
+        .classList.add('bl-open');
 }
 
     function printCard(){
@@ -337,6 +457,57 @@
 
     printWindow.document.close();
     printWindow.print();
+}
+
+function showMemberProfile(borrowingMap,overdueMap,idReader, gender, address, birth, name,
+    initials, gradient, readerType,id, phone, email, issua, dob,total, overdue, expiry) {
+
+    const av = document.getElementById('prof-avatar');
+    av.textContent = initials;
+    av.style.background = `linear-gradient(135deg,${gradient})`;
+
+    document.getElementById('prof-current').textContent= borrowingMap || 0;
+    document.getElementById('prof-overdue').textContent= overdueMap;
+    document.getElementById('issua-date').textContent = issua;
+    document.getElementById('birth-show').textContent = birth;
+
+    // ✅ FIX QUAN TRỌNG
+    document.getElementById('id-reader').value = idReader;
+    document.getElementById('gender').value = gender;
+    document.getElementById('address-prof').value = address;
+    document.getElementById('reader-type').value = readerType;
+
+    document.getElementById('prof-name').textContent = name;
+    document.getElementById('prof-id').textContent = id;
+
+    document.getElementById('prof-total').textContent = total;
+    document.getElementById('prof-overdue').textContent = overdue;
+
+    document.getElementById('prof-info').innerHTML = `
+        <div class="profile-info-row">
+            <span class="profile-info-icon">📱</span>
+            <span class="profile-info-label">Điện thoại</span>
+            <span class="profile-info-val" id="val-phone">${phone}</span>
+        </div>
+
+        <div class="profile-info-row">
+            <span class="profile-info-icon">📧</span>
+            <span class="profile-info-label">Email</span>
+            <span class="profile-info-val" id="val-email">${email}</span>
+        </div>
+
+        <div class="profile-info-row">
+            <span class="profile-info-icon">🎂</span>
+            <span class="profile-info-label">Ngày sinh</span>
+            <span class="profile-info-val" id="val-date-birth">${dob}</span>
+        </div>
+
+        <div class="profile-info-row">
+            <span class="profile-info-icon">📅</span>
+            <span class="profile-info-label">Hết hạn</span>
+            <span class="profile-info-val" id="val-date-issua">${expiry}</span>
+        </div>
+    `;
 }
 </script>
 </body>

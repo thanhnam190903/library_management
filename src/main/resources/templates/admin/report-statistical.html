@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/head :: head"></head>
+<body>
+
+<!-- ════════ SIDEBAR ════════ -->
+<aside th:replace="layout/aside :: aside"></aside>
+
+<!-- ════════ MAIN ════════ -->
+<div class="bl-main">
+    <header th:replace="layout/header :: header"></header>
+    <div class="bl-content">
+
+        <!-- ══════ PAGE: STATS ══════ -->
+        <div class="bl-page" id="page-stats">
+
+            <!-- ── Bộ lọc ─────────────────────────────────────────────── -->
+            <form method="get" th:action="@{/quan-ly/statistics}"
+                  style="display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;">
+
+                <div style="display:flex;gap:4px;background:var(--paper);border:1.5px solid var(--border);border-radius:10px;padding:4px;">
+                    <button type="submit" name="period" value="week"
+                            th:classappend="${period == 'week'} ? ' active'"
+                            class="circ-tab" style="padding:7px 16px;font-size:12px;">Tuần này</button>
+                    <button type="submit" name="period" value="month"
+                            th:classappend="${period == 'month'} ? ' active'"
+                            class="circ-tab" style="padding:7px 16px;font-size:12px;">Tháng này</button>
+                    <button type="submit" name="period" value="quarter"
+                            th:classappend="${period == 'quarter'} ? ' active'"
+                            class="circ-tab" style="padding:7px 16px;font-size:12px;">Quý này</button>
+                    <button type="submit" name="period" value="year"
+                            th:classappend="${period == 'year'} ? ' active'"
+                            class="circ-tab" style="padding:7px 16px;font-size:12px;"
+                            th:text="'Năm ' + ${currentYear}">Năm 2026</button>
+                </div>
+
+                <input class="bl-filter-select" type="date" name="from" id="fromDate"
+                       th:value="${fromValue}"
+                       onchange="submitCustomRange()">
+                <span style="color:var(--mist);font-size:13px;">đến</span>
+                <input class="bl-filter-select" type="date" name="to" id="toDate"
+                       th:value="${toValue}"
+                       onchange="submitCustomRange()">
+                <!-- hidden field để gửi period=custom khi đổi date -->
+
+
+                <button type="button" class="bl-btn bl-btn-secondary"
+                        style="margin-left:auto;"
+                        onclick="window.location.href='/qltv/quan-ly/statistics/export?from='+document.getElementById('fromDate').value+'&amp;to='+document.getElementById('toDate').value">
+                    📥 Xuất báo cáo
+                </button>
+                <button type="button" class="bl-btn bl-btn-primary" onclick="window.print()">
+                    🖨️ In báo cáo
+                </button>
+            </form>
+
+            <!-- ── KPI Cards ──────────────────────────────────────────── -->
+            <div class="stats-overview">
+
+                <!-- Tổng đầu sách -->
+                <div class="stat-card" style="animation-delay:.05s;">
+                    <div class="stat-icon-box" style="background:#fef3dc;">📚</div>
+                    <div class="stat-num"
+                         th:text="${#numbers.formatInteger(stats.totalBooks, 1, 'COMMA')}">8,247</div>
+                    <div class="stat-lbl">Tổng đầu sách</div>
+                    <div class="stat-trend-row">
+                        <span class="trend-pill"
+                              th:classappend="${stats.totalBooksDiff >= 0} ? ' trend-up' : ' trend-down'"
+                              th:text="${stats.totalBooksDiff >= 0 ? '+' : ''} + ${stats.totalBooksDiff}">+42</span>
+                        <span class="trend-lbl">so tháng trước</span>
+                    </div>
+                </div>
+
+                <!-- Đang cho mượn -->
+                <div class="stat-card" style="animation-delay:.10s;">
+                    <div class="stat-icon-box" style="background:#fdeee9;">↗</div>
+                    <div class="stat-num" th:text="${stats.currentlyBorrowing}">312</div>
+                    <div class="stat-lbl">Đang cho mượn</div>
+                    <div class="stat-trend-row">
+                        <span class="trend-pill"
+                              th:classappend="${stats.borrowingChangePct >= 0} ? ' trend-up' : ' trend-down'"
+                              th:text="${stats.borrowingChangePct >= 0 ? '+' : ''}
+                                       + ${#numbers.formatDecimal(stats.borrowingChangePct,1,1)} + '%'">+18%</span>
+                        <span class="trend-lbl">vs tuần trước</span>
+                    </div>
+                </div>
+
+                <!-- Hội viên tích cực -->
+                <div class="stat-card" style="animation-delay:.15s;">
+                    <div class="stat-icon-box" style="background:#e6f2ec;">👥</div>
+                    <div class="stat-num"
+                         th:text="${#numbers.formatInteger(stats.activeMembers, 1, 'COMMA')}">1,584</div>
+                    <div class="stat-lbl">Hội viên tích cực</div>
+                    <div class="stat-trend-row">
+                        <span class="trend-pill trend-up"
+                              th:text="'+' + ${stats.newMembersThisMonth}">+5</span>
+                        <span class="trend-lbl">đăng ký mới</span>
+                    </div>
+                </div>
+
+                <!-- Lượt mượn tháng này -->
+                <div class="stat-card" style="animation-delay:.20s;">
+                    <div class="stat-icon-box" style="background:#e8f0fb;">📋</div>
+                    <div class="stat-num"
+                         th:text="${#numbers.formatInteger(stats.borrowCountThisMonth, 1, 'COMMA')}">2,841</div>
+                    <div class="stat-lbl"
+                         th:text="'Lượt mượn tháng ' + ${currentMonth}">Lượt mượn tháng 3</div>
+                    <div class="stat-trend-row">
+                        <span class="trend-pill"
+                              th:classappend="${stats.borrowMonthChangePct >= 0} ? ' trend-up' : ' trend-down'"
+                              th:text="${stats.borrowMonthChangePct >= 0 ? '+' : ''}
+                                       + ${#numbers.formatDecimal(stats.borrowMonthChangePct,1,1)} + '%'">+12%</span>
+                        <span class="trend-lbl" th:text="'vs tháng ' + ${prevMonth}">vs tháng 2</span>
+                    </div>
+                </div>
+
+            </div><!-- /stats-overview -->
+
+            <!-- ── Charts ─────────────────────────────────────────────── -->
+            <div style="display:grid;grid-template-columns:1fr ;gap:20px;">
+                <div>
+                    <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600;margin-bottom:14px;">
+                        Xuất báo cáo
+                    </div>
+                    <div class="report-cards" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;">
+                        <div class="report-card"
+                             th:attr="onclick=|window.location.href='@{/qltv/quan-ly/statistics/export(type='monthly',from=${fromValue},to=${toValue})}'|">
+                            <div class="report-icon">📊</div>
+                            <div class="report-name">Báo cáo tháng</div>
+                            <div class="report-desc"
+                                 th:text="'Tổng hợp tháng ' + ${currentMonth} + '/' + ${currentYear}">
+                                Tổng hợp tháng 3/2026</div>
+                        </div>
+                        <div class="report-card"
+                             th:attr="onclick=|window.location.href='@{/quan-ly/statistics/export(type='borrows',from=${fromValue},to=${toValue})}'|">
+                            <div class="report-icon">📋</div>
+                            <div class="report-name">Danh sách mượn</div>
+                            <div class="report-desc">Tất cả phiếu đang hoạt động</div>
+                        </div>
+                        <div class="report-card"
+                             th:attr="onclick=|window.location.href='@{/quan-ly/statistics/export(type='overdue',from=${fromValue},to=${toValue})}'|"
+                        >
+                            <div class="report-icon">⚠️</div>
+                            <div class="report-name">Báo cáo quá hạn</div>
+                            <div class="report-desc">Danh sách &amp; phí phạt</div>
+                        </div>
+                        <div class="report-card"
+                             th:attr="onclick=|window.location.href='@{/quan-ly/statistics/export?type=members}'|"
+                        >
+                            <div class="report-icon">👥</div>
+                            <div class="report-name">Hội viên</div>
+                            <div class="report-desc">Danh sách &amp; tình trạng thẻ</div>
+                        </div>
+                        <div class="report-card"
+                             th:attr="onclick=|window.location.href='@{/quan-ly/statistics/export?type=inventory}'|"
+                        >
+                            <div class="report-icon">📚</div>
+                            <div class="report-name">Kho sách</div>
+                            <div class="report-desc">Tồn kho &amp; phân bố thể loại</div>
+                        </div>
+                        <div class="report-card"
+                             th:attr="onclick=|window.location.href='@{/quan-ly/statistics/export(type='finance',from=${fromValue},to=${toValue})}'|"
+                        >
+                            <div class="report-icon">💰</div>
+                            <div class="report-name">Tài chính</div>
+                            <div class="report-desc">Phí thành viên &amp; phạt</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-grid">
+
+                <!-- Bar chart: lượt mượn theo ngày -->
+                <div class="chart-box">
+                    <div class="chart-title"
+                         th:text="'Lượt mượn sách — ' + ${fromDisplay} + ' đến ' + ${toDisplay}">
+                        Lượt mượn sách — Tháng 3/2026
+                    </div>
+                    <div class="bar-chart">
+                        <div class="bar-col"
+                             th:each="d, dStat : ${stats.dailyBorrows}"
+                             th:style="'animation-delay:' + ${0.1 + dStat.index * 0.02} + 's'">
+                            <div class="bar-val" th:text="${d.count}">78</div>
+                            <!-- Tính height tương đối: max 97px -->
+                            <div class="bar-fill"
+                                 th:classappend="${d.dayType == 'weekend' ? ' teal' : (d.dayType == 'peak' ? ' hl' : '')}"
+                                 th:style="'height:' + ${d.count == 0 ? 2 : d.count * 97.0 / maxDailyCount} + 'px'">
+                            </div>
+                            <div class="bar-lbl" th:text="${d.day}">1</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:16px;margin-top:12px;">
+                        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mist);">
+                            <div style="width:10px;height:10px;border-radius:2px;background:var(--gold);"></div> Ngày thường
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mist);">
+                            <div style="width:10px;height:10px;border-radius:2px;background:#3a8a7a;"></div> Cuối tuần
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mist);">
+                            <div style="width:10px;height:10px;border-radius:2px;background:var(--rust);"></div> Cao điểm
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donut chart: phân bố thể loại -->
+                <div class="chart-box">
+                    <div class="chart-title">Phân bố thể loại</div>
+                    <div class="donut-wrap">
+                        <!-- SVG donut được vẽ bằng JS sau khi load -->
+                        <div style="position:relative;width:140px;height:140px;flex-shrink:0;">
+                            <canvas id="donutCanvas" width="140" height="140"></canvas>
+                            <div class="donut-center">
+                                <div class="donut-num"
+                                     th:text="${#numbers.formatInteger(stats.totalBooks,1,'COMMA')}">8,247</div>
+                                <div class="donut-sub">Tổng đầu sách</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:each="c, cStat : ${stats.categoryStats}">
+                        <div class="legend-row">
+                            <div class="legend-dot"
+                                 th:attr="data-index=${cStat.index}"
+                                 style="background:#c9963a;"></div>
+                            <span style="flex:1;font-size:12px;" th:text="${c.categoryName}">Văn học</span>
+                            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;"
+                                  th:text="${c.percentage} + '%'">30%</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /chart-grid -->
+
+            <!-- ── Bottom Row ────────────────────────────────────────── -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+
+                <div>
+                    <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600;margin-bottom:14px;">
+                        Top sách được đọc nhiều nhất
+                    </div>
+                    <div class="top-books-list">
+
+                        <div th:if="${#lists.isEmpty(topDigital)}"
+                             style="text-align:center;padding:32px;color:var(--mist);font-size:13px;">
+                            Chưa có dữ liệu
+                        </div>
+
+                        <div class="top-book-item"
+                             th:each="book, stat : ${topDigital}">
+
+                            <!-- Hạng -->
+                            <div class="rank-num"
+                                 th:classappend="${stat.index == 0 ? ' gold-rank' :
+                            (stat.index == 1 ? ' silver-rank' :
+                            (stat.index == 2 ? ' bronze-rank' : ''))}"
+                                 th:text="${stat.count}">
+                                1
+                            </div>
+
+                            <div style="flex:1;">
+                                <!-- Tên sách -->
+                                <div style="font-size:13px;font-weight:500;margin-bottom:4px;"
+                                     th:text="${book.bookTitle.title}">
+                                    Tên sách
+                                </div>
+
+                                <!-- Loại file -->
+                                <div style="font-size:11px;color:var(--mist);margin-bottom:4px;"
+                                     th:text="${book.fileType}">
+                                    PDF
+                                </div>
+
+                                <!-- Thanh progress -->
+                                <div class="top-book-bar-bg">
+                                    <div class="top-book-bar-fill"
+                                         th:style="'width:' +
+                         (${topDigital[0].viewCount == 0 ? 0 :
+                         book.viewCount * 100 / topDigital[0].viewCount}) + '%'">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Số lượt xem -->
+                            <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                                <div class="top-book-count"
+                                     th:text="${book.viewCount}">
+                                    100
+                                </div>
+
+                                <span style="font-size:10px;color:#6c757d">
+                                lượt đọc
+                            </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <div>
+                    <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600;margin-bottom:14px;">
+                        Top sách được mượn nhiều nhất
+                    </div>
+                    <div class="top-books-list">
+
+                        <!-- Empty state -->
+                        <div th:if="${#lists.isEmpty(stats.topBooks)}"
+                             style="text-align:center;padding:32px;color:var(--mist);font-size:13px;">
+                            Chưa có dữ liệu trong khoảng thời gian này
+                        </div>
+
+                        <div class="top-book-item"
+                             th:each="book, bStat : ${stats.topBooks}">
+
+                            <!-- Rank badge -->
+                            <div class="rank-num"
+                                 th:classappend="${bStat.index == 0 ? ' gold-rank' : (bStat.index == 1 ? ' silver-rank' : (bStat.index == 2 ? ' bronze-rank' : ''))}"
+                                 th:text="${bStat.count}">1</div>
+
+                            <div style="flex:1;">
+                                <div style="font-size:13px;font-weight:500;margin-bottom:2px;"
+                                     th:text="${book.title}">Đắc Nhân Tâm</div>
+                                <div style="font-size:11px;color:var(--mist);margin-bottom:4px;"
+                                     th:text="${book.authorName}">Dale Carnegie</div>
+                                <!-- Progress bar: width tỉ lệ theo sách đứng đầu -->
+                                <div class="top-book-bar-bg">
+                                    <div class="top-book-bar-fill"
+                                         th:style="'width:' + ${stats.topBooks[0].borrowCount == 0 ? 0
+                                                    : book.borrowCount * 100 / stats.topBooks[0].borrowCount} + '%'">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+                                <div class="top-book-count" th:text="${book.borrowCount}">134</div>
+                                <!-- Đang mượn badge (status=1) -->
+                                <span th:if="${book.activeBorrows > 0}"
+                                      style="font-size:10px;background:#e6f2ec;color:#2d6a3f;
+                                             border-radius:6px;padding:1px 7px;font-weight:600;"
+                                      th:text="'● ' + ${book.activeBorrows} + ' bản'">● 5 bản</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /bottom row -->
+
+        </div><!-- /page-stats -->
+
+    </div><!-- /bl-content -->
+</div><!-- /bl-main -->
+
+<!-- ════════ SCRIPTS ════════ -->
+<script th:replace="layout/script :: script"></script>
+
+<script th:inline="javascript">
+
+    function submitCustomRange() {
+    // Tạo form mới để tránh conflict với button period
+    const from = document.getElementById('fromDate').value;
+    const to   = document.getElementById('toDate').value;
+    if (from && to) {
+        window.location.href = '/qltv/quan-ly/statistics?period=custom&from=' + from + '&to=' + to;
+    }
+}
+
+// ── Bar chart
+(function () {
+    const bars = document.querySelectorAll('.bar-fill');
+    const vals = Array.from(document.querySelectorAll('.bar-val'))
+                      .map(el => parseInt(el.textContent) || 0);
+    const maxVal = Math.max(...vals, 1);
+    bars.forEach((bar, i) => {
+        const h = Math.max(2, Math.round(vals[i] / maxVal * 97));
+        bar.style.height = h + 'px';
+    });
+})();
+
+// ── Donut chart — build catData từ Thymeleaf th:each thay vì inline object
+(function () {
+    const COLORS = ['#c9963a','#2d5a3d','#3a6cb0','#b04a2a','#8a8070'];
+
+    // Build array từ DOM (legend rows đã render bởi Thymeleaf)
+    const catData = [];
+    document.querySelectorAll('.legend-row').forEach((row, idx) => {
+        const name = row.querySelector('span:first-of-type')?.textContent?.trim() || '';
+        const pctText = row.querySelector('span:last-of-type')?.textContent?.replace('%','').trim() || '0';
+        catData.push({ name, pct: parseFloat(pctText) || 0 });
+        // Gán màu legend dot
+        const dot = row.querySelector('.legend-dot');
+        if (dot) dot.style.background = COLORS[idx] || '#ccc';
+    });
+
+    const canvas = document.getElementById('donutCanvas');
+    if (!canvas || !catData.length) return;
+
+    const ctx = canvas.getContext('2d');
+    const cx = 70, cy = 70, r = 54, strokeW = 20;
+    const TAU = Math.PI * 2;
+    const total = catData.reduce((s, c) => s + c.pct, 0) || 1;
+
+    // Vẽ track nền
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, TAU);
+    ctx.strokeStyle = '#ede7d5';
+    ctx.lineWidth = strokeW;
+    ctx.stroke();
+
+    let offset = -Math.PI / 2;
+    catData.forEach((c, i) => {
+        if (c.pct <= 0) return;
+        const angle = (c.pct / total) * TAU;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, offset, offset + angle);
+        ctx.strokeStyle = COLORS[i] || '#ccc';
+        ctx.lineWidth = strokeW;
+        ctx.stroke();
+        offset += angle;
+    });
+})();
+
+</script>
+
+</body>
+</html>

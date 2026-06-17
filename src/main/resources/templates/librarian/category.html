@@ -16,26 +16,21 @@
         <!-- ══════ PAGE: BOOKS ══════ -->
         <div class="bl-page active" id="page-users">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-                <div class="bl-search-bar" style="flex:1;min-width:220px;">
-                    <span style="color:var(--mist);">🔍</span>
-                    <input type="text" placeholder="Tìm theo tên sách, tác giả, ISBN...">
-                </div>
-                <select class="bl-filter-select">
-                    <option>Tất cả vai trò</option>
-                    <option>Văn học</option>
-                    <option>Kỹ năng sống</option>
-                    <option>Lịch sử</option>
-                    <option>Tâm lý học</option>
-                    <option>Công nghệ</option>
-                    <option>Thiếu nhi</option>
-                </select>
-                <select class="bl-filter-select">
-                    <option>Tất cả trạng thái</option>
-                    <option>Còn sách</option>
-                    <option>Đang mượn</option>
-                    <option>Quá hạn</option>
-                </select>
-                <button type="button" class="bl-btn bl-btn-primary" onclick="openAddMember()">➕ Thêm mới</button>
+                <form th:action="@{/quan-ly/categories}" method="get" style="display: contents;">
+                    <div class="bl-search-bar" style="flex:1;min-width:220px;">
+                        <span style="color:var(--mist);">🔍</span>
+                        <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm theo thể loại...">
+                    </div>
+                    <select class="bl-filter-select" name="status">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="true" th:selected="${status == true}">Hoạt động</option>
+                        <option value="false" th:selected="${status == false}">Tạm dừng</option>
+                    </select>
+                    <button type="submit" class="bl-btn bl-btn-secondary">Tìm</button>
+                </form>
+
+
+                <button type="button" class="bl-btn bl-btn-primary" onclick="openAddCategory()">➕ Thêm mới</button>
             </div>
 
             <div id="books-list-view">
@@ -54,6 +49,7 @@
                     <table class="bl-data-table">
                         <thead>
                         <tr>
+                            <th>STT</th>
                             <th>Chủ đề</th>
                             <th>Thể loại</th>
                             <th>Trạng thái</th>
@@ -66,31 +62,25 @@
                                 Không có dữ liệu
                             </td>
                         </tr>
-                        <tr th:each="c : ${categories}">
-
+                        <tr th:each="c,stat : ${categories.content}">
+                            <td style="color:var(--mist);" th:text="${stat.index+1}"></td>
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <div style="font-weight:500;" th:switch="${c.parent}">
-
                                         <span th:case="'1'">Văn học</span>
-                                        <span th:case="'2'">Kỹ năng sống</span>
+                                        <span th:case="'2'">Truyện</span>
                                         <span th:case="'3'">Lịch sử</span>
                                         <span th:case="'4'">Tâm lý học</span>
-                                        <span th:case="'5'">Công nghệ</span>
-                                        <span th:case="'6'">Kinh tế</span>
-                                        <span th:case="'7'">Giáo dục</span>
-                                        <span th:case="'8'">Thiếu nhi</span>
-                                        <span th:case="'9'">Khoa học</span>
-                                        <span th:case="'10'">Ngoại ngữ</span>
-
-                                        <span th:case="*">---</span>
+                                        <span th:case="0">---</span>
 
                                     </div>
                                 </div>
                             </td>
-                            <td style="color:var(--mist);" th:text="${c.parent != null && c.parent != '0' ? '— ' + c.categoryName : c.categoryName}"></td>
+                            <td style="color:var(--mist);"
+                                th:text="${c.parent != null && c.parent != '0' ? '' + c.categoryName : c.categoryName}"></td>
                             <td>
-                                <span class="bl-badge bl-badge-borrowed" th:classappend="${c.status} ? 'bl-badge-active' : 'bl-badge-inactive'"
+                                <span class="bl-badge bl-badge-borrowed"
+                                      th:classappend="${c.status} ? 'bl-badge-active' : 'bl-badge-inactive'"
                                       th:text="${c.status} ? 'Hoạt động' : 'Bị khóa'"></span>
                             </td>
                             <td>
@@ -99,13 +89,32 @@
                                         th:data-name="${c.categoryName}"
                                         th:data-parent="${c.parent}"
                                         th:data-status="${c.status}"
-                                        onclick="openUpdateMember()">Sửa</button>
-                                <button class="action-btn" th:data-id="${c.id}" onclick="confirmDelete(this)">Xóa</button>
+                                        onclick="openCateMember(this)">Sửa
+                                </button>
+                                <button class="action-btn" th:data-id="${c.id}" onclick="confirmDelete(this)">Xóa
+                                </button>
                             </td>
                         </tr>
 
                         </tbody>
                     </table>
+                    <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                        <div style="font-size:13px;color:var(--mist);"
+                             th:text="'Hiển thị ' + ${categories.numberOfElements}
+                                          + ' / ' + ${totalElements} + ' Thể loại'">Hiển thị 6 / 1,584 hội viên</div>
+                        <div style="display:flex;gap:6px;">
+                            <a th:if="${currentPage > 0}" class="action-btn"
+                               th:href="@{/quan-ly/categories(page=${currentPage - 1}, keyword=${keyword}, status=${status})}">‹
+                            </a>
+                            <a class="action-btn" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:text="${i + 1}"
+                               th:href="@{/quan-ly/categories(page=${i}, keyword=${keyword}, status=${status})}"
+                               th:classappend="${i == currentPage} ? 'active' : ''">
+                            </a>
+                            <a class="action-btn" th:if="${currentPage < totalPages - 1}"
+                               th:href="@{/quan-ly/categories(page=${currentPage + 1}, keyword=${keyword}, status=${status})}">›
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -113,56 +122,54 @@
 </div><!-- /main -->
 
 <!-- ════════ MODALS ════════ -->
-<div class="bl-modal-overlay" id="add-member-modal" onclick="closeModal('add-member-modal')">
+<div class="bl-modal-overlay" id="add-cate-modal" onclick="closeModal('add-cate-modal')">
     <div class="bl-modal" onclick="event.stopPropagation()">
         <div class="bl-modal-header">
             <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
-            <div><div class="bl-modal-book-title">Thêm mới thể loại</div></div>
-            <button class="bl-modal-close" onclick="closeModal('add-member-modal')">✕</button>
+            <div>
+                <div class="bl-modal-book-title">Thêm mới thể loại</div>
+            </div>
+            <button class="bl-modal-close" onclick="closeModal('add-cate-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
-            <form th:action="@{/categories}" th:object="${category}" method="post">
+            <form th:action="@{/quan-ly/categories}" th:object="${category}" method="post">
                 <div class="bl-form-row">
                     <div style="color:red" th:if="${error}" th:text="${error}">
                     </div>
                 </div>
                 <div class="bl-form-row">
                     <div class="bl-form-group">
-                        <div class="bl-form-label">Thể loại cha</div>
+                        <div class="bl-form-label">Chủ đề</div>
                         <select class="bl-form-input" name="parent">
-                            <option value="">-- Chọn thể loại --</option>
+                            <option value="0">-- Chọn chủ đề --</option>
                             <option value="1">Văn học</option>
-                            <option value="2">Kỹ năng sống</option>
+                            <option value="2">Truyện</option>
                             <option value="3">Lịch sử</option>
                             <option value="4">Tâm lý học</option>
-                            <option value="5">Công nghệ</option>
-                            <option value="6">Kinh tế</option>
-                            <option value="7">Giáo dục</option>
-                            <option value="8">Thiếu nhi</option>
-                            <option value="9">Khoa học</option>
-                            <option value="10">Ngoại ngữ</option>
-                            <option value="">Không có thể loại cha</option>
+                            <option value="0">Không có chủ đề</option>
                         </select>
                     </div>
                     <div class="bl-form-group">
-                        <div class="bl-form-label">Tên thể loại*</div>
-                        <input type="text" th:field="*{categoryName}" class="bl-form-input" placeholder="Nhập tên đầy đủ...">
-                    </div>
-                </div>
-                <div class="bl-form-row">
-
-                    <div class="bl-form-group"><div class="bl-form-label">Trạng thái</div>
+                        <div class="bl-form-label">Trạng thái</div>
                         <select class="bl-form-input" th:field="*{status}">
-                            <option th:value="true">Hoạt động</option>
+                            <option th:value="true" selected>Hoạt động</option>
                             <option th:value="false">Khóa</option>
                         </select>
                     </div>
 
                 </div>
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Tên thể loại*</div>
+                    <input type="text" th:field="*{categoryName}" class="bl-form-input"
+                           placeholder="Nhập tên đầy đủ...">
+                </div>
 
                 <div style="display:flex;gap:10px;">
-                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký</button>
-                    <button type="button" class="bl-btn bl-btn-secondary" onclick="closeModal('add-member-modal')">Hủy</button>
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng
+                        ký
+                    </button>
+                    <button type="button" class="bl-btn bl-btn-secondary" onclick="closeModal('add-cate-modal')">Hủy
+                    </button>
                 </div>
             </form>
 
@@ -170,45 +177,35 @@
     </div>
 </div>
 
-<div class="bl-modal-overlay" id="update-member-modal" onclick="closeModal('update-member-modal')">
+<div class="bl-modal-overlay" id="update-cate-modal" onclick="closeModal('update-cate-modal')">
     <div class="bl-modal" onclick="event.stopPropagation()">
         <div class="bl-modal-header">
             <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
-            <div><div class="bl-modal-book-title">Thêm mới thể loại</div></div>
-            <button class="bl-modal-close" onclick="closeModal('update-member-modal')">✕</button>
+            <div>
+                <div class="bl-modal-book-title">Thay đổi thể loại</div>
+            </div>
+            <button class="bl-modal-close" onclick="closeModal('update-cate-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
-            <form th:action="@{/categories}" th:object="${category}" method="post">
+            <form th:action="@{/quan-ly/categories}" th:object="${category}" method="post">
                 <div class="bl-form-row">
                     <div style="color:red" th:if="${error}" th:text="${error}"></div>
-                    <input type="hidden" id="edit-id" name="id" >
+                    <input type="hidden" id="edit-id" name="id">
                 </div>
                 <div class="bl-form-row">
                     <div class="bl-form-group">
-                        <div class="bl-form-label">Thể loại cha</div>
+                        <div class="bl-form-label">Chủ đề</div>
                         <select class="bl-form-input" name="parent" id="edit-parent">
-                            <option value="">-- Chọn thể loại --</option>
+                            <option value="0">-- Chọn chủ đề --</option>
                             <option value="1">Văn học</option>
-                            <option value="2">Kỹ năng sống</option>
+                            <option value="2">Truyện</option>
                             <option value="3">Lịch sử</option>
                             <option value="4">Tâm lý học</option>
-                            <option value="5">Công nghệ</option>
-                            <option value="6">Kinh tế</option>
-                            <option value="7">Giáo dục</option>
-                            <option value="8">Thiếu nhi</option>
-                            <option value="9">Khoa học</option>
-                            <option value="10">Ngoại ngữ</option>
-                            <option value="">Không có thể loại cha</option>
+                            <option value="0">Không có chủ đề</option>
                         </select>
                     </div>
                     <div class="bl-form-group">
-                        <div class="bl-form-label">Tên thể loại*</div>
-                        <input type="text" id="edit-name" name="categoryName" class="bl-form-input" placeholder="Nhập tên đầy đủ...">
-                    </div>
-                </div>
-                <div class="bl-form-row">
-
-                    <div class="bl-form-group"><div class="bl-form-label">Trạng thái</div>
+                        <div class="bl-form-label">Trạng thái</div>
                         <select class="bl-form-input" id="edit-status" name="status">
                             <option th:value="true">Hoạt động</option>
                             <option th:value="false">Khóa</option>
@@ -216,10 +213,19 @@
                     </div>
 
                 </div>
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Tên thể loại*</div>
+                    <input type="text" id="edit-name" name="categoryName" class="bl-form-input"
+                           placeholder="Nhập tên đầy đủ...">
+                </div>
 
                 <div style="display:flex;gap:10px;">
-                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký</button>
-                    <button type="button" class="bl-btn bl-btn-secondary" onclick="closeModal('update-member-modal')">Hủy</button>
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Thay
+                        đổi
+                    </button>
+                    <button type="button" class="bl-btn bl-btn-secondary" onclick="closeModal('update-cate-modal')">
+                        Hủy
+                    </button>
                 </div>
             </form>
 
@@ -228,25 +234,32 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:replace="layout/script :: script"></script>
-<script th:if="${showModal}">
-    window.addEventListener("load", function () {
-        document.getElementById("add-member-modal").classList.add("bl-open");
-    });
-</script>
+<!--<script th:if="${showModal}">-->
+<!--    window.addEventListener("load", function () {-->
+<!--        document.getElementById("add-member-modal").classList.add("bl-open");-->
+<!--    });-->
+<!--</script>-->
 <script>
     function confirmDelete(element) {
     const cId = element.dataset.id;
     if (confirm("Bạn có chắc chắn muốn xóa thể loại " + cId + " này?")) {
-        window.location.href = "/qltv/categories?id=" + cId;
+        window.location.href = "/qltv/quan-ly/categories?id=" + cId;
     }
 }
+
+function openCateMember(btn) {
+        document.getElementById("edit-id").value = btn.dataset.id;
+        document.getElementById("edit-name").value = btn.dataset.name;
+        document.getElementById("edit-parent").value = btn.dataset.parent;
+        document.getElementById("edit-status").value = btn.dataset.status;
+        document.getElementById('update-cate-modal').classList.add('bl-open');
+    }
+    function openAddCategory(){
+         document.getElementById('add-cate-modal').classList.add('bl-open');
+    }
     document.querySelectorAll(".btn-edit").forEach(btn => {
     btn.addEventListener("click", function () {
-        document.getElementById("edit-id").value = this.dataset.id;
-        document.getElementById("edit-name").value = this.dataset.name;
-        document.getElementById("edit-parent").value = this.dataset.parent;
-        document.getElementById("edit-status").value = this.dataset.status;
-        document.getElementById("updateUserModal").classList.add("show");
+
     });
 });
 </script>

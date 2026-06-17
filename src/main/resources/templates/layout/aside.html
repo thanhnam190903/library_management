@@ -14,8 +14,8 @@
     <a class="bl-nav-item" id="nav-dashboard" th:href="@{/quan-ly/dashboard}" th:classappend="${activePage == 'dashboard'} ? 'active' : ''">
         <span class="bl-nav-icon">⊞</span>Bảng điều khiển
     </a>
-    <div class="bl-nav-item" id="nav-stats" onclick="goPage('stats')">
-        <span class="bl-nav-icon">📊</span>Thống kê &amp; Báo cáo</div>
+    <a class="bl-nav-item" id="nav-stats" th:href="@{/quan-ly/statistics}" th:classappend="${activePage == 'report-sta'} ? 'active' : ''">
+        <span class="bl-nav-icon">📊</span>Thống kê &amp; Báo cáo</a>
 </div>
 <div class="bl-sidebar-section">
     <div class="section-label">Người dùng</div>
@@ -28,14 +28,10 @@
     <a class="bl-nav-item" th:href="@{/quan-ly/categories}" th:classappend="${activePage == 'category'} ? 'active' : ''">
         <span class="bl-nav-icon">🏷️</span>Thể loại
     </a>
-
     <a class="bl-nav-item menu-toggle" id="nav-books" th:href="@{/quan-ly/books}" th:classappend="${activePage == 'books'} ? 'active' : ''">
         <span class="bl-nav-icon">📚</span> Danh mục sách
     </a>
 
-    <a class="bl-nav-item" th:href="@{/quan-ly/books(open='add')}" >
-        <span class="bl-nav-icon">➕</span>Nhập sách mới
-    </a>
 </div>
 
 <div class="bl-sidebar-section">
@@ -45,9 +41,9 @@
     <a class="bl-nav-item" th:href="@{/quan-ly/borrowing(tab='return-tab')}" th:classappend="${activePage == 'return'} ? 'active' : ''">
         <span class="bl-nav-icon">↙</span>Trả sách</a>
     <a class="bl-nav-item" th:href="@{/quan-ly/borrowing(tab='overdue-tab')}" th:classappend="${activePage == 'overdue'} ? 'active' : ''">
-        <span class="bl-nav-icon">⚠️</span>Quá hạn<span class="bl-nav-badge">7</span></a>
-    <a class="bl-nav-item">
-        <span class="bl-nav-icon">🔔</span>Đặt trước<span class="bl-nav-badge">3</span></a>
+        <span class="bl-nav-icon">⚠️</span>Quá hạn<span class="bl-nav-badge" th:text="${overdueCount}">7</span></a>
+    <a class="bl-nav-item" th:href="@{/quan-ly/reserve}" th:classappend="${activePage == 'reserves'} ? 'active' : ''">
+        <span class="bl-nav-icon">🔔</span>Đặt trước<span class="bl-nav-badge" th:text="${countPendingRequests}">3</span></a>
 </div>
 
 <div class="bl-sidebar-section">
@@ -55,22 +51,26 @@
     <a class="bl-nav-item" th:href="@{/quan-ly/readers}" th:classappend="${activePage == 'readers'} ? 'active' : ''" id="nav-members">
         <span class="bl-nav-icon">💳</span>Thẻ thư viện/Hội viên
     </a>
-    <div class="bl-nav-item" onclick="goPage('members');openAddMember()">
-        <span class="bl-nav-icon">👤</span>Đăng ký mới</div>
-    <div class="bl-nav-item">
-        <span class="bl-nav-icon"></span></div>
 </div>
 
 <div class="bl-sidebar-section">
     <div class="section-label">Hệ thống</div>
-    <div class="bl-nav-item"><span class="bl-nav-icon">⚙️</span>Cài đặt</div>
-    <div class="bl-nav-item"><span class="bl-nav-icon">🛡️</span>Phân quyền</div>
+    <div class="bl-nav-item">
+        <span class="bl-nav-icon">⚙️</span>Cài đặt</div>
 </div>
 
 <div class="bl-sidebar-footer">
     <div class="user-card">
         <div class="user-avatar">NV</div>
-        <div><div class="user-name">Nguyễn Văn Minh</div><div class="user-role">Quản trị viên</div></div>
+        <div><div class="user-name" th:text="${profileAdmin.name}">Nguyễn Văn Minh</div>
+            <div class="user-role"><span th:each="role,stat : ${profileAdmin.roles}">
+        <span th:text="${
+            role.roleName == 'ADMIN' ? 'Quản trị viên' :
+            role.roleName == 'LIBRARIAN' ? 'Thủ thư' :
+            role.roleName
+        }"></span>
+        <span th:if="${!stat.last}"> - </span>
+    </span></div></div>
     </div>
 </div>
 </aside>

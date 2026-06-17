@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +35,13 @@ public class BookCopy {
     @OneToMany(mappedBy = "bookCopy")
     List<BorrowDetail> borrowDetails;
     boolean status ;
+    Boolean deleted = false;
+    @Column(name = "create_at")
+    @CreationTimestamp
+    LocalDateTime createdAt;
+    @Column(name = "last_modified")
+    @UpdateTimestamp
+    LocalDateTime lastModified;
 
 
 }

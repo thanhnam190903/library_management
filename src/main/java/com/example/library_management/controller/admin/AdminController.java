@@ -1,14 +1,14 @@
 package com.example.library_management.controller.admin;
 
 
+import com.example.library_management.entity.BookTitle;
+import com.example.library_management.entity.BorrowDetail;
 import com.example.library_management.entity.User;
-import com.example.library_management.repository.BookCopyRepository;
-import com.example.library_management.repository.BorrowDetailRepository;
-import com.example.library_management.repository.ReaderRepository;
-import com.example.library_management.repository.UserRepository;
+import com.example.library_management.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +28,8 @@ public class AdminController {
     ReaderRepository readerRepository;
     BookCopyRepository bookCopyRepository;
     BorrowDetailRepository borrowDetailRepository;
+    BookTitleRepository bookTitleRepository;
+    LibraryCardRepository libraryCardRepository;
 
     @GetMapping("/dashboard")
     public String index(Model model){
@@ -36,17 +38,27 @@ public class AdminController {
         DateTimeFormatter formatter = DateTimeFormatter
                 .ofPattern("EEEE, dd 'tháng' M 'năm' yyyy", new Locale("vi", "VN"));
         String result = date.format(formatter);
+        List<BookTitle> books = borrowDetailRepository
+                .findTopRecentBorrowedBooks(PageRequest.of(0,5));
+        Map<String, Long> availableMap = new HashMap<>();
+        for (BookTitle b : books) {
+            long available = bookCopyRepository
+                    .countAvailableBooks(b.getId());
+            availableMap.put(b.getId(), available);
+        }
         data.put("title", result);
         data.put("sub","Bảng điều khiển" );
         data.put("activePage", "dashboard");
-        data.put("totalBook", bookCopyRepository.count());
+        data.put("totalBook", bookTitleRepository.countByDeletedFalse());
         data.put("totalReader", readerRepository.count());
         data.put("totalBorrowing", borrowDetailRepository.countAllBorrowing());
         data.put("totalOverdue", borrowDetailRepository.overdueAllBooks());
+        data.put("available",availableMap);
+        data.put("listBook",books);
+        data.put("topReader",libraryCardRepository
+                .findTopBorrowers(PageRequest.of(0,5)));
         model.addAllAttributes(data);
         return "admin/index";
     }
-
-
-
+   
 }

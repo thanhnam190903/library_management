@@ -4,8 +4,11 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -20,14 +23,16 @@ public class BookTitle {
     String id;
     String title;
     @Column(name = "publish_year")
-    @Min(value = 1900, message = "Năm xuất bản không hợp lệ")
     String publishYear;
+    @Column(nullable = true)
     String isbn;
-    double price;
+    @Column(nullable = true)
+    Double price;
     String language;
     @Column(columnDefinition = "LONGTEXT")
     String coverImage;
-    int quantity;
+    @Column(nullable = true)
+    Integer quantity;
     @Column(columnDefinition = "TEXT")
     private String note;
     boolean deleted;
@@ -44,4 +49,10 @@ public class BookTitle {
     List<BookCopy> copies;
     @OneToMany(mappedBy = "bookTitle")
     List<DigitalBook> digitalBooks;
+    @Column(name = "create_at")
+    @CreationTimestamp
+    LocalDateTime createdAt;
+    @Column(name = "last_modified")
+    @UpdateTimestamp
+    LocalDateTime lastModified;
 }

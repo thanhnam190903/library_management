@@ -26,7 +26,7 @@ public class SecurityConfiguration {
                 req -> req
                         .requestMatchers("/quan-ly/**")
                         .hasAnyRole("ADMIN", "LIBRARIAN")
-                        .requestMatchers("/home").permitAll()
+                        .requestMatchers("/home","/home/**").permitAll()
                         .requestMatchers("/assets/**").permitAll()
                         .anyRequest().authenticated()
         ).formLogin(
@@ -37,6 +37,7 @@ public class SecurityConfiguration {
         ).logout(
                 logout -> logout
                         .logoutUrl("/logout")
+                        .logoutSuccessUrl("/home")
                         .logoutSuccessUrl("/login")
         ).exceptionHandling(
                 exception->exception

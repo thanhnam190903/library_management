@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="reader/layout/reader-head :: reader-head">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════ -->
+<div th:replace="reader/layout/reader-sidebar :: reader-sidebar"></div>
+
+<!-- ══════════════════════════════════════════
+     APP BODY
+══════════════════════════════════════════ -->
+<div class="app-body">
+    <!-- TOPBAR -->
+    <div th:replace="reader/layout/reader-header :: reader-header"></div>
+
+    <div class="content-wrap">
+        <!-- MAIN SCROLL -->
+        <div class="main-scroll" id="mainScroll">
+                        <div id="page-requests" style="display:block">
+                            <div class="page-hdr">
+                                <div class="page-title">
+                                    Yêu cầu đặt mượn</div>
+                                <div class="page-sub">Danh sách yêu cầu đặt mượn đang chờ xác nhận từ thủ thư</div>
+                            </div>
+                            <div id="reqList">
+                                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <strong>Thành công!</strong> <span th:text="${success}"></span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    <strong>Thất bại!</strong> <span th:text="${error}"></span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                                <div class="req-card" th:each="r,stat : ${requestBorrow}">
+                                    <div th:style="'width:46px;height:60px;border-radius:7px;' +
+                                           'flex-shrink:0;display:flex;align-items:center;justify-content:center;' +
+                                           'font-size:18px;font-weight:800;color:rgba(255,255,255,.85);' +
+                                           'background:' + (${stat.index % 2 == 0} ? '#4e73df' : '#f39c12')" th:text="${#strings.substring(r.bookCopy.bookTitle.title, 0, 1)}"></div>
+                                    <div class="req-info">
+                                        <div class="req-title" th:text="${r.bookCopy.bookTitle.title}"></div>
+                                        <div class="req-meta">
+                                            <span><i class="ti ti-user" style="font-size:11px"></i>
+                                                <span th:text="${r.bookCopy.bookTitle.author.authorName}"></span>
+                                            </span>
+                                            <span>
+                                                <i class="ti ti-map-pin" style="font-size:11px;color:var(--blue)"></i>
+                                                <span th:text="${r.bookCopy.shelfLocation}"></span>
+                                            </span>
+                                            <span><i class="ti ti-calendar" style="font-size:11px"></i>
+                                               Gửi: <span th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                            </span>
+                                            <span><i class="ti ti-clock" style="font-size:11px"></i>
+                                                <span th:text="${r.requestDays}"></span> ngày</span>
+                                            <span style="color:var(--green)" th:if="${r.status == 2 or r.status == 3}">
+                                                <i class="ti ti-check" style="font-size:11px"></i>
+                                                XN: <span th:text="${#temporals.format(r.requestDateTime, 'dd/MM/yyyy HH:mm')}"> </span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+                                       <span class="status-pill"
+                                             th:classappend="${r.status == 1} ? 'pill-soon'
+                                                    : (${r.status == 2} ? 'pill-confirmed'
+                                                    : (${r.status == 4} ? 'pill-confirmed'
+                                                    : 'pill-late'))"
+                                             th:text="${r.status == 1} ? '⏳ Chờ xác nhận'
+                                                     : (${r.status == 2} ? '✓ Đã xác nhận'
+                                                     : (${r.status == 4} ? '🖨 Đã in phiếu'
+                                                     : '✕ Từ chối'))">
+                                        </span>
+                                        <button class="btn-cancel-req" th:if="${r.status == 1}"
+                                                th:data-id="${r.id}" th:data-name="${r.bookCopy.bookTitle.title}"
+                                                onclick="cancelReq(this)">
+                                            Huỷ yêu cầu
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="reqEmpty" class="empty-state" th:if="${requestBorrow == null or #lists.isEmpty(requestBorrow)}">
+                                <i class="ti ti-clipboard-off"></i>
+                                <p>Chưa có yêu cầu nào</p>
+                            </div>
+                        </div>
+
+
+        </div><!-- /main-scroll -->
+
+    </div><!-- /content-wrap -->
+</div><!-- /app-body -->
+
+<!-- ══ NOTIFICATION PANEL ══ -->
+<div class="chat-widget" th:replace="reader/layout/reader-chat :: reader-chat"></div>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="reader/layout/reader-sc :: reader-script"></div>
+<script>
+    function cancelReq(element) {
+        const cId = element.dataset.id;
+        const name = element.dataset.name
+        if (confirm("Bạn có chắc chắn muốn hủy mượn sách " + name + " này?")) {
+            window.location.href = "/qltv/home/borrow-request?id=" + cId;
+        }
+        }
+</script>
+</body>
+</html>

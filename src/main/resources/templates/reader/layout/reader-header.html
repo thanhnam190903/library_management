@@ -5,12 +5,18 @@
     </div>
     <div class="topbar-search">
         <i class="ti ti-search"></i>
-        <input type="text" id="globalSearch" placeholder="Tìm kiếm sách, tác giả, thể loại..." onkeydown="if(event.key==='Enter')doSearch(this.value)"/>
+        <input type="text" id="globalSearch" placeholder="Tìm kiếm sách, tác giả, thể loại..."
+               onkeydown="if(event.key==='Enter')doSearch(this.value)"/>
         <button class="topbar-search-btn" onclick="doSearch(document.getElementById('globalSearch').value)">
             <i class="ti ti-search"></i>
         </button>
     </div>
     <div class="topbar-right">
-        <button class="notif-btn" onclick="toggleNotifPanel()"><i class="ti ti-bell"></i><span class="notif-dot" id="notifDot">2</span></button>
+        <button class="notif-btn" onclick="toggleNotifPanel()"><i class="ti ti-bell"></i><span class="notif-dot"
+                                                                                               id="notifDot">2</span>
+        </button>
+        <a class="btn-confirm" id="" sec:authorize="isAuthenticated()" th:href="@{/logout}">
+            Đăng xuất
+        </a>
     </div>
 </div>

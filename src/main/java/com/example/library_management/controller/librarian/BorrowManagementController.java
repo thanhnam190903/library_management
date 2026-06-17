@@ -1,22 +1,30 @@
 package com.example.library_management.controller.librarian;
 
 import com.example.library_management.entity.*;
-import com.example.library_management.repository.BookCopyRepository;
-import com.example.library_management.repository.BorrowDetailRepository;
-import com.example.library_management.repository.BorrowSlipRepository;
-import com.example.library_management.repository.LibraryCardRepository;
+import com.example.library_management.repository.*;
 import com.example.library_management.service.EmailService;
 import com.example.library_management.service.IdGeneratorService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,26 +41,45 @@ public class BorrowManagementController {
     BorrowDetailRepository borrowDetailRepository;
     IdGeneratorService idGeneratorService;
     BorrowSlipRepository borrowSlipRepository;
+    LibararyRuleRepository libararyRuleRepository;
 
     @GetMapping("/borrowing")
-    public String showBorrowing(@RequestParam(defaultValue = "borrow-tab") String tab,Model model) {
+    public String showBorrowing(@RequestParam(defaultValue = "borrow-tab") String tab,
+                                @RequestParam(defaultValue = "") String filter,
+                                @RequestParam(defaultValue = "") String keyword,
+                                @RequestParam(defaultValue = "0") int page,Model model) {
+
         Map<String, Object> data = new HashMap<>();
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<BorrowDetail> historyPage = borrowDetailRepository.searchHistory(keyword, filter, pageable);
         data.put("title", "Cho mượn · Trả sách · Quá hạn");
         data.put("sub", "Quản lý lưu hành");
-        data.put("borrowTitle", borrowDetailRepository.findAll());
-        data.put("overdueCount", borrowDetailRepository.findOverdueBooks().size());
+        data.put("borrowTitle", historyPage);
+        data.put("activeTab", tab);
+        data.put("keyword",keyword);
+        data.put("totalElements", historyPage.getTotalElements());
         data.put("overdueBooks", borrowDetailRepository.findOverdueBooks());
         data.put("returnedToday", borrowDetailRepository.findReturnedToday());
+        data.put("renewedBorrow",borrowDetailRepository.findRenewedBorrowDetails());
         data.put("countReturnedToday", borrowDetailRepository.findReturnedToday().size());
+        data.put("libraryRule",libararyRuleRepository.findAll());
+        double overdueRate = libararyRuleRepository.findByRuleKey("OVERDUE_FINE_PER_DAY")
+                .orElseThrow()
+                .getRuleValue();
+        data.put("overdueRate",overdueRate);
 
-        if(tab.equals("borrow-tab")){
-            data.put("activePage", "borrow");
-        } else if(tab.equals("return-tab")){
-            data.put("activePage", "return");
-        } else if(tab.equals("overdue-tab")){
-            data.put("activePage", "overdue");
-        }else {
-            data.put("activePage", "borrow");
+        switch (tab) {
+            case "history-tab":
+                model.addAttribute("activePage", "borrow");
+                break;
+            case "return-tab":
+                model.addAttribute("activePage", "return");
+                break;
+            case "overdue-tab":
+                model.addAttribute("activePage", "overdue");
+                break;
+            default:
+                model.addAttribute("activePage", "borrow");
         }
         model.addAllAttributes(data);
         return "librarian/borrow";
@@ -153,4 +180,67 @@ public class BorrowManagementController {
         return "redirect:/quan-ly/borrowing?tab=history-tab";
     }
 
+    @GetMapping("/borrow-slip/{id}")
+    @ResponseBody
+    public Map<String, Object> getBorrowSlip(@PathVariable String id) {
+        BorrowSlip slip = borrowSlipRepository.findById(id).orElseThrow();
+        Map<String, Object> map = new HashMap<>();
+        map.put("slipId", slip.getId());
+        map.put("readerName", slip.getLibraryCard().getReader().getName());
+        map.put("borrowDate", slip.getBorrowDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        map.put("dueDate", slip.getDueDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        List<Map<String, Object>> books = slip.getDetails()
+                .stream()
+                .map(d -> {
+                    Map<String, Object> b = new HashMap<>();
+                    b.put("bookId", d.getBookCopy().getId());
+                    b.put("title", d.getBookCopy().getBookTitle().getTitle());
+                    b.put("author", d.getBookCopy().getBookTitle().getAuthor().getAuthorName());
+                    b.put("category", d.getBookCopy().getBookTitle().getCategory().getCategoryName());
+                    return b;
+                }).toList();
+        map.put("books", books);
+        return map;
+    }
+
+    @GetMapping("/borrowing/export-excel")
+    public void exportExcel(HttpServletResponse response) throws IOException {
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=lich-su-muon-tra.xlsx");
+
+        List<BorrowDetail> list = borrowDetailRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Lich su muon tra");
+
+        Row header = sheet.createRow(0);
+
+        header.createCell(0).setCellValue("Mã phiếu");
+        header.createCell(1).setCellValue("Độc giả");
+        header.createCell(2).setCellValue("Tên sách");
+        header.createCell(3).setCellValue("Ngày mượn");
+        header.createCell(4).setCellValue("Hạn trả");
+        header.createCell(5).setCellValue("Trạng thái");
+
+        int rowNum = 1;
+        for (BorrowDetail bd : list) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(bd.getBorrowSlip().getId());
+            row.createCell(1).setCellValue(bd.getBorrowSlip().getLibraryCard()
+                                    .getReader().getName());
+            row.createCell(2).setCellValue(bd.getBookCopy().getBookTitle().getTitle());
+            row.createCell(3).setCellValue(bd.getBorrowSlip().getBorrowDate().toString());
+            row.createCell(4).setCellValue(bd.getBorrowSlip().getDueDate().toString());
+
+            String status = bd.getStatus() == 0 ? "Đã trả" : (bd.getBorrowSlip().getDueDate().isBefore(LocalDate.now())
+                            ? "Quá hạn" : "Đang mượn");
+            row.createCell(5).setCellValue(status);
+        }
+        for (int i = 0; i < 6; i++) {
+            sheet.autoSizeColumn(i);
+        }
+        workbook.write(response.getOutputStream());
+        workbook.close();
+    }
 }

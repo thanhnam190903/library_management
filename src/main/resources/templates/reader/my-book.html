@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="reader/layout/reader-head :: reader-head">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════ -->
+<div th:replace="reader/layout/reader-sidebar :: reader-sidebar"></div>
+
+<!-- ══════════════════════════════════════════
+     APP BODY
+══════════════════════════════════════════ -->
+<div class="app-body">
+    <!-- TOPBAR -->
+    <div th:replace="reader/layout/reader-header :: reader-header"></div>
+
+    <div class="content-wrap">
+        <!-- MAIN SCROLL -->
+        <div class="main-scroll" id="mainScroll">
+            <!-- ════ PAGE: MY BOOKS ════ -->
+            <div id="page-mybooks" style="display:block">
+                <div class="page-hdr">
+                    <div class="page-title">Sách của tôi</div>
+                    <div class="page-sub">Quản lý sách đang mượn, gia hạn và trả sách</div>
+                </div>
+                <div class="loans-table-wrap">
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Thành công!</strong> <span th:text="${success}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <table class="loans-table">
+                        <thead>
+                        <tr>
+                            <th>Tên sách</th>
+                            <th>Ngày mượn</th>
+                            <th>Hạn trả cũ</th>
+                            <th>Ngày đến hạn</th>
+                            <th>Lượt gia hạn</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="myBooksBody">
+                        <tr th:if="${#lists.isEmpty(details)}">
+                            <td colspan="7" class="empty-state"><i class="ti ti-book-off"></i>
+                                <p>Không có sách nào đang mượn</p></td>
+                        </tr>
+                        <tr th:each="b,stat : ${details}">
+                            <td>
+                                <div class="loan-book-cell">
+                                    <div class="loan-book-art"
+                                         th:style="${stat.index % 2 == 0} ? 'background:#4f46e5' : 'background:#10b981'"
+                                         th:text="${b.bookCopy.bookTitle.title != null} ? ${#strings.toUpperCase(#strings.substring(b.bookCopy.bookTitle.title, 0, 1))} : ''">
+                                    </div>
+                                    <div>
+                                        <div class="loan-book-title" th:text="${b.bookCopy.bookTitle.title}"></div>
+                                        <div class="loan-book-author"
+                                             th:text="${b.bookCopy.bookTitle.author.authorName}"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${#temporals.format(b.borrowSlip.borrowDate,'dd/MM/yyyy')}"></td>
+                            <td th:text="${b.borrowSlip.oldDueDate != null} ? ${#temporals.format(b.borrowSlip.oldDueDate, 'dd/MM/yyyy')} : '___'"></td>
+                            <td th:text="${#temporals.format(b.borrowSlip.dueDate,'dd/MM/yyyy')}"></td>
+                            <td>
+                               <span class="status-pill"
+                                     th:classappend="${b.borrowSlip.renewed} ? ' pill-soon' : ' pill-ok'"
+                                     th:text="${b.borrowSlip.renewed} ? '1/1 lần' : '0/1 lần'"></span>
+                                <br>
+                                <small th:if="${b.borrowSlip.statusRenewed == null}"
+                                       style="color:#6b7280;font-weight:600">
+                                    Chưa gia hạn
+                                </small>
+
+                                <small th:if="${b.borrowSlip.statusRenewed == 0}"
+                                       style="color:#2563eb;font-weight:600">
+                                    Chờ xét duyệt
+                                </small>
+
+                                <small th:if="${b.borrowSlip.statusRenewed == 1}"
+                                       style="color:#16a34a;font-weight:600">
+                                    Đã gia hạn
+                                </small>
+
+                                <small th:if="${b.borrowSlip.statusRenewed == 2}"
+                                       style="color:#dc2626;font-weight:600">
+                                    Từ chối
+                                </small>
+                            </td>
+                            <td>
+                                <small th:if="${!b.borrowSlip.dueDate.isBefore(T(java.time.LocalDate).now())}"
+                                       class="status-pill pill-ok"
+                                       th:text="${'Còn ' + T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), b.borrowSlip.dueDate) + ' ngày'}">
+                                </small>
+
+                                <small th:if="${b.borrowSlip.dueDate.isBefore(T(java.time.LocalDate).now())}"
+                                       class="status-pill pill-late"
+                                       th:text="${'Quá ' + T(java.time.temporal.ChronoUnit).DAYS.between(b.borrowSlip.dueDate, T(java.time.LocalDate).now()) + ' ngày'}">
+                                </small>
+                            </td>
+                            <td>
+                                <!--                                th:onclick="|openRenew('${b.id}')|"-->
+                                <div style="display:flex;gap:6px">
+                                    <button class="btn-renew" th:if="${!b.borrowSlip.renewed}"
+                                            th:data-id="${b.borrowSlip.id}"
+                                            th:data-title="${b.bookCopy.bookTitle.title}"
+                                            th:data-duedate="${b.borrowSlip.dueDate}"
+                                            onclick="openRenew(this)">
+                                        <i class="ti ti-refresh"></i> Gia hạn
+                                    </button>
+                                    <span style="font-size:11px;color:var(--muted)" th:if="${b.borrowSlip.renewed}">Hết lượt</span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div><!-- /main-scroll -->
+
+    </div><!-- /content-wrap -->
+</div><!-- /app-body -->
+
+<!-- ══ NOTIFICATION PANEL ══ -->
+<div id="notifPanel"
+     style="position:fixed;top:64px;right:12px;width:340px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);z-index:150;display:none;overflow:hidden;animation:modalIn .18s ease">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:15px;font-weight:700;color:var(--ink)">Thông báo</div>
+        <button onclick="markAllRead()"
+                style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:500">
+            Đánh dấu đã đọc
+        </button>
+    </div>
+    <div id="notifPanelList"></div>
+</div>
+<div id="notifBackdrop" style="position:fixed;inset:0;z-index:149;display:none" onclick="closeNotifPanel()"></div>
+
+<!-- ══ RENEW MODAL ══ -->
+<div class="modal-overlay" id="renewModal">
+    <div class="modal-box" style="width:420px">
+        <div class="modal-title">Gia hạn mượn sách</div>
+        <div class="modal-sub" id="mRenewSub">—</div>
+        <div class="modal-info-box">
+            <i class="ti ti-info-circle" style="font-size:15px"></i>
+            <span>Mỗi cuốn sách được gia hạn tối đa <strong>1 lần</strong>.
+                Gia hạn có hiệu lực ngay sau khi quản trị viên kiểm duyệt.</span>
+        </div>
+        <form th:action="@{/home/renew-book}" method="post">
+            <div class="form-field"><label class="form-label">Gia hạn thêm</label>
+                <input type="hidden" id="renewBorrowSlipId" name="borrowSlipId">
+                <select class="form-select" name="renewDays">
+                    <option value="3" selected>3 ngày</option>
+                    <option value="7" >7 ngày</option>
+                    <option value="14">14 ngày</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" type="button" onclick="closeModal('renewModal')">Huỷ</button>
+                <button class="btn-confirm">
+                    <i class="ti ti-check" style="font-size:13px"></i>Xác nhận gia hạn
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<div class="chat-widget" th:replace="reader/layout/reader-chat :: reader-chat"></div>
+<!-- ══ READER OVERLAY ══ -->
+
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="reader/layout/reader-sc :: reader-script"></div>
+</body>
+</html>

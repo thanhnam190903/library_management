@@ -4,14 +4,8 @@
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     SIDEBAR
-══════════════════════════════════════════ -->
 <div th:replace="reader/layout/reader-sidebar :: reader-sidebar"></div>
 
-<!-- ══════════════════════════════════════════
-     APP BODY
-══════════════════════════════════════════ -->
 <div class="app-body">
     <!-- TOPBAR -->
     <div th:replace="reader/layout/reader-header :: reader-header"></div>
@@ -19,119 +13,175 @@
     <div class="content-wrap">
         <!-- MAIN SCROLL -->
         <div class="main-scroll" id="mainScroll">
+            <div id="page-history" style="display:block">
+                <div class="page-hdr">
+                    <div class="page-title">Lịch sử mượn trả</div>
+                    <div class="page-sub">Toàn bộ giao dịch mượn, trả và gia hạn của bạn</div>
+                </div>
+                <div class="hist-filter-row">
+                    <button class="hist-chip active" onclick="showHistTab('all',this)">Tất cả</button>
+                    <button class="hist-chip" onclick="showHistTab('returned',this)">Đã trả</button>
+                    <button class="hist-chip" onclick="showHistTab('renewed',this)">Đã gia hạn</button>
+                    <button class="hist-chip" onclick="showHistTab('late',this)">Trả trễ</button>
+                </div>
+                <div class="loans-table-wrap" id="hist-all">
+                    <table class="loans-table">
+                        <thead>
+                        <tr>
+                            <th>Tên sách</th>
+                            <th>Ngày mượn</th>
+                            <th>Hạn trả</th>
+                            <th>Ngày trả thực tế</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(detailsAll)}">
+                            <td colspan="5" style="text-align:center;color:var(--muted);padding:20px">
+                                Không có giao dịch nào trong lịch sử mượn trả của bạn
+                            </td>
+                        </tr>
+                        <tr th:each="h : ${detailsAll}">
+                            <td>
+                                <strong th:text="${h.bookCopy.bookTitle.title}"></strong>
+                                <br>
+                                <small style="color:var(--muted)"
+                                       th:text="${h.bookCopy.bookTitle.author.authorName}"></small>
+                            </td>
+                            <td th:text="${#temporals.format(h.borrowSlip.borrowDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#temporals.format(h.borrowSlip.dueDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${h.returnDate != null ? #temporals.format(h.returnDate, 'dd/MM/yyyy') : '___'}"></td>
+                            <td>
+                                <span class="status-pill"
+                                      th:with="today=${T(java.time.LocalDate).now()},due=${h.borrowSlip.dueDate},ret=${h.returnDate},st=${h.status}"
+                                      th:classappend="${st == 0 ? (ret != null and ret.isAfter(due) ? 'pill-late' : 'pill-ok') :
+                                      (due.isBefore(today) ? 'pill-late' : 'pill-pending')}"
+                                      th:text="${st == 0 ? (ret != null and ret.isAfter(due) ? 'Trả trễ' : 'Đã trả'):
+                                      (due.isBefore(today) ? 'Quá hạn' : 'Đang mượn')}">
+                                </span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
 
+                <div class="loans-table-wrap" id="hist-returned" style="display:none">
+                    <table class="loans-table">
+                        <thead>
+                        <tr>
+                            <th>Tên sách</th>
+                            <th>Ngày mượn</th>
+                            <th>Hạn trả</th>
+                            <th>Ngày trả thực tế</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:if="${#lists.isEmpty(returnedList)}">
+                              <td colspan="5" style="text-align:center;color:var(--muted);padding:20px">
+                                  Không có lượt trả nào
+                              </td>
+                          </tr>
+                          <tr th:each="h : ${returnedList}">
+                            <td>
+                                <strong th:text="${h.bookCopy.bookTitle.title}"></strong>
+                                <br>
+                                <small style="color:var(--muted)"
+                                       th:text="${h.bookCopy.bookTitle.author.authorName}"></small>
+                            </td>
+                            <td th:text="${#temporals.format(h.borrowSlip.borrowDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#temporals.format(h.borrowSlip.dueDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${h.returnDate != null ? #temporals.format(h.returnDate, 'dd/MM/yyyy') : '___'}"></td>
+                            <td>
+                                <span class="status-pill pill-ok">
+                                     Đã trả
+                                </span>
+                            </td>
+                          </tr>
+                        </tbody>
+                    </table>
+                </div>
 
+                <div class="loans-table-wrap" id="hist-late" style="display:none">
+                    <table class="loans-table">
+                        <thead>
+                        <tr>
+                            <th>Tên sách</th>
+                            <th>Ngày mượn</th>
+                            <th>Hạn trả</th>
+                            <th>Ngày trả thực tế</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(lateList)}">
+                            <td colspan="5" style="text-align:center;color:var(--muted);padding:20px">
+                                Không có lượt trả trễ
+                            </td>
+                        </tr>
+                          <tr th:each="h : ${lateList}">
+                            <td>
+                                <strong th:text="${h.bookCopy.bookTitle.title}"></strong>
+                                <br>
+                                <small style="color:var(--muted)"
+                                       th:text="${h.bookCopy.bookTitle.author.authorName}"></small>
+                            </td>
+                            <td th:text="${#temporals.format(h.borrowSlip.borrowDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#temporals.format(h.borrowSlip.dueDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${h.returnDate != null ? #temporals.format(h.returnDate, 'dd/MM/yyyy') : '___'}"></td>
+                            <td>
+                                <span class="status-pill pill-late">
+                                     Trả trễ
+                                </span>
+                            </td>
+                          </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-             ════ PAGE: HISTORY ════
-                        <div id="page-history" style="display:none">
-                            <div class="page-hdr"><div class="page-title">Lịch sử mượn trả</div><div class="page-sub">Toàn bộ giao dịch mượn, trả và gia hạn của bạn</div></div>
-                            <div class="hist-filter-row">
-                                <button class="hist-chip active" onclick="filterHist('all',this)">Tất cả</button>
-                                <button class="hist-chip" onclick="filterHist('returned',this)">Đã trả</button>
-                                <button class="hist-chip" onclick="filterHist('renewed',this)">Đã gia hạn</button>
-                                <button class="hist-chip" onclick="filterHist('late',this)">Trả trễ</button>
-                            </div>
-                            <div class="loans-table-wrap">
-                                <table class="loans-table">
-                                    <thead>
-                                    <tr>
-                                        <th>Tên sách</th>
-                                        <th>Ngày mượn</th>
-                                        <th>Hạn trả</th>
-                                        <th>Ngày trả thực tế</th>
-                                        <th>Trạng thái</th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody id="histBody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-
-             ════ PAGE: RENEW ════
-                        <div id="page-renew" style="display:none">
-                            <div class="page-hdr">
-                                <div class="page-title">Gia hạn mượn</div>
-                                <div class="page-sub">Gia hạn các sách đang mượn trực tiếp tại đây</div>
-                            </div>
-                            <div class="loans-table-wrap">
-                                <table class="loans-table">
-                                    <thead>
-                                    <tr>
-                                        <th>Tên sách</th>
-                                        <th>Ngày mượn</th>
-                                        <th>Hạn hiện tại</th>
-                                        <th>Lượt gia hạn</th>
-                                        <th>Trạng thái</th>
-                                        <th>Thao tác</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody id="renewBody"></tbody>
-                                </table>
-                            </div>
-                            <div id="renewEmpty" class="empty-state" style="display:none"><i class="ti ti-refresh-off"></i><p>Không có sách nào cần gia hạn</p></div>
-                        </div>
-
-             ════ PAGE: REQUESTS ════
-                        <div id="page-requests" style="display:none">
-                            <div class="page-hdr"><div class="page-title">Yêu cầu đặt mượn</div><div class="page-sub">Danh sách yêu cầu đặt mượn đang chờ xác nhận từ thủ thư</div></div>
-                            <div id="reqList"></div>
-                            <div id="reqEmpty" class="empty-state" style="display:none"><i class="ti ti-clipboard-off"></i><p>Chưa có yêu cầu nào</p></div>
-                        </div>
-
-            <!-- ════ PAGE: DIGITAL ════ -->
-            <!--            <div id="page-digital" style="display:none">-->
-            <!--                <div class="page-hdr"><div class="page-title">Đọc trực tuyến</div><div class="page-sub">E-Book và tài liệu số — đọc ngay trên trình duyệt</div></div>-->
-            <!--                <div class="hist-filter-row">-->
-            <!--                    <button class="hist-chip active" onclick="switchDigiTab('ebook',this)">E-Book</button>-->
-            <!--                    <button class="hist-chip" onclick="switchDigiTab('doc',this)">Tài liệu học thuật</button>-->
-            <!--                </div>-->
-            <!--                <div id="digiTab-ebook" class="books-row" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))"></div>-->
-            <!--                <div id="digiTab-doc" style="display:none"></div>-->
-            <!--            </div>-->
-
-            <!-- ════ PAGE: PROFILE ════ -->
-            <!--            <div id="page-profile" style="display:none">-->
-            <!--                <div class="page-hdr"><div class="page-title">Tài khoản của tôi</div><div class="page-sub">Thông tin thẻ thư viện và thống kê hoạt động</div></div>-->
-            <!--                <div class="profile-card">-->
-            <!--                    <div class="profile-card-content">-->
-            <!--                        <div class="profile-avatar"><span>TV</span></div>-->
-            <!--                        <div class="profile-name">Nguyễn Thảo Vy</div>-->
-            <!--                        <div class="profile-id">Mã độc giả: DG000123 · Thẻ hiệu lực đến 31/12/2026</div>-->
-            <!--                        <div class="profile-meta-row">-->
-            <!--                            <div class="profile-meta-item"><div class="label">Hạng thành viên</div><div class="val">🥈 Hạng Bạc</div></div>-->
-            <!--                            <div class="profile-meta-item"><div class="label">Điểm tích lũy</div><div class="val">320 điểm</div></div>-->
-            <!--                            <div class="profile-meta-item"><div class="label">Tổng sách đã mượn</div><div class="val">18 cuốn</div></div>-->
-            <!--                        </div>-->
-            <!--                    </div>-->
-            <!--                </div>-->
-            <!--                <div class="stats-grid">-->
-            <!--                    <div class="stat-card"><div class="stat-icon" style="background:var(&#45;&#45;blue-lt)"><i class="ti ti-books" style="color:var(&#45;&#45;blue)"></i></div><div><div class="stat-val">18</div><div class="stat-lbl">Đã mượn</div></div></div>-->
-            <!--                    <div class="stat-card"><div class="stat-icon" style="background:var(&#45;&#45;green-lt)"><i class="ti ti-check" style="color:var(&#45;&#45;green)"></i></div><div><div class="stat-val">16</div><div class="stat-lbl">Đã đọc xong</div></div></div>-->
-            <!--                    <div class="stat-card"><div class="stat-icon" style="background:var(&#45;&#45;amber-lt)"><i class="ti ti-star" style="color:var(&#45;&#45;amber)"></i></div><div><div class="stat-val">320</div><div class="stat-lbl">Điểm tích lũy</div></div></div>-->
-            <!--                    <div class="stat-card"><div class="stat-icon" style="background:var(&#45;&#45;red-lt)"><i class="ti ti-alert-triangle" style="color:var(&#45;&#45;red)"></i></div><div><div class="stat-val">1</div><div class="stat-lbl">Lần trả trễ</div></div></div>-->
-            <!--                </div>-->
-            <!--                <div style="background:#fff;border:1px solid var(&#45;&#45;border);border-radius:14px;padding:22px;margin-bottom:20px">-->
-            <!--                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">-->
-            <!--                        <div style="font-size:15px;font-weight:700;color:var(&#45;&#45;ink)">Thông tin cá nhân</div>-->
-            <!--                        <button class="btn-renew" onclick="showToast('Chức năng chỉnh sửa đang phát triển')"><i class="ti ti-edit" style="font-size:12px"></i> Chỉnh sửa</button>-->
-            <!--                    </div>-->
-            <!--                    <div class="info-grid">-->
-            <!--                        <div class="info-item"><div class="info-label">Họ và tên</div><div class="info-val">Nguyễn Thảo Vy</div></div>-->
-            <!--                        <div class="info-item"><div class="info-label">Ngày sinh</div><div class="info-val">20/08/2001</div></div>-->
-            <!--                        <div class="info-item"><div class="info-label">Email</div><div class="info-val">thaovy@email.com</div></div>-->
-            <!--                        <div class="info-item"><div class="info-label">Số điện thoại</div><div class="info-val">0987 654 321</div></div>-->
-            <!--                        <div class="info-item"><div class="info-label">Địa chỉ</div><div class="info-val">45 Đinh Tiên Hoàng, Hà Nội</div></div>-->
-            <!--                        <div class="info-item"><div class="info-label">Nghề nghiệp</div><div class="info-val">Sinh viên</div></div>-->
-            <!--                    </div>-->
-            <!--                </div>-->
-            <!--                <div style="background:#fff;border:1px solid var(&#45;&#45;border);border-radius:14px;padding:22px">-->
-            <!--                    <div style="font-size:15px;font-weight:700;color:var(&#45;&#45;ink);margin-bottom:12px">Tiến trình thăng hạng 🥇</div>-->
-            <!--                    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(&#45;&#45;muted);margin-bottom:6px"><span>320 điểm hiện tại</span><span>500 điểm → Hạng Vàng</span></div>-->
-            <!--                    <div style="height:10px;background:var(&#45;&#45;border);border-radius:5px;overflow:hidden"><div style="height:100%;width:64%;background:linear-gradient(90deg,var(&#45;&#45;blue),#60A5FA);border-radius:5px"></div></div>-->
-            <!--                    <div style="font-size:12px;color:var(&#45;&#45;muted);margin-top:6px">Còn 180 điểm nữa để đạt Hạng Vàng</div>-->
-            <!--                </div>-->
-            <!--            </div>-->
+                <div class="loans-table-wrap" id="hist-renewed" style="display:none">
+                    <table class="loans-table">
+                        <thead>
+                        <tr>
+                            <th>Tên sách</th>
+                            <th>Ngày mượn</th>
+                            <th>Hạn trả cũ</th>
+                            <th>Hạn trả mới</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:if="${#lists.isEmpty(renewedList)}">
+                            <td colspan="5" style="text-align:center;color:var(--muted);padding:20px">
+                                Không có lượt gia hạn nào
+                            </td>
+                          </tr>
+                          <tr th:each="h : ${renewedList}">
+                            <td>
+                                <strong th:text="${h.bookCopy.bookTitle.title}"></strong>
+                                <br>
+                                <small style="color:var(--muted)"
+                                       th:text="${h.bookCopy.bookTitle.author.authorName}"></small>
+                            </td>
+                              <td th:text="${#temporals.format(h.borrowSlip.borrowDate, 'dd/MM/yyyy')}"></td>
+                              <td th:text="${h.borrowSlip.oldDueDate != null} ? ${#temporals.format(h.borrowSlip.oldDueDate, 'dd/MM/yyyy')} : '___'"></td>
+                              <td th:text="${#temporals.format(h.borrowSlip.dueDate, 'dd/MM/yyyy')}"></td>
+                              <td>
+                                <span class="status-pill"
+                                      th:classappend="${h.borrowSlip.statusRenewed == null} ? ' pill-pending' :
+                                      (${h.borrowSlip.statusRenewed == 0} ? ' pill-ok' : ' pill-pending')"
+                                      th:text="${h.borrowSlip.statusRenewed == null} ? '___' :
+                                      (${h.borrowSlip.statusRenewed == 0} ? 'Đã gia hạn' : 'Chờ xử lý')">
+                                </span>
+                              </td>
+                          </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
         </div><!-- /main-scroll -->
 
@@ -139,96 +189,22 @@
 </div><!-- /app-body -->
 
 <!-- ══ NOTIFICATION PANEL ══ -->
-<div id="notifPanel" style="position:fixed;top:64px;right:12px;width:340px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);z-index:150;display:none;overflow:hidden;animation:modalIn .18s ease">
+<div id="notifPanel"
+     style="position:fixed;top:64px;right:12px;width:340px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);z-index:150;display:none;overflow:hidden;animation:modalIn .18s ease">
     <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
         <div style="font-size:15px;font-weight:700;color:var(--ink)">Thông báo</div>
-        <button onclick="markAllRead()" style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:500">Đánh dấu đã đọc</button>
+        <button onclick="markAllRead()"
+                style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:500">
+            Đánh dấu đã đọc
+        </button>
     </div>
     <div id="notifPanelList"></div>
 </div>
 <div id="notifBackdrop" style="position:fixed;inset:0;z-index:149;display:none" onclick="closeNotifPanel()"></div>
 
-<!-- ══ BORROW MODAL ══ -->
-<div class="modal-overlay" id="borrowModal">
-    <div class="modal-box">
-        <div class="modal-title">Đặt mượn sách</div>
-        <div class="modal-sub">Gửi yêu cầu — thủ thư xác nhận và giữ sách 48 giờ</div>
-        <div class="modal-cover-row">
-            <div class="modal-book-art" id="mBorrowArt"></div>
-            <div style="flex:1">
-                <div class="modal-book-title" id="mBorrowTitle">—</div>
-                <div class="modal-book-author" id="mBorrowAuthor">—</div>
-                <div id="mBorrowAvail" style="font-size:12.5px;margin-bottom:4px"></div>
-                <div id="mBorrowShelf" style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px"><i class="ti ti-map-pin" style="color:var(--blue);font-size:12px"></i><span id="mBorrowShelfText">—</span></div>
-            </div>
-        </div>
-        <div class="modal-info-box"><i class="ti ti-info-circle" style="font-size:15px"></i><span>Sau khi gửi yêu cầu, thủ thư sẽ xác nhận và giữ sách trong <strong>48 giờ</strong>. Bạn đến thư viện lấy trực tiếp.</span></div>
-        <div class="form-field"><label class="form-label">Hình thức nhận</label>
-            <select class="form-select" id="mBorrowType">
-                <option value="pickup">Đến thư viện lấy trực tiếp</option>
-                <option value="ebook">Đọc E-Book online</option>
-            </select></div>
-        <div class="form-field"><label class="form-label">Thời hạn mượn</label>
-            <select class="form-select" id="mBorrowDur">
-                <option value="7">7 ngày</option><option value="14" selected>14 ngày</option>
-                <option value="21">21 ngày</option><option value="30">30 ngày</option>
-            </select></div>
-        <div class="form-field"><label class="form-label">Ghi chú cho thủ thư (tuỳ chọn)</label>
-            <input class="form-input" id="mBorrowNote" placeholder="Ví dụ: tôi sẽ đến vào buổi chiều..."/></div>
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeModal('borrowModal')">Huỷ</button>
-            <button class="btn-confirm" onclick="confirmBorrow()"><i class="ti ti-send" style="font-size:13px"></i>Gửi yêu cầu</button>
-        </div>
-    </div>
-</div>
-
-<!-- ══ RENEW MODAL ══ -->
-<div class="modal-overlay" id="renewModal">
-    <div class="modal-box" style="width:420px">
-        <div class="modal-title">Gia hạn mượn sách</div>
-        <div class="modal-sub" id="mRenewSub">—</div>
-        <div class="modal-info-box"><i class="ti ti-info-circle" style="font-size:15px"></i><span>Mỗi cuốn sách được gia hạn tối đa <strong>2 lần</strong>. Gia hạn có hiệu lực ngay.</span></div>
-        <div class="form-field"><label class="form-label">Gia hạn thêm</label>
-            <select class="form-select" id="mRenewDur">
-                <option value="7" selected>7 ngày</option><option value="14">14 ngày</option>
-            </select></div>
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeModal('renewModal')">Huỷ</button>
-            <button class="btn-confirm" onclick="confirmRenew()"><i class="ti ti-check" style="font-size:13px"></i>Xác nhận gia hạn</button>
-        </div>
-    </div>
-</div>
-
-<!-- ══ RETURN MODAL ══ -->
-<div class="modal-overlay" id="returnModal">
-    <div class="modal-box" style="width:400px">
-        <div class="modal-title">Trả sách</div>
-        <div class="modal-sub" id="mReturnSub">—</div>
-        <div style="background:var(--green-lt);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:var(--green);display:flex;gap:8px"><i class="ti ti-star" style="font-size:15px;flex-shrink:0"></i><span>Trả đúng hạn bạn nhận được <strong>+10 điểm tích lũy</strong>!</span></div>
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeModal('returnModal')">Huỷ</button>
-            <button class="btn-confirm" style="background:var(--green)" onclick="confirmReturn()"><i class="ti ti-check" style="font-size:13px"></i>Xác nhận trả</button>
-        </div>
-    </div>
-</div>
-
 
 <div class="chat-widget" th:replace="reader/layout/reader-chat :: reader-chat"></div>
-<!-- ══ READER OVERLAY ══ -->
-<div class="reader-overlay" id="readerOverlay">
-    <div class="reader-topbar">
-        <button class="reader-btn" onclick="closeReader()"><i class="ti ti-x" style="font-size:13px"></i> Đóng</button>
-        <div class="reader-title" id="readerTitle">—</div>
-        <button class="reader-btn"><i class="ti ti-settings" style="font-size:13px"></i></button>
-    </div>
-    <div class="reader-body">
-        <div class="reader-toc">
-            <div class="reader-toc-title">Mục lục</div>
-            <div id="readerToc"></div>
-        </div>
-        <div class="reader-content" id="readerContent"></div>
-    </div>
-</div>
+
 
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

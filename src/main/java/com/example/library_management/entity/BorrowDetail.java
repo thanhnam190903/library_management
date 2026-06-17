@@ -3,9 +3,12 @@ package com.example.library_management.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -29,4 +32,10 @@ public class BorrowDetail {
     double fineAmount;
     Integer status;
     boolean overdueMailSent = false;
+    @Column(name = "create_at")
+    @CreationTimestamp
+    LocalDateTime createdAt;
+    @Column(name = "last_modified")
+    @UpdateTimestamp
+    LocalDateTime lastModified;
 }

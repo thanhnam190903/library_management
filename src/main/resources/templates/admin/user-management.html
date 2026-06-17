@@ -15,26 +15,24 @@
         <!-- ══════ PAGE: BOOKS ══════ -->
         <div class="bl-page active" id="page-users">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                <form method="get" th:action="@{/quan-ly/users}" style="display: contents;">
                 <div class="bl-search-bar" style="flex:1;min-width:220px;">
                     <span style="color:var(--mist);">🔍</span>
-                    <input type="text" placeholder="Tìm theo tên sách, tác giả, ISBN...">
+                    <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên, email...">
                 </div>
-                <select class="bl-filter-select">
-                    <option>Tất cả vai trò</option>
-                    <option>Văn học</option>
-                    <option>Kỹ năng sống</option>
-                    <option>Lịch sử</option>
-                    <option>Tâm lý học</option>
-                    <option>Công nghệ</option>
-                    <option>Thiếu nhi</option>
+                <select class="bl-filter-select" name="role">
+                    <option value="">Tất cả vai trò</option>
+                    <option value="LIBRARIAN">Thủ thư</option>
+                    <option value="ADMIN">Admin</option>
                 </select>
-                <select class="bl-filter-select">
-                    <option>Tất cả trạng thái</option>
-                    <option>Còn sách</option>
-                    <option>Đang mượn</option>
-                    <option>Quá hạn</option>
+                <select class="bl-filter-select" name="status">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="true">Hoạt động</option>
+                    <option value="false">Bị khóa</option>
                 </select>
-                <button type="button" class="bl-btn bl-btn-primary" onclick="openAddMember()">➕ Thêm mới</button>
+                    <button type="submit" class="bl-btn bl-btn-secondary">Tìm</button>
+                </form>
+                <button type="button" class="bl-btn bl-btn-primary" onclick="openAddUser()">➕ Thêm mới</button>
             </div>
 
             <div id="books-list-view">
@@ -46,7 +44,7 @@
                     </div>
                     <table class="bl-data-table">
                         <thead>
-                         <tr>
+                        <tr>
                             <th>Tên</th>
                             <th>Email</th>
                             <th>Ngày sinh</th>
@@ -54,7 +52,7 @@
                             <th>SĐT</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
-                         </tr>
+                        </tr>
                         </thead>
                         <tbody>
                         <tr th:if="${#lists.isEmpty(listUser)}">
@@ -62,18 +60,21 @@
                                 Không có dữ liệu
                             </td>
                         </tr>
-                        <tr th:each="u : ${listUser}">
+                        <tr th:each="u : ${listUser.content}">
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <div style="font-weight:500;" th:text="${u.name}"></div>
                                 </div>
                             </td>
                             <td style="color:var(--mist);" th:text="${u.email}"></td>
-                            <td style="color:var(--mist);" th:text="${u.birthDate != null} ? ${#temporals.format(u.birthDate, 'dd/MM/yyyy')} : ''"></td>
+                            <td style="color:var(--mist);"
+                                th:text="${u.birthDate != null} ? ${#temporals.format(u.birthDate, 'dd/MM/yyyy')} : ''"></td>
                             <td><span class="bl-badge bl-badge-silver" th:each="r : ${u.roles}"
                                       th:text="${r.roleName}"></span></td>
-                            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);" th:text="${u.phone}"></td>
-                            <td><span class="bl-badge bl-badge-borrowed" th:classappend="${u.status} ? 'bl-badge-active' : 'bl-badge-inactive'"
+                            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);"
+                                th:text="${u.phone}"></td>
+                            <td><span class="bl-badge bl-badge-borrowed"
+                                      th:classappend="${u.status} ? 'bl-badge-active' : 'bl-badge-inactive'"
                                       th:text="${u.status} ? 'Hoạt động' : 'Bị khóa'"></span></td>
                             <td>
                                 <button class="action-btn btn-edit"
@@ -84,13 +85,32 @@
                                         th:data-phone="${u.phone}"
                                         th:data-status="${u.status}"
                                         th:data-roles="${u.roles != null ? #strings.arrayJoin(u.roles.![roleName], ',') : ''}"
-                                        onclick="openUpdateMember()">Sửa</button>
-                                <button class="action-btn" th:data-id="${u.id}" onclick="confirmDelete(this)">Xóa</button>
+                                        onclick="openUpdateMember()">Sửa
+                                </button>
+                                <button class="action-btn" th:data-id="${u.id}" onclick="confirmDelete(this)">Xóa
+                                </button>
                             </td>
                         </tr>
 
                         </tbody>
                     </table>
+                    <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                        <div style="font-size:13px;color:var(--mist);"
+                             th:text="'Hiển thị ' + ${listUser.numberOfElements}
+                                          + ' / ' + ${totalElements} + ' người dùng'">Hiển thị 6 / 1,584 hội viên</div>
+                        <div style="display:flex;gap:6px;">
+                            <a class="action-btn" th:if="${currentPage > 0}"
+                               th:href="@{/quan-ly/users(page=${currentPage - 1}, keyword=${keyword}, role=${role}, status=${status})}">‹
+                            </a>
+                            <a class="action-btn" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? 'active' : ''"
+                               th:href="@{/quan-ly/users(page=${i}, keyword=${keyword}, role=${role}, status=${status})}">
+                            </a>
+                            <a class="action-btn" th:if="${currentPage < totalPages - 1}"
+                               th:href="@{/quan-ly/users(page=${currentPage + 1}, keyword=${keyword}, role=${role}, status=${status})}">›
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -98,12 +118,15 @@
 </div><!-- /main -->
 
 <!-- ════════ MODALS ════════ -->
-<div class="bl-modal-overlay" id="add-member-modal" onclick="closeModal('add-member-modal')">
+<div class="bl-modal-overlay" id="add-user-modal" onclick="closeModal('add-user-modal')">
     <div class="bl-modal" onclick="event.stopPropagation()">
         <div class="bl-modal-header">
             <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
-            <div><div class="bl-modal-book-title">Đăng ký nhân viên</div><div class="bl-modal-book-author">Tạo tài khoản nhân viên</div></div>
-            <button class="bl-modal-close" onclick="closeModal('add-member-modal')">✕</button>
+            <div>
+                <div class="bl-modal-book-title">Đăng ký nhân viên</div>
+                <div class="bl-modal-book-author">Tạo tài khoản nhân viên</div>
+            </div>
+            <button class="bl-modal-close" onclick="closeModal('add-user-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
             <form th:action="@{/quan-ly/add-user}" th:object="${user}" method="post">
@@ -133,7 +156,8 @@
                 </div>
                 <div class="bl-form-row">
 
-                    <div class="bl-form-group"><div class="bl-form-label">Trạng thái</div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Trạng thái</div>
                         <select class="bl-form-input" th:field="*{status}">
                             <option th:value="true">Hoạt động</option>
                             <option th:value="false">Khóa</option>
@@ -153,8 +177,11 @@
                 </div>
 
                 <div style="display:flex;gap:10px;">
-                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng ký &amp; In thẻ</button>
-                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('add-member-modal')">Hủy</button>
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Đăng
+                        ký
+                    </button>
+                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('add-user-modal')">Hủy
+                    </button>
                 </div>
             </form>
 
@@ -166,7 +193,10 @@
     <div class="bl-modal" onclick="event.stopPropagation()">
         <div class="bl-modal-header">
             <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
-            <div><div class="bl-modal-book-title">Cập nhật nhân viên</div><div class="bl-modal-book-author">Tạo tài khoản nhân viên</div></div>
+            <div>
+                <div class="bl-modal-book-title">Cập nhật nhân viên</div>
+                <div class="bl-modal-book-author">Tạo tài khoản nhân viên</div>
+            </div>
             <button class="bl-modal-close" onclick="closeModal('update-member-modal')">✕</button>
         </div>
         <div class="bl-modal-body">
@@ -179,7 +209,7 @@
                     </div>
                     <div class="bl-form-group">
                         <div class="bl-form-label">Ngày sinh *</div>
-                        <input name="birthDate" id="edit-ngaysinh"  class="bl-form-input" type="date">
+                        <input name="birthDate" id="edit-ngaysinh" class="bl-form-input" type="date">
                     </div>
                 </div>
                 <div class="bl-form-row">
@@ -189,12 +219,14 @@
                     </div>
                     <div class="bl-form-group">
                         <div class="bl-form-label">Email</div>
-                        <input class="bl-form-input" name="email" id="edit-email" type="email" placeholder="email@domain.com">
+                        <input class="bl-form-input" name="email" id="edit-email" type="email"
+                               placeholder="email@domain.com">
                     </div>
                 </div>
                 <div class="bl-form-row">
 
-                    <div class="bl-form-group"><div class="bl-form-label">Trạng thái</div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Trạng thái</div>
                         <select class="bl-form-input" id="edit-status" name="status">
                             <option th:value="true">Hoạt động</option>
                             <option th:value="false">Khóa</option>
@@ -214,8 +246,11 @@
                 </div>
 
                 <div style="display:flex;gap:10px;">
-                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">Cập nhật</button>
-                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('update-member-modal')">Hủy</button>
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">Cập nhật
+                    </button>
+                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('update-member-modal')">
+                        Hủy
+                    </button>
                 </div>
             </form>
 
@@ -225,9 +260,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:replace="layout/script :: script"></script>
 <script th:if="${showModal}">
-     window.addEventListener("load", function () {
-         document.getElementById("add-member-modal").classList.add("bl-open");
-     });
+    window.addEventListener("load", function () {
+        document.getElementById("add-member-modal").classList.add("bl-open");
+    });
 </script>
 <script>
     function confirmDelete(element) {
@@ -235,6 +270,9 @@
     if (confirm("Bạn có chắc chắn muốn xóa nhân viên " + userId + " này?")) {
         window.location.href = "/qltv/quan-ly/delete-user?id=" + userId;
     }
+}
+function openAddUser(){
+    document.getElementById('add-user-modal').classList.add('bl-open');
 }
     document.querySelectorAll(".btn-edit").forEach(btn => {
     btn.addEventListener("click", function () {

@@ -1,492 +1,727 @@
+<div sec:authorize="isAuthenticated()">
+    <script>
+        isLogin = true;
+    </script>
+</div>
 <div th:fragment="reader-script">
-    <script >
-        /* ══════════════════════ DATA ══════════════════════ */
-        const BOOKS = [
-          {id:1,title:"Nhà Giả Kim",author:"Paulo Coelho",genre:"Tiểu thuyết",color:"#B71C1C",rating:4.8,pages:228,avail:true,digital:true,copies:3,shelf:"Kệ B-05 · Tầng 2",desc:"Cuốn tiểu thuyết huyền thoại của Paulo Coelho kể về Santiago — cậu bé chăn cừu theo đuổi giấc mơ tìm kho báu. Tác phẩm truyền cảm hứng về việc lắng nghe tiếng gọi trái tim và dũng cảm đi theo ước mơ."},
-          {id:2,title:"Đắc Nhân Tâm",author:"Dale Carnegie",genre:"Kỹ năng",color:"#1A237E",rating:4.9,pages:320,avail:true,digital:true,copies:5,shelf:"Kệ A-12 · Tầng 1",desc:"Cuốn sách kinh điển về nghệ thuật giao tiếp và tạo ảnh hưởng. Dale Carnegie chia sẻ những nguyên tắc đơn giản nhưng sâu sắc giúp cải thiện mối quan hệ và thành công trong cuộc sống."},
-          {id:3,title:"Sapiens",author:"Yuval Noah Harari",genre:"Lịch sử",color:"#004D40",rating:4.9,pages:512,avail:true,digital:false,copies:2,shelf:"Kệ C-08 · Tầng 2",desc:"Tác phẩm lịch sử của Yuval Noah Harari khám phá toàn bộ lịch sử loài người từ thời tiền sử đến hiện đại. Một cái nhìn đột phá về cách Homo Sapiens chinh phục thế giới."},
-          {id:4,title:"Tư Duy Nhanh Và Chậm",author:"Daniel Kahneman",genre:"Tâm lý",color:"#4A148C",rating:4.7,pages:499,avail:true,digital:true,copies:1,shelf:"Kệ D-03 · Tầng 1",desc:"Daniel Kahneman phân tích hai hệ thống tư duy: tư duy nhanh (trực giác) và tư duy chậm (lý trí), giúp độc giả hiểu cách não bộ đưa ra quyết định."},
-          {id:5,title:"Atomic Habits",author:"James Clear",genre:"Kỹ năng",color:"#0D47A1",rating:4.9,pages:320,avail:true,digital:true,copies:4,shelf:"Kệ A-15 · Tầng 1",desc:"James Clear trình bày hệ thống thực tế để xây dựng thói quen tốt và phá vỡ thói quen xấu thông qua những thay đổi nhỏ mang lại kết quả lớn."},
-          {id:6,title:"Chiến Tranh & Hòa Bình",author:"Lev Tolstoy",genre:"Tiểu thuyết",color:"#33691E",rating:4.8,pages:1225,avail:false,digital:true,copies:0,shelf:"Kệ E-01 · Tầng 3",desc:"Đại tác phẩm của Lev Tolstoy về tình yêu, chiến tranh và số phận con người trong bối cảnh nước Nga thời Napoleon. Một trong những tiểu thuyết vĩ đại nhất mọi thời đại."},
-          {id:7,title:"Người Đua Diều",author:"Khaled Hosseini",genre:"Tiểu thuyết",color:"#880E4F",rating:4.7,pages:372,avail:true,digital:false,copies:2,shelf:"Kệ B-11 · Tầng 2",desc:"Câu chuyện đầy cảm xúc về tình bạn, phản bội và chuộc lỗi tại Afghanistan. Một tác phẩm xúc động về sự tha thứ và lòng dũng cảm."},
-          {id:8,title:"Nhập Môn Python",author:"Al Sweigart",genre:"Khoa học",color:"#1B5E20",rating:4.6,pages:390,avail:true,digital:true,copies:5,shelf:"Kệ G-02 · Tầng 3",desc:"Giáo trình Python toàn diện từ cú pháp cơ bản đến các dự án thực tế. Phù hợp cho người mới bắt đầu học lập trình."},
-        ];
+    <script>
 
-        let activeLoans = [
-          {id:1,bookId:1,title:"Nhà Giả Kim",author:"Paulo Coelho",color:"#B71C1C",borrowed:"10/05/2024",due:"25/05/2024",daysLeft:-8,renewCount:0},
-          {id:2,bookId:2,title:"Đắc Nhân Tâm",author:"Dale Carnegie",color:"#1A237E",borrowed:"05/05/2024",due:"20/05/2024",daysLeft:-13,renewCount:1},
-        ];
-        let borrowedIds = [1,2];
+        let selectedGenre = "Tất cả";
+        function setGenre(genre, element) {
 
-        let HIST = [
-          {id:10,title:"Sapiens",author:"Yuval Harari",borrowed:"01/03/2024",due:"15/03/2024",returned:"14/03/2024",status:"returned"},
-          {id:11,title:"Atomic Habits",author:"James Clear",borrowed:"01/02/2024",due:"15/02/2024",returned:"15/02/2024",status:"renewed"},
-          {id:12,title:"Người Đua Diều",author:"K. Hosseini",borrowed:"10/01/2024",due:"24/01/2024",returned:"28/01/2024",status:"late"},
-        ];
+            selectedGenre = genre;
 
-        let borrowRequests = [
-          {id:201,bookId:5,title:"Atomic Habits",author:"James Clear",color:"#0D47A1",shelf:"Kệ A-15 · Tầng 1",type:"pickup",dur:14,sentAt:"01/06/2026 09:10",status:"pending",confirmedAt:null},
-          {id:202,bookId:3,title:"Sapiens",author:"Yuval Noah Harari",color:"#004D40",shelf:"Kệ C-08 · Tầng 2",type:"pickup",dur:7,sentAt:"30/05/2026 14:20",status:"confirmed",confirmedAt:"30/05/2026 16:00"},
-        ];
+            document
+                .querySelectorAll("#genreChips .chip")
+                .forEach(c => c.classList.remove("active"));
 
-        const NOTIFS = [
-          {id:1,icon:"ti-alert-triangle",bg:"var(--amber-lt)",color:"var(--amber)",title:"Sách sắp đến hạn trả",meta:"Nhà Giả Kim — quá hạn 8 ngày!",unread:true,time:"30 phút trước"},
-          {id:2,icon:"ti-check-circle",bg:"var(--green-lt)",color:"var(--green)",title:"Yêu cầu đặt mượn được xác nhận",meta:"Sapiens — đến thư viện lấy trước 17:00",unread:true,time:"2 giờ trước"},
-          {id:3,icon:"ti-star",bg:"var(--amber-lt)",color:"var(--amber)",title:"Bạn đạt 320 điểm tích lũy!",meta:"Còn 180 điểm nữa để lên Hạng Vàng",unread:false,time:"Hôm qua"},
-          {id:4,icon:"ti-books",bg:"var(--blue-lt)",color:"var(--blue)",title:"Sách mới bổ sung",meta:"Thư viện vừa nhập 15 đầu sách mới tháng 6",unread:false,time:"2 ngày trước"},
-        ];
-        const carousel = new bootstrap.Carousel(
-            document.getElementById("libraryBanner"),
-            {
-                interval: 4000,
-                ride: "carousel",
-                pause: false,
-                wrap: true
+            element.classList.add("active");
+
+            searchBooks();
+        }
+
+
+                let pendingBorrow=null, pendingRenew=null, pendingReturn=null;
+
+                /* ══ SEARCH ══ */
+
+        function doSearch(keyword) {
+
+            if (!keyword || !keyword.trim()) return;
+            keyword = keyword.trim();
+            sessionStorage.setItem("keyword", keyword);
+            if (!window.location.pathname.includes("/search")) {
+                window.location.href = "/qltv/home/search";
+                return;
             }
-        );
-        let pendingBorrow=null, pendingRenew=null, pendingReturn=null;
-        let currentGenre="Tất cả", searchQ="";
-
-        /* ══ NAV ══ */
-        function switchPage(page, btn) {
-          ['home','search','mybooks','history','renew','requests','digital','profile'].forEach(p => {
-            document.getElementById('page-'+p).style.display = p===page ? 'block' : 'none';
-          });
-          document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-          if(btn) btn.classList.add('active');
-          if(page==='mybooks') renderMyBooks();
-          if(page==='history') renderHist('all');
-          if(page==='renew') renderRenew();
-          if(page==='requests') renderRequests();
-          if(page==='digital') renderDigital();
+            searchBooks();
         }
+        window.addEventListener("DOMContentLoaded", () => {
+            const keyword = sessionStorage.getItem("keyword");
+            if (keyword) {
+                const input = document.getElementById("searchInput");
+                if (input) input.value = keyword;
+                searchBooks();
+            }
+        });
+        function searchBooks() {
 
-        /* ══ RENDER FEATURED ══ */
-        function renderFeatured() {
-          const grid = document.getElementById('featuredBooks');
-          grid.innerHTML = BOOKS.slice(0,4).map(b => bookCardHTML(b)).join('');
-        }
+            const keyword = document.getElementById("searchInput")?.value || "";
+            const availability = document.getElementById("fAvail").value;
+            const format = document.getElementById("fFormat").value;
+            const params = new URLSearchParams();
 
-<!--        function bookCardHTML(b) {-->
-<!--          const borrowed = borrowedIds.includes(b.id);-->
-<!--          return `<div class="book-card">-->
-<!--            <div class="book-cover" style="background:#f8f8f8;cursor:pointer" onclick="openDetail(${b.id})">-->
-<!--              <div class="book-cover-art" style="background:${b.color}">${b.title[0]}</div>-->
-<!--            </div>-->
-<!--            <div class="book-body">-->
-<!--              <div class="book-title" title="${b.title}" style="cursor:pointer" onclick="openDetail(${b.id})">${b.title}</div>-->
-<!--              <div class="book-author">${b.author}</div>-->
-<!--              <div class="book-avail">-->
-<!--                <div class="avail-dot" style="background:${b.avail?'var(&#45;&#45;green)':'var(&#45;&#45;red)'}"></div>-->
-<!--                <span style="font-size:11.5px;color:${b.avail?'var(&#45;&#45;green)':'var(&#45;&#45;red)'}">${b.avail?`Còn ${b.copies} bản`:'Hết sách'}</span>-->
-<!--              </div>-->
-<!--              <button class="btn-detail" onclick="openDetail(${b.id})">Xem chi tiết</button>-->
-<!--              <button class="btn-borrow" ${(!b.avail||borrowed)?'disabled':''} onclick="openBorrow(${b.id})">${borrowed?'Đang mượn':'Mượn sách'}</button>-->
-<!--            </div>-->
-<!--          </div>`;-->
-<!--        }-->
-
-        /* ══ LOANS TABLE HELPERS ══ */
-        function loanStatusHTML(l) {
-          if(l.daysLeft < 0) return `<span class="status-pill pill-late">Quá hạn ${Math.abs(l.daysLeft)} ngày</span>`;
-          if(l.daysLeft <= 5) return `<span class="status-pill pill-soon">Sắp đến hạn</span>`;
-          return `<span class="status-pill pill-ok">Còn ${l.daysLeft} ngày</span>`;
+            if (keyword.trim()) {
+                params.append("keyword", keyword.trim());
+            }
+            if (selectedGenre !== "Tất cả") {
+                params.append("category", selectedGenre);
+            }
+            if (availability !== "all") {
+                params.append("availability", availability);
+            }
+            if (format !== "all") {
+                params.append("format", format);
+            }
+            fetch("/qltv/home/api/search?" + params.toString())
+                .then(response => response.json())
+                .then(data => renderBooks(data))
+                .catch(error => console.error(error));
         }
 
-        function renderHomeLoans() {
-          const tbody = document.getElementById('homeLoansBody');
-          tbody.innerHTML = activeLoans.map(l => `
-            <tr>
-              <td><div class="loan-book-cell">
-                <div class="loan-book-art" style="background:${l.color}">${l.title[0]}</div>
-                <div><div class="loan-book-title">${l.title}</div><div class="loan-book-author">${l.author}</div></div>
-              </div></td>
-              <td>${l.borrowed}</td>
-              <td style="color:${l.daysLeft<0?'var(--red)':l.daysLeft<=5?'var(--amber)':'inherit'}">${l.due}${l.daysLeft<0?`<br><small style="color:var(--red)">Quá hạn ${Math.abs(l.daysLeft)} ngày</small>`:l.daysLeft<=5?`<br><small style="color:var(--amber)">Còn ${l.daysLeft} ngày</small>`:''}</td>
-              <td>${loanStatusHTML(l)}</td>
-              <td><div style="display:flex;gap:6px">
-                ${l.renewCount<2?`<button class="btn-renew" onclick="openRenew(${l.id})">Gia hạn</button>`:'<span style="font-size:11px;color:var(--muted)">Hết lượt</span>'}
-              </div></td>
-            </tr>`).join('');
+        function renderBooks(books) {
+            const grid = document.getElementById("searchGrid");
+            if (!books || books.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:40px">Không tìm thấy sách phù hợp</div>`;
+                return;
+            }
+            let html = "";
+            books.forEach(book => {
+
+                html += `
+                    <div class="book-card">
+                        <div class="book-cover" onclick="openDetail('${book.id}')">
+                            <img src="${book.coverImage}" class="book-cover-art" alt="">
+                        </div>
+                        <div class="book-body">
+                            <div class="book-title" onclick="openDetail('${book.id}')">${book.title}</div>
+                            <div class="book-author">${book.authorName}</div>
+                            <div class="book-avail">
+                            ${(book.hasBookCopy  || book.hasDigital)? `
+                                ${book.hasBookCopy ? `
+                                <span style="color:${book.availableCopies > 0 ? 'var(--green)' : 'var(--red)'};font-size:15px;">
+                                   ${book.availableCopies > 0 ? `Còn ${book.availableCopies} bản` : 'Hết sách'}
+                                </span>` : ''}
+                            ${book.hasDigital ? '<span class="status-pill pill-confirmed">E-Book</span>': ''}
+                            ` : '<span style="color:#999">Chưa cập nhật</span>'}
+                            </div>
+                            <button class="btn-detail" onclick="openDetail('${book.id}')">
+                                Xem chi tiết
+                            </button>
+                            <button class="btn-borrow"
+                                 onclick="handleBorrowClick('${book.id}', ${book.cardStatus === true})"
+                                ${book.availableCopies > 0 && book.cardStatus === true ? '' : 'disabled'}
+                                style="${
+                                    book.availableCopies > 0 && book.cardStatus === true
+                                        ? ''
+                                        : 'opacity:0.5;cursor:not-allowed;pointer-events:none;'
+                                }">
+                                Mượn sách
+                            </button>
+                        </div>
+
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
         }
 
-        function renderMyBooks() {
-          const tbody = document.getElementById('myBooksBody');
-          const empty = document.getElementById('myBooksEmpty');
-          if(!activeLoans.length){tbody.innerHTML='';empty.style.display='block';return;}
-          empty.style.display='none';
-          tbody.innerHTML = activeLoans.map(l => `
-            <tr>
-              <td><div class="loan-book-cell">
-                <div class="loan-book-art" style="background:${l.color}">${l.title[0]}</div>
-                <div><div class="loan-book-title">${l.title}</div><div class="loan-book-author">${l.author}</div></div>
-              </div></td>
-              <td>${l.borrowed}</td>
-              <td style="color:${l.daysLeft<0?'var(--red)':l.daysLeft<=5?'var(--amber)':'inherit'}">${l.due}${l.daysLeft<0?`<br><small>Quá hạn ${Math.abs(l.daysLeft)} ngày</small>`:''}</td>
-              <td>${loanStatusHTML(l)}</td>
-              <td><div style="display:flex;gap:6px">
-                ${l.renewCount<2?`<button class="btn-renew" onclick="openRenew(${l.id})">Gia hạn</button>`:'<span style="font-size:11px;color:var(--muted)">Hết lượt</span>'}
-                <button class="btn-return" onclick="openReturn(${l.id})">Trả sách</button>
-              </div></td>
-            </tr>`).join('');
-        }
-
-        function renderRenew() {
-          const tbody = document.getElementById('renewBody');
-          const empty = document.getElementById('renewEmpty');
-          if(!activeLoans.length){tbody.innerHTML='';empty.style.display='block';return;}
-          empty.style.display='none';
-          tbody.innerHTML = activeLoans.map(l => `
-            <tr>
-              <td><div class="loan-book-cell">
-                <div class="loan-book-art" style="background:${l.color}">${l.title[0]}</div>
-                <div><div class="loan-book-title">${l.title}</div><div class="loan-book-author">${l.author}</div></div>
-              </div></td>
-              <td>${l.borrowed}</td>
-              <td style="color:${l.daysLeft<0?'var(--red)':l.daysLeft<=5?'var(--amber)':'inherit'}">${l.due}</td>
-              <td><span class="status-pill ${l.renewCount===0?'pill-ok':l.renewCount===1?'pill-soon':'pill-late'}">${l.renewCount}/2 lần</span></td>
-              <td>${loanStatusHTML(l)}</td>
-              <td>${l.renewCount<2?`<button class="btn-renew" onclick="openRenew(${l.id})"><i class="ti ti-refresh" style="font-size:12px"></i> Gia hạn ngay</button>`:'<span style="font-size:11px;color:var(--muted)">Hết lượt gia hạn</span>'}</td>
-            </tr>`).join('');
-        }
-
-        /* ══ HISTORY ══ */
-        function renderHist(filter) {
-          const tbody = document.getElementById('histBody');
-          const data = filter==='all'?HIST:HIST.filter(h=>h.status===filter);
-          const pillMap = {returned:'pill-done',renewed:'pill-pending',late:'pill-late'};
-          const lblMap = {returned:'Đã trả',renewed:'Đã gia hạn',late:'Trả trễ'};
-          tbody.innerHTML = data.map(h => `
-            <tr>
-              <td><strong>${h.title}</strong><br><small style="color:var(--muted)">${h.author}</small></td>
-              <td>${h.borrowed}</td><td>${h.due}</td><td>${h.returned||'—'}</td>
-              <td><span class="status-pill ${pillMap[h.status]}">${lblMap[h.status]}</span></td>
-              <td><button class="btn-return" onclick="showToast('Đang mở chi tiết')"><i class="ti ti-eye" style="font-size:12px"></i> Chi tiết</button></td>
-            </tr>`).join('');
-        }
-        function filterHist(f,btn){
-          document.querySelectorAll('.hist-chip').forEach(b=>b.classList.remove('active'));
-          btn.classList.add('active'); renderHist(f);
-        }
-
-        /* ══ REQUESTS ══ */
-        function renderRequests() {
-          const list = document.getElementById('reqList');
-          const empty = document.getElementById('reqEmpty');
-          if(!borrowRequests.length){list.innerHTML='';empty.style.display='block';return;}
-          empty.style.display='none';
-          list.innerHTML = borrowRequests.map(r => `
-            <div class="req-card">
-              <div style="width:46px;height:60px;border-radius:7px;background:${r.color};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:rgba(255,255,255,.85)">${r.title[0]}</div>
-              <div class="req-info">
-                <div class="req-title">${r.title}</div>
-                <div class="req-meta">
-                  <span><i class="ti ti-user" style="font-size:11px"></i> ${r.author}</span>
-                  <span><i class="ti ti-map-pin" style="font-size:11px;color:var(--blue)"></i> ${r.shelf}</span>
-                  <span><i class="ti ti-calendar" style="font-size:11px"></i> Gửi: ${r.sentAt}</span>
-                  <span><i class="ti ti-clock" style="font-size:11px"></i> ${r.dur} ngày</span>
-                  ${r.confirmedAt?`<span style="color:var(--green)"><i class="ti ti-check" style="font-size:11px"></i> XN: ${r.confirmedAt}</span>`:''}
-                </div>
-              </div>
-              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-                <span class="status-pill ${r.status==='pending'?'pill-soon':r.status==='confirmed'?'pill-confirmed':'pill-done'}">${r.status==='pending'?'⏳ Chờ xác nhận':r.status==='confirmed'?'✓ Đã xác nhận':'✕ Đã huỷ'}</span>
-                ${r.status==='pending'?`<button class="btn-cancel-req" onclick="cancelReq(${r.id})">Huỷ yêu cầu</button>`:''}
-              </div>
-            </div>`).join('');
-        }
-        function cancelReq(id) {
-          const r = borrowRequests.find(x=>x.id===id);
-          if(r){r.status='cancelled';renderRequests();showToast('Đã huỷ yêu cầu đặt mượn');}
-        }
-
-        /* ══ DIGITAL ══ */
-        function renderDigital() {
-          const grid = document.getElementById('digiTab-ebook');
-          const digital = BOOKS.filter(b=>b.digital);
-          grid.innerHTML = digital.map(b => `
-            <div class="book-card">
-              <div class="book-cover" style="background:#f8f8f8;cursor:pointer" onclick="openReader(${b.id})">
-                <div class="book-cover-art" style="background:${b.color}">${b.title[0]}</div>
-              </div>
-              <div class="book-body">
-                <div class="book-title">${b.title}</div>
-                <div class="book-author">${b.author}</div>
-                <div class="book-avail"><i class="ti ti-device-tablet" style="font-size:12px;color:var(--blue)"></i><span style="font-size:11.5px;color:var(--blue)">E-Book</span></div>
-                <button class="btn-borrow" onclick="openReader(${b.id})"><i class="ti ti-book-open" style="font-size:12px"></i> Đọc ngay</button>
-              </div>
-            </div>`).join('');
-        }
-
-        /* ══ SEARCH ══ */
-        function renderSearchGrid() {
-          const grid = document.getElementById('searchGrid');
-          const avail = document.getElementById('fAvail').value;
-          const format = document.getElementById('fFormat').value;
-          const sort = document.getElementById('fSort').value;
-          let data = BOOKS.filter(b =>
-            (currentGenre==='Tất cả'||b.genre===currentGenre) &&
-            (b.title.toLowerCase().includes(searchQ)||b.author.toLowerCase().includes(searchQ)) &&
-            (avail==='all'||(avail==='avail'&&b.avail)||(avail==='unavail'&&!b.avail)) &&
-            (format==='all'||(format==='digital'&&b.digital)||(format==='physical'&&!b.digital))
-          );
-          if(sort==='rating') data.sort((a,b)=>b.rating-a.rating);
-          if(sort==='pages_asc') data.sort((a,b)=>a.pages-b.pages);
-          grid.innerHTML = data.length ? data.map(b=>bookCardHTML(b)).join('') : '<p style="color:var(--muted);grid-column:1/-1;padding:40px 0;text-align:center">Không tìm thấy kết quả phù hợp.</p>';
-        }
-        function searchBooks() { searchQ=document.getElementById('searchInput').value.toLowerCase(); renderSearchGrid(); }
-        function setGenre(g,el) {
-          currentGenre=g;
-          document.querySelectorAll('#genreChips .chip').forEach(c=>c.classList.remove('active'));
-          el.classList.add('active'); renderSearchGrid();
-        }
         function resetSearch() {
-          currentGenre='Tất cả'; searchQ='';
-          document.getElementById('searchInput').value='';
-          document.getElementById('fAvail').value='all';
-          document.getElementById('fFormat').value='all';
-          document.getElementById('fSort').value='default';
-          document.querySelectorAll('#genreChips .chip').forEach((c,i)=>c.classList.toggle('active',i===0));
-          renderSearchGrid(); showToast('Đã đặt lại bộ lọc');
-        }
-        function doSearch(q) {
-          searchQ = q.toLowerCase();
-          switchPage('search', document.querySelectorAll('.nav-item')[1]);
-          document.getElementById('searchInput').value = q;
-          renderSearchGrid();
-        }
 
+            selectedGenre = "Tất cả";
 
-async function openDetail(id) {
+            document.getElementById("searchInput").value = "";
 
-    const response = await fetch(`/qltv/home/book-featured/${id}`);
+            document.getElementById("fAvail").value = "all";
 
-    if (!response.ok) {
-        alert("Không lấy được thông tin sách");
-        return;
-    }
+            document.getElementById("fFormat").value = "all";
 
-    const b = await response.json();
+            document
+                .querySelectorAll("#genreChips .chip")
+                .forEach((c, index) =>
+                    c.classList.toggle("active", index === 0)
+                );
 
-    document.getElementById('dArt').src = b.coverImage;
-    document.getElementById('dTitle').textContent = b.title;
-    document.getElementById('dAuthor').textContent = b.author;
-    document.getElementById('dDesc').textContent = b.note;
-    document.getElementById('dBadges').innerHTML = `
-        <span class="status-pill ${b.availableCopies ? 'pill-ok': 'pill-late'}">
-        ${b.availableCopies ?`Còn ${b.availableCopies} bản`:'Hết sách'}</span>
-        ${b.hasDigitalBook?'<span class="status-pill pill-confirmed">E-Book</span>':''}
-    `;
-    const readBtn = document.getElementById('dReadBtn');
-    if (b.hasDigitalBook) {
-        readBtn.style.display = 'block';
-    } else {
-        readBtn.style.display = 'none';
-    }
-
-    document.getElementById('dMeta').innerHTML = `
-        <div class="detail-meta-item">
-            <div class="detail-meta-label">Thể loại</div>
-            <div class="detail-meta-val">${b.category}</div>
-        </div>
-        <div class="detail-meta-item">
-            <div class="detail-meta-label">Ngôn ngữ</div>
-            <div class="detail-meta-val">${b.language}</div>
-        </div>
-        <div class="detail-meta-item">
-            <div class="detail-meta-label">Vị trí</div>
-            <div class="detail-meta-val">${b.shelfLocation}</div>
-        </div>
-        <div class="detail-meta-item">
-            <div class="detail-meta-label">Số bản</div>
-            <div class="detail-meta-val">${b.totalCopies}</div>
-        </div>
-    `;
-
-    document.getElementById('detailModal').style.display = 'flex';
-}
-
-        /* ══ BORROW ══ */
-        function openBorrow(id) {
-          const b = BOOKS.find(x=>x.id===id);
-          pendingBorrow = b;
-          document.getElementById('mBorrowArt').style.background = b.color;
-          document.getElementById('mBorrowArt').style.borderRadius = '7px';
-          document.getElementById('mBorrowArt').textContent = b.title[0];
-          document.getElementById('mBorrowArt').style.color = 'rgba(255,255,255,.85)';
-          document.getElementById('mBorrowArt').style.fontSize = '22px';
-          document.getElementById('mBorrowArt').style.fontWeight = '800';
-          document.getElementById('mBorrowTitle').textContent = b.title;
-          document.getElementById('mBorrowAuthor').textContent = b.author;
-          document.getElementById('mBorrowAvail').innerHTML = `<span class="status-pill ${b.avail?'pill-ok':'pill-late'}">${b.avail?`Còn ${b.copies} bản`:'Hết sách'}</span>`;
-          document.getElementById('mBorrowShelfText').textContent = b.shelf;
-          document.getElementById('borrowModal').style.display = 'flex';
-        }
-        function openBorrowQuick() { openBorrow(BOOKS.find(b=>b.avail&&!borrowedIds.includes(b.id))?.id || 1); }
-        function confirmBorrow() {
-          if(!pendingBorrow) return;
-          const type = document.getElementById('mBorrowType').value;
-          const dur = parseInt(document.getElementById('mBorrowDur').value);
-          const due = new Date(); due.setDate(due.getDate()+dur);
-          const dueStr = due.toLocaleDateString('vi-VN');
-          const now = new Date().toLocaleString('vi-VN');
-          if(type==='ebook') {
-            activeLoans.push({id:pendingBorrow.id,bookId:pendingBorrow.id,title:pendingBorrow.title,author:pendingBorrow.author,color:pendingBorrow.color,borrowed:now.split(',')[0],due:dueStr,daysLeft:dur,renewCount:0});
-            borrowedIds.push(pendingBorrow.id);
-            document.getElementById('myBooksBadge').textContent = activeLoans.length;
-            renderHomeLoans();
-          } else {
-            borrowRequests.unshift({id:Date.now(),bookId:pendingBorrow.id,title:pendingBorrow.title,author:pendingBorrow.author,color:pendingBorrow.color,shelf:pendingBorrow.shelf,type,dur,sentAt:now,status:'pending',confirmedAt:null});
-            const badge = parseInt(document.getElementById('reqNavBadge').textContent||'0');
-            document.getElementById('reqNavBadge').textContent = badge+1;
-          }
-          closeModal('borrowModal');
-          renderFeatured(); renderSearchGrid();
-          showToast(`✓ Đã gửi yêu cầu đặt mượn "${pendingBorrow.title}"`);
-          pendingBorrow = null;
+            searchBooks();
         }
 
-        /* ══ RENEW ══ */
-        function openRenew(id) {
-          pendingRenew = id;
-          const l = activeLoans.find(x=>x.id===id);
-          document.getElementById('mRenewSub').textContent = `Sách: ${l.title} · Hạn hiện tại: ${l.due}`;
-          document.getElementById('renewModal').style.display = 'flex';
-        }
-        function confirmRenew() {
-          const l = activeLoans.find(x=>x.id===pendingRenew);
-          const extra = parseInt(document.getElementById('mRenewDur').value);
-          l.renewCount++; l.daysLeft = Math.max(l.daysLeft,0)+extra;
-          const d = new Date(); d.setDate(d.getDate()+l.daysLeft);
-          l.due = d.toLocaleDateString('vi-VN');
-          closeModal('renewModal');
-          renderHomeLoans(); renderMyBooks(); renderRenew();
-          showToast(`✓ Đã gia hạn "${l.title}" thêm ${extra} ngày`);
-        }
+        window.selectedBookId = null;
 
-        /* ══ RETURN ══ */
-        function openReturn(id) {
-          pendingReturn = id;
-          const l = activeLoans.find(x=>x.id===id);
-          document.getElementById('mReturnSub').textContent = `Bạn xác nhận trả "${l.title}"?`;
-          document.getElementById('returnModal').style.display = 'flex';
-        }
-        function confirmReturn() {
-          const l = activeLoans.find(x=>x.id===pendingReturn);
-          activeLoans = activeLoans.filter(x=>x.id!==pendingReturn);
-          borrowedIds = borrowedIds.filter(id=>id!==pendingReturn);
-          HIST.unshift({id:l.id,title:l.title,author:l.author,borrowed:l.borrowed,due:l.due,returned:new Date().toLocaleDateString('vi-VN'),status:'returned'});
-          document.getElementById('myBooksBadge').textContent = activeLoans.length;
-          closeModal('returnModal');
-          renderHomeLoans(); renderMyBooks(); renderFeatured(); renderSearchGrid();
-          showToast(`✓ Đã trả "${l.title}" · +10 điểm tích lũy`);
-        }
+        async function openDetail(id) {
+            window.selectedBookId = id;
+            const response = await fetch(`/qltv/home/book-featured/${id}`);
+            if (!response.ok) {
+                alert("Không lấy được thông tin sách");
+                return;
+            }
+            const b = await response.json();
+            document.getElementById('dArt').src = b.coverImage;
+            document.getElementById('dTitle').textContent = b.title;
+            document.getElementById('dAuthor').textContent = b.author;
+            document.getElementById('dDesc').textContent = b.note;
+            document.getElementById('dBadges').innerHTML = `
+               ${b.hasCopyBook ? `
+            <span class="status-pill ${b.availableCopies ? 'pill-ok' : 'pill-late'}">
+                ${b.availableCopies ? `Còn ${b.availableCopies} bản` : 'Hết sách'}
+            </span>
+            ` : ''}
+                ${b.hasDigitalBook?'<span class="status-pill pill-confirmed">E-Book</span>':''}
+            `;
 
-        /* ══ READER ══ */
-        function openReader(id) {
-          const b = BOOKS.find(x=>x.id===id);
-          document.getElementById('readerTitle').textContent = `${b.title} — ${b.author}`;
-          const chapters = ['Chương 1: Mở đầu','Chương 2: Cuộc gặp gỡ','Chương 3: Hành trình','Chương 4: Thử thách','Chương 5: Kết'];
-          document.getElementById('readerToc').innerHTML = chapters.map((c,i) => `<div class="reader-toc-item ${i===0?'active':''}" onclick="loadChap(this,${i})">${c}</div>`).join('');
-          document.getElementById('readerContent').innerHTML = `<h1>${b.title}</h1><p style="color:var(--muted);font-size:13px;margin-bottom:24px">${b.author} · ${b.pages} trang · ★ ${b.rating}</p><p>${b.desc}</p><p>Santiago đứng nhìn đàn cừu của mình đang ngủ say. Cậu ta tự hỏi về ý nghĩa của giấc mơ kỳ lạ đêm qua — một đứa trẻ tóc vàng kéo tay cậu đến kim tự tháp ở Ai Cập, nơi có một kho báu chờ đợi.</p><blockquote>"Khi bạn khao khát điều gì đó, toàn thể vũ trụ sẽ hợp lực giúp bạn đạt được nó."</blockquote><p>Cậu quyết định lên đường. Chuyến hành trình không ai biết trước kết quả, nhưng cậu tin vào "huyền thoại cá nhân" của mình — con đường mà số phận đã vạch ra từ thuở ấu thơ.</p>`;
-          document.getElementById('readerOverlay').style.display = 'flex';
-        }
-        function loadChap(el,idx) {
-          document.querySelectorAll('.reader-toc-item').forEach(i=>i.classList.remove('active'));
-          el.classList.add('active');
-        }
-        function closeReader() { document.getElementById('readerOverlay').style.display='none'; }
-
-        /* ══ NOTIFICATIONS ══ */
-        function renderNotifPanel() {
-          document.getElementById('notifPanelList').innerHTML = NOTIFS.map(n => `
-            <div onclick="readNotif(${n.id})" style="display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer;background:${n.unread?'var(--blue-lt)':'#fff'};transition:background .13s">
-              <div style="width:36px;height:36px;border-radius:50%;background:${n.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${n.icon}" style="color:${n.color};font-size:16px"></i></div>
-              <div style="flex:1"><div style="font-size:13px;font-weight:500;margin-bottom:2px;color:var(--ink)">${n.title}</div><div style="font-size:11.5px;color:var(--muted)">${n.meta} · ${n.time}</div></div>
-              ${n.unread?'<div style="width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:5px;flex-shrink:0"></div>':''}
-            </div>`).join('');
-          document.getElementById('notifDot').textContent = NOTIFS.filter(n=>n.unread).length;
-          document.getElementById('notifDot').style.display = NOTIFS.filter(n=>n.unread).length ? 'flex' : 'none';
-        }
-        function toggleNotifPanel() {
-          const p = document.getElementById('notifPanel');
-          const open = p.style.display==='block';
-          p.style.display = open?'none':'block';
-          document.getElementById('notifBackdrop').style.display = open?'none':'block';
-          if(!open) renderNotifPanel();
-        }
-        function closeNotifPanel() {
-          document.getElementById('notifPanel').style.display='none';
-          document.getElementById('notifBackdrop').style.display='none';
-        }
-        function readNotif(id) { const n=NOTIFS.find(x=>x.id===id); if(n) n.unread=false; renderNotifPanel(); }
-        function markAllRead() { NOTIFS.forEach(n=>n.unread=false); renderNotifPanel(); showToast('Đã đánh dấu tất cả đã đọc'); }
-
-        /* ══ CHAT ══ */
-        function toggleChat(){
-            const box = document.getElementById("chatBox");
-
-            if(box.style.display === "flex"){
-                box.style.display = "none";
-            }else{
-                box.style.display = "flex";
+            const borrowBtn = document.getElementById('dBorrowBtn');
+            console.log("copies =", b.availableCopies);
+        console.log("btn =", borrowBtn);
+            if (borrowBtn) {
+            if (Number(b.availableCopies) > 0) {
+                borrowBtn.style.display = "inline-block";
+            } else {
+                borrowBtn.style.display = "none";
             }
         }
 
-        function sendMessage(){
+            const readBtn = document.getElementById('dReadBtn');
+            if (b.hasDigitalBook) {
+                document.getElementById("digital-id").value = b.digitalId;
+                document.getElementById("pdfUrl").value = b.fileURL;
+                console.log(document.getElementById("pdfUrl"));
+                readBtn.style.display = 'block';
+            } else {
+                readBtn.style.display = 'none';
+            }
 
-            const input = document.getElementById("chatInput");
-            const messages = document.getElementById("chatMessages");
-
-            let text = input.value.trim();
-
-            if(text === "") return;
-
-            messages.innerHTML += `
-                <div class="message user">
-                    ${text}
+            document.getElementById('dMeta').innerHTML = `
+                <div class="detail-meta-item">
+                    <div class="detail-meta-label">Thể loại</div>
+                    <div class="detail-meta-val">${b.category}</div>
+                </div>
+                <div class="detail-meta-item">
+                    <div class="detail-meta-label">Ngôn ngữ</div>
+                    <div class="detail-meta-val">${b.language}</div>
+                </div>
+                <div class="detail-meta-item">
+                    <div class="detail-meta-label">Vị trí</div>
+                    <div class="detail-meta-val">${b.shelfLocation}</div>
+                </div>
+                <div class="detail-meta-item">
+                    <div class="detail-meta-label">Số bản</div>
+                    <div class="detail-meta-val">${b.totalCopies ?? 0}</div>
                 </div>
             `;
 
-            input.value = "";
-
-            setTimeout(() => {
-
-                let reply = "Xin lỗi, tôi chưa hiểu câu hỏi.";
-
-                if(text.toLowerCase().includes("gia hạn")){
-                    reply = "Bạn vào mục Gia hạn sách để thực hiện gia hạn.";
-                }
-
-                if(text.toLowerCase().includes("mượn")){
-                    reply = "Bạn có thể tìm kiếm sách và nhấn nút Mượn sách.";
-                }
-
-                if(text.toLowerCase().includes("trả")){
-                    reply = "Vào mục Sách của tôi và chọn Trả sách.";
-                }
-
-                messages.innerHTML += `
-                    <div class="message bot">
-                        ${reply}
-                    </div>
-                `;
-
-                messages.scrollTop = messages.scrollHeight;
-
-            }, 500);
+            document.getElementById('detailModal').style.display = 'flex';
         }
-        /* ══ UTILS ══ */
-        function closeModal(id) { document.getElementById(id).style.display='none'; }
-        function showToast(msg) {
-          const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
-          clearTimeout(t._to); t._to=setTimeout(()=>t.style.display='none',3000);
+        function borrowFromModal() {
+            if (!selectedBookId) return;
+             document.getElementById('detailModal').style.display = 'none';
+            openBorrow(selectedBookId);
         }
-        document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});});
+                /* ══ BORROW ══ */
 
-        /* ══ INIT ══ */
-        renderFeatured();
-        renderHomeLoans();
-        renderSearchGrid();
+        function handleBorrowClick(bookId, cardStatus) {
+            if (!cardStatus) {
+                showCardLockedMessage();
+                return;
+            }
+            openBorrow(bookId);
+        }
+        function showCardLockedMessage() {
+            showToast("Thẻ thư viện của bạn đã bị khóa!");
+        }
+        function checkLoginAndGo() {
+                    alert("Bạn cần đăng nhập!");
+                    window.location.href = "/qltv/login";
+            }
+        async function openBorrow(id) {
+
+            const res = await fetch(`/qltv/home/reader-find-book/${id}`);
+            const b = await res.json();
+
+            document.getElementById('borrowBookId').value = b.id;
+
+            const art = document.getElementById('mBorrowArt');
+            art.style.background = '#4e73df';
+            art.style.borderRadius = '7px';
+            art.textContent = b.title?.[0] || '?';
+            art.style.color = 'rgba(255,255,255,.85)';
+            art.style.fontSize = '22px';
+            art.style.fontWeight = '800';
+
+            document.getElementById('mBorrowTitle').textContent = b.title || '';
+            document.getElementById('mBorrowAuthor').textContent = b.author || '';
+            document.getElementById('mBorrowShelfText').textContent = b.shLocation || '';
+
+            document.getElementById('mBorrowAvail').innerHTML =
+                `<span class="status-pill ${b.availableCopies > 0 ? 'pill-ok' : 'pill-late'}">
+                    ${b.availableCopies > 0 ? `Còn ${b.availableCopies} bản` : 'Hết sách'}
+                </span>`;
+
+            document.getElementById('borrowModal').style.display = 'flex';
+        }
+
+                /* ══ RENEW ══ */
+            function openRenew(btn) {
+
+            document.getElementById("renewBorrowSlipId").value =
+                btn.dataset.id;
+
+            document.getElementById("mRenewSub").textContent =
+                `Sách: ${btn.dataset.title} · Hạn hiện tại: ${btn.dataset.duedate}`;
+
+            document.getElementById("renewModal").style.display = "flex";
+        }
+
+                /* ══ READER ══ */
+
+                function loadChap(el,idx) {
+                  document.querySelectorAll('.reader-toc-item').forEach(i=>i.classList.remove('active'));
+                  el.classList.add('active');
+                }
+                function closeReader() { document.getElementById('readerOverlay').style.display='none'; }
+
+                /* ══ NOTIFICATIONS ══ */
+        <!--        function renderNotifPanel() {-->
+        <!--          document.getElementById('notifPanelList').innerHTML = NOTIFS.map(n => `-->
+        <!--            <div onclick="readNotif(${n.id})" style="display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid var(&#45;&#45;border);cursor:pointer;background:${n.unread?'var(&#45;&#45;blue-lt)':'#fff'};transition:background .13s">-->
+        <!--              <div style="width:36px;height:36px;border-radius:50%;background:${n.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${n.icon}" style="color:${n.color};font-size:16px"></i></div>-->
+        <!--              <div style="flex:1"><div style="font-size:13px;font-weight:500;margin-bottom:2px;color:var(&#45;&#45;ink)">${n.title}</div><div style="font-size:11.5px;color:var(&#45;&#45;muted)">${n.meta} · ${n.time}</div></div>-->
+        <!--              ${n.unread?'<div style="width:8px;height:8px;border-radius:50%;background:var(&#45;&#45;blue);margin-top:5px;flex-shrink:0"></div>':''}-->
+        <!--            </div>`).join('');-->
+        <!--          document.getElementById('notifDot').textContent = NOTIFS.filter(n=>n.unread).length;-->
+        <!--          document.getElementById('notifDot').style.display = NOTIFS.filter(n=>n.unread).length ? 'flex' : 'none';-->
+        <!--        }-->
+        <!--        function toggleNotifPanel() {-->
+        <!--          const p = document.getElementById('notifPanel');-->
+        <!--          const open = p.style.display==='block';-->
+        <!--          p.style.display = open?'none':'block';-->
+        <!--          document.getElementById('notifBackdrop').style.display = open?'none':'block';-->
+        <!--          if(!open) renderNotifPanel();-->
+        <!--        }-->
+        <!--        function closeNotifPanel() {-->
+        <!--          document.getElementById('notifPanel').style.display='none';-->
+        <!--          document.getElementById('notifBackdrop').style.display='none';-->
+        <!--        }-->
+
+                /* ══ UTILS ══ */
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+
+function showToast(msg) {
+     const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
+     clearTimeout(t._to); t._to=setTimeout(()=>t.style.display='none',3000);
+}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});});
+
+
+        <!--        show hist tab-->
+function showHistTab(tab, btn) {
+
+            document.querySelectorAll(".hist-chip")
+                .forEach(b => b.classList.remove("active"));
+
+            btn.classList.add("active");
+
+            const tabs = ["all", "returned", "late", "renewed"];
+
+            tabs.forEach(t => {
+                const el = document.getElementById("hist-" + t);
+                if (el) el.style.display = "none";
+            });
+
+            const target = document.getElementById("hist-" + tab);
+            if (target) target.style.display = "block";
+        }
+
+function readBook() {
+            const url = document.getElementById("pdfUrl").value;
+            const digitalId = document.getElementById("digital-id").value;
+            if (!url) {
+                alert("Không có file PDF!");
+                return;
+            }
+             fetch(`/qltv/home/increase-view/${digitalId}`, {
+                method: "POST"
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("ViewCount:", data);
+            })
+            .catch(err => console.error(err));
+
+            document.getElementById("detailModal").style.display = "none";
+            const frame = document.getElementById("pdfFrame");
+
+            frame.src =
+                "https://mozilla.github.io/pdf.js/web/viewer.html?file=" +
+                encodeURIComponent(url);
+     console.log(document.getElementById("pdfFrame"));
+     console.log(document.getElementById("pdfFrame").offsetWidth);
+     console.log(document.getElementById("pdfFrame").offsetHeight);
+     document.getElementById('pdfModal').style.display = 'flex';;
+}
+
+let pages = [];
+let currentPage = 0;
+let speaking = false;
+let currentSpeech = null;
+
+function updateAudioStatus(text) {
+    const status = document.getElementById("audio-status");
+    if (status) {
+        status.textContent = text;
+    }
+}
+
+function getVietnameseVoice() {
+    const voices = speechSynthesis.getVoices();
+    return voices.find(v => v.lang === "vi-VN")
+        || voices.find(v => v.lang.startsWith("vi"))
+        || voices[0];
+}
+
+async function startAudio() {
+
+    const pdfUrl = document.getElementById("pdfUrl").value;
+    if (!pdfUrl) {
+        alert("Không tìm thấy PDF!");
+        return;
+    }
+    stopAudio();
+    updateAudioStatus("Đang tải nội dung...");
+    try {
+        const response = await fetch("/qltv/home/audio?pdfUrl=" +encodeURIComponent(pdfUrl));
+        pages = await response.json();
+        if (!pages || pages.length === 0) {
+            updateAudioStatus("Không đọc được nội dung");
+            alert("Không đọc được nội dung PDF!");
+            return;
+        }
+        currentPage = 0;
+        speaking = true;
+        const totalPages = document.getElementById("total-pages");
+        if (totalPages) {
+            totalPages.textContent = "/ " + pages.length + " trang";
+        }
+        if (speechSynthesis.getVoices().length === 0) {
+            await new Promise(resolve => {
+                speechSynthesis.onvoiceschanged = () => resolve();
+            });
+        }
+        readCurrentPage();
+    } catch (e) {
+        console.error(e);
+        updateAudioStatus("Lỗi tải nội dung PDF");
+    }
+}
+
+function readCurrentPage() {
+
+    if (!speaking) return;
+    if (currentPage < 0) {
+        currentPage = 0;
+    }
+    if (currentPage >= pages.length) {
+        updateAudioStatus("Đã đọc xong");
+        speaking = false;
+        return;
+    }
+    let text = pages[currentPage];
+    if (!text || text.trim().length === 0) {
+        currentPage++;
+        setTimeout(readCurrentPage, 100);
+        return;
+    }
+    text = text
+        .replace(/\r/g, " ")
+        .replace(/\n/g, " ")
+        .trim();
+    if (text.length > 300) {
+        text = text.substring(0, 300);
+    }
+    updateAudioStatus(`Đang đọc trang ${currentPage + 1}/${pages.length}`);
+    const speech = new SpeechSynthesisUtterance(text);
+    currentSpeech = speech;
+    speech.voice = getVietnameseVoice();
+    speech.lang = "vi-VN";
+    speech.volume = 1;
+    speech.rate = 1;
+    speech.pitch = 1;
+    speech.onstart = () => {
+        console.log("Đang đọc trang",currentPage + 1);
+    };
+    speech.onend = () => {
+        if (!speaking) return;
+        if (speech !== currentSpeech) return;
+        currentPage++;
+        if (currentPage < pages.length) {
+            setTimeout(readCurrentPage,300);
+        } else {
+            updateAudioStatus("Đã đọc xong");
+            speaking = false;
+        }
+    };
+    speech.onerror = (e) => {
+        console.error(e);
+        if (speech !== currentSpeech) return;
+        currentPage++;
+        if (speaking) {
+            setTimeout(readCurrentPage,300);
+        }
+    };
+    speechSynthesis.speak(speech);
+}
+
+function pauseAudio() {
+
+    if (!speechSynthesis.speaking) return;
+    speechSynthesis.pause();
+    updateAudioStatus(`Tạm dừng tại trang ${currentPage + 1}/${pages.length}`);
+}
+
+function resumeAudio() {
+
+    if (!speechSynthesis.paused) return;
+    speechSynthesis.resume();
+    updateAudioStatus(`Đang đọc trang ${currentPage + 1}/${pages.length}`);
+}
+
+function stopAudio() {
+
+    speaking = false;
+    currentSpeech = null;
+    speechSynthesis.cancel();
+    updateAudioStatus("Đã dừng");
+}
+
+function nextPage() {
+
+    if (!pages.length) return;
+    speechSynthesis.cancel();
+    currentSpeech = null;
+    if (currentPage < pages.length - 1) {
+        currentPage++;
+    }
+    speaking = true;
+    setTimeout(() => {
+        readCurrentPage();
+    }, 100);
+}
+
+function prevPage() {
+    if (!pages.length) return;
+    speechSynthesis.cancel();
+    currentSpeech = null;
+    if (currentPage > 0) {
+        currentPage--;
+    }
+    speaking = true;
+    setTimeout(() => {
+        readCurrentPage();
+    }, 100);
+}
+
+function gotoPage() {
+    if (!pages.length) {
+        alert("Hãy bấm Đọc sách trước!");
+        return;
+    }
+    const page =parseInt(document.getElementById("goto-page").value);
+    if (isNaN(page)) {
+        alert("Vui lòng nhập số trang!");
+        return;
+    }
+    if (page < 1 ||page > pages.length) {
+        alert(`Trang hợp lệ từ 1 đến ${pages.length}`);
+        return;
+    }
+    speechSynthesis.cancel();
+    currentSpeech = null;
+    currentPage = page - 1;
+    speaking = true;
+    setTimeout(() => {
+        readCurrentPage();
+    }, 100);
+}
+
+function closeBook() {
+       console.log("closeBook called");
+       stopAudio();
+       const modal = document.getElementById("pdfModal");
+       const frame = document.getElementById("pdfFrame");
+       frame.src = "";
+       closeModal("pdfModal");
+}
+
+        <!--document.addEventListener("contextmenu", e => e.preventDefault());-->
+        <!--document.addEventListener("keydown", e => {-->
+        <!--    if (e.key === "F12") {-->
+        <!--        e.preventDefault();-->
+        <!--    }-->
+        <!--    if (e.ctrlKey && ['p','s','u'].includes(e.key.toLowerCase())) {-->
+        <!--        e.preventDefault();-->
+        <!--    }-->
+        <!--    if (e.ctrlKey && e.shiftKey &&-->
+        <!--        ["I", "J", "C"].includes(e.key.toUpperCase())) {-->
+        <!--        e.preventDefault();-->
+        <!--        return false;-->
+        <!--    }-->
+        <!--});-->
+
+
+const HISTORY_KEY = 'bibliolink_chat_history';
+// ✅ Khôi phục history từ sessionStorage khi load trang
+const chatHistory = JSON.parse(sessionStorage.getItem(HISTORY_KEY) || '[]');
+let isWaiting = false;
+
+function saveHistory() {
+    sessionStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory));
+}
+function toggleChat() {
+    const chatBox = document.getElementById('chatBox');
+    const icon = document.getElementById('chatFabIcon');
+    const isOpen = chatBox.classList.toggle('open');
+    icon.className = isOpen ? 'ti ti-x' : 'ti ti-message-circle';
+    if (isOpen) {
+        restoreChatUI();  // ✅ render lại tin nhắn cũ
+        document.getElementById('chatInput').focus();
+    }
+}
+// ✅ Render lại toàn bộ lịch sử lên UI khi mở chat
+function restoreChatUI() {
+    const container = document.getElementById('chatMessages');
+    // Xoá hết trừ tin nhắn chào mặc định
+    const defaultMsg = container.querySelector('.message.bot');
+    container.innerHTML = '';
+    if (defaultMsg) container.appendChild(defaultMsg);
+    chatHistory.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
+        div.innerHTML = msg.content.replace(/\n/g, '<br>');
+        container.appendChild(div);
+        // Nếu lượt đó có books thì render lại card
+        if (msg.booksJson) {
+            renderBookCards(msg.booksJson, container);
+        }
+    });
+
+    container.scrollTop = container.scrollHeight;
+}
+
+function appendMessage(role, text) {
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    div.innerHTML = text.replace(/\n/g, '<br>');
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+}
+
+function showTyping() {
+    return appendMessage('bot',
+        '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>'
+    );
+}
+
+function renderBookCards(booksJson, container) {
+    let data;
+    try { data = JSON.parse(booksJson); } catch(e) { return; }
+    if (!data.books || data.books.length === 0) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-book-cards';
+    data.books.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'chat-book-card';
+        const img = document.createElement('img');
+        img.src = book.cover || '/qltv/images/no-cover.png';
+        img.alt = book.title;
+        img.onerror = function() { this.src = '/qltv/images/no-cover.png'; };
+        const info = document.createElement('div');
+        info.className = 'book-info';
+        info.innerHTML = `
+            <div class="book-title" title="${book.title}">${book.title}</div>
+            <div class="book-author">${book.author}</div>
+            <div class="book-status ${book.statusKey}">${book.status}</div>
+        `;
+        const btn = document.createElement('button');
+        btn.className = 'btn-choose';
+        btn.textContent = 'Chọn';
+        btn.onclick = () => handleChooseBook(book);
+        card.append(img, info, btn);
+        wrapper.appendChild(card);
+    });
+
+    container.appendChild(wrapper);
+    container.scrollTop = container.scrollHeight;
+}
+
+function handleChooseBook(book) {
+    const isOnSearchPage = window.location.pathname.includes('/home/search');
+    if (isOnSearchPage) {
+        const input = document.getElementById('searchInput');
+        if (input) {
+            input.value = book.title;
+            searchBooks();
+        }
+    } else {
+        // ✅ Lưu history trước khi redirect
+        saveHistory();
+        window.location.href = `/qltv/home/search?keyword=${encodeURIComponent(book.title)}`;
+    }
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text || isWaiting) return;
+    input.value = '';
+    isWaiting = true;
+    appendMessage('user', text);
+    chatHistory.push({ role: 'user', content: text });
+    saveHistory();
+    const typingEl = showTyping();
+    try {
+        const res = await fetch('/qltv/home/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: text,
+                // ✅ Lọc bỏ tin nhắn lỗi khỏi history trước khi gửi
+                history: chatHistory.slice(0, -1).filter(msg =>
+                    msg.content &&
+                    !msg.content.startsWith('Có lỗi xảy ra:') &&
+                    !msg.content.startsWith('Xin lỗi, tôi đang gặp sự cố') &&
+                    !msg.content.startsWith('Kết nối thất bại')
+                )
+            })
+        });
+        const data = await res.json();
+        typingEl.remove();
+        const reply = data.reply || 'Xin lỗi, có lỗi xảy ra.';
+        const container = document.getElementById('chatMessages');
+
+        if (data.searchCalled) {
+            container.querySelectorAll('.chat-book-cards').forEach(el => el.remove());
+        }
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message bot';
+        msgDiv.innerHTML = reply.replace(/\n/g, '<br>');
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+
+        if (data.booksJson) {
+            renderBookCards(data.booksJson, container);
+        }
+
+        chatHistory.push({
+            role: 'assistant',
+            content: reply,
+            booksJson: data.booksJson || null,
+            keyword: data.keyword || null
+        });
+        saveHistory();
+        if (chatHistory.length > 20) {
+            chatHistory.splice(0, 2);
+            saveHistory();
+        }
+    } catch(e) {
+        typingEl.remove();
+        // ✅ Chỉ show thông báo thân thiện, không show lỗi kỹ thuật
+        appendMessage('bot', 'Xin lỗi, kết nối bị gián đoạn. Bạn vui lòng thử lại nhé!');
+    } finally {
+        isWaiting = false;
+    }
+}
     </script>
 </div>
 

@@ -14,42 +14,39 @@
         <!-- ══════ PAGE: BOOKS ══════ -->
         <div class="bl-page active" id="page-books">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                <form th:action="@{/quan-ly/books-management}" method="get" style="display: contents;">
                 <div class="bl-search-bar" style="flex:1;min-width:220px;"><span
-                        style="color:var(--mist);">🔍</span><input type="text"
-                                                                  placeholder="Tìm theo tên sách, tác giả, ISBN...">
+                        style="color:var(--mist);">🔍</span>
+                    <input type="hidden" name="id" th:value="${bookTittleId}">
+                    <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm theo vị trí, tình trạng...">
                 </div>
-                <select class="bl-filter-select">
-                    <option>Tất cả thể loại</option>
-                    <option>Văn học</option>
-                    <option>Kỹ năng sống</option>
-                    <option>Lịch sử</option>
-                    <option>Tâm lý học</option>
-                    <option>Công nghệ</option>
-                    <option>Thiếu nhi</option>
+                <select class="bl-filter-select" name="circulationStatus">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="available">Còn sách</option>
+                    <option value="borrowed">Đang mượn</option>
+                    <option value="reserved">Đang đặt</option>
+                    <option value="lost">Mất sách</option>
                 </select>
-                <select class="bl-filter-select">
-                    <option>Tất cả trạng thái</option>
-                    <option>Còn sách</option>
-                    <option>Đang mượn</option>
-                    <option>Quá hạn</option>
-                </select>
+                    <button type="submit" class="bl-btn bl-btn-secondary">Tìm</button>
+                </form>
                 <div class="view-toggle">
                     <button class="view-btn active" onclick="setView('grid')">Sách vật lý</button>
                     <button class="view-btn" onclick="setView('list')">Tài liệu online</button>
                 </div>
-                <button class="bl-btn bl-btn-primary" style="display:none;" id="books-list" onclick="openAddBook()">➕
+                <button class="bl-btn bl-btn-primary" style="display:none;" id="books-list"
+                        onclick="openAddBookDigital()">➕
                     Thêm sách
                 </button>
-                <button class="bl-btn bl-btn-primary disabled" onclick="openEditBookCopy()" disabled id="books-edit">✏️
+                <button class="bl-btn bl-btn-primary disabled" onclick="openEditMulti()" disabled id="books-edit">✏️
                     Sửa nhanh
                 </button>
             </div>
 
             <div id="books-grid-view">
                 <div class="bl-panel">
-                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <div th:if="${succe}" class="alert alert-success alert-dismissible fade show" role="alert">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Thành công!</strong> <span th:text="${success}"></span>
+                        <strong>Thành công!</strong> <span th:text="${succe}"></span>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     <table class="bl-data-table">
@@ -66,12 +63,12 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:if="${#lists.isEmpty(bookCopy)}">
+                        <tr th:if="${#lists.isEmpty(bookCopy.content)}">
                             <td colspan="10" style="text-align:center; padding:20px;">
                                 Chưa có bản ghi nào
                             </td>
                         </tr>
-                        <tr th:each="b,stt : ${bookCopy}">
+                        <tr th:each="b,stt : ${bookCopy.content}">
                             <td><input type="checkbox" class="row-check" th:value="${b.id}"></td>
                             <td th:text="${stt.index + 1}"></td>
                             <td>
@@ -92,8 +89,9 @@
                                 </span>
                             </td>
 
-                            <td >
-                                <span class="bl-badge bl-badge-gold" th:text="${b.bookCondition != null ? b.bookCondition : '---'}"></span>
+                            <td>
+                                <span class="bl-badge bl-badge-gold"
+                                      th:text="${b.bookCondition != null ? b.bookCondition : '---'}"></span>
                             </td>
                             <td th:switch="${b.circulationStatus}">
                                 <span th:case="'available'" class="bl-badge bl-badge-available">
@@ -105,6 +103,9 @@
                                 <span th:case="'lost'" class="bl-badge bl-badge-overdue">
                                     Mất sách
                                 </span>
+                                <span th:case="'reserved'" class="bl-badge bl-badge-overdue">
+                                    Đăng được đặt
+                                </span>
                                 <span th:case="*"
                                       class="bl-badge bl-badge-inactive">
                                     Không xác định
@@ -114,13 +115,30 @@
                                 <button class="action-btn" th:data-id="${b.id}" th:data-vt="${b.shelfLocation}"
                                         th:data-tt="${b.bookCondition}" onclick="openEditSingle(this)">Sửa
                                 </button>
-                                <button class="action-btn" th:data-id="${b.id}"
-                                        onclick="deleteBook(this)">Xóa
+                                <button class="action-btn" th:data-id="${b.id}" th:data-status="${b.circulationStatus}"
+                                        onclick="deleteBookCopy(this)">Xóa
                                 </button>
                             </td>
                         </tr>
                         </tbody>
                     </table>
+                    <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                        <div style="font-size:13px;color:var(--mist);"
+                             th:text="'Hiển thị ' + ${bookCopy.numberOfElements}
+                                          + ' / ' + ${totalElements} + ' cuốn sách'">Hiển thị 6 / 1,584 hội viên</div>
+                        <div style="display:flex;gap:6px;">
+                            <a th:if="${currentPage > 0}" class="action-btn"
+                               th:href="@{/quan-ly/books-management(id=${bookTittleId},page=${currentPage - 1}, keyword=${keyword}, status=${status})}">‹
+                            </a>
+                            <a class="action-btn" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:text="${i + 1}"
+                               th:href="@{/quan-ly/books-management(id=${bookTittleId},page=${i}, keyword=${keyword}, status=${status})}"
+                               th:classappend="${i == currentPage} ? 'active' : ''">
+                            </a>
+                            <a class="action-btn" th:if="${currentPage < totalPages - 1}"
+                               th:href="@{/quan-ly/books-management(id=${bookTittleId},page=${currentPage + 1}, keyword=${keyword}, status=${status})}">›
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -141,9 +159,10 @@
                         <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Tên sách</th>
-                            <th>Tồn kho</th>
+                            <th>Tên tài liệu</th>
+                            <th>Loại file</th>
                             <th>Trạng thái</th>
+                            <th>Ngày upload</th>
                             <th>Thao tác</th>
                         </tr>
                         </thead>
@@ -153,7 +172,8 @@
                                 Chưa có bản ghi nào
                             </td>
                         </tr>
-                        <tr th:each="b : ${digitalBook}">
+                        <tr th:each="b,iter  : ${digitalBook}">
+                            <td th:text="${iter.index + 1}">1</td>
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <div style="width:32px;height:42px;background:#fef3dc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
@@ -165,33 +185,37 @@
                                 </div>
                             </td>
 
-                            <td style="color:var(--mist);">
+                            <td style="color:var(--mist);" th:text="${b.fileType}">
                                 Dale Carnegie
                             </td>
 
                             <td>
-                                <span class="bl-badge bl-badge-silver">
+                                <span class="bl-badge "
+                                      th:classappend="${b.status == 1} ? 'bl-badge-borrowed' : 'bl-badge-silver'"
+                                      th:text="${b.status == 1 ? 'Hiển thị' : 'Ẩn'}">
                                     Kỹ năng sống
                                 </span>
                             </td>
 
-                            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">
-                                978-604-1-22345-6
-                            </td>
                             <td>
-                            <span style="font-family:'DM Mono',monospace;font-weight:600;">
+                            <span style="font-family:'DM Mono',monospace;font-weight:600;"
+                                  th:text="${#temporals.format(b.createdAt, 'dd/MM/yyyy')}">
                                 12/15
                             </span>
-                            </td>
-
                             <td>
-                            <span class="bl-badge bl-badge-borrowed">
-                                Đang mượn
-                            </span>
-                            </td>
-                            <td>
-                                <button class="action-btn">Xem</button>
-                                <button class="action-btn">Sửa</button>
+                                <button class="action-btn" th:data-url="${b.fileUrl}" onclick="openFile(this)">Xem
+                                </button>
+                                <button class="action-btn"
+                                        th:data-id="${b.id}"
+                                        th:data-name="${b.fileName}"
+                                        th:data-type="${b.fileType}"
+                                        th:data-status="${b.status}"
+                                        th:onclick="openEditDigital(this)">Sửa</button>
+                                <a>
+                                    <button class="action-btn" style="color:red;"
+                                     th:data-titled="${b.bookTitle.title}" th:data-iddigital="${b.id}"
+                                     onclick="deleteDigital(this)">Xóa</button>
+                                </a>
                             </td>
                         </tr>
                         </tbody>
@@ -245,8 +269,227 @@
     </div>
 </div>
 
+<div class="bl-modal-overlay" id="edit-digitalbook-modal" onclick="closeModal('edit-digitalbook-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" style="background:#e6f2ec;font-size:28px;">📄</div>
+            <div>
+                <div class="bl-modal-book-title">Thêm tài liệu</div>
+                <div class="bl-modal-book-author">Quản lý tài liệu online</div>
+            </div>
+            <button class="bl-modal-close" onclick="closeModal('edit-digitalbook-modal')">✕</button>
+        </div>
+
+        <div class="bl-modal-body">
+
+            <form th:action="@{/quan-ly/digital-book}" method="post" enctype="multipart/form-data">
+
+                <input type="hidden" th:value="${bookTittleId}" name="bookTittleId">
+                <!-- Tên tài liệu -->
+                <div class="bl-form-group">
+                    <input type="hidden" name="id" id="digital-id">
+                    <div class="bl-form-label">Tên tài liệu *</div>
+                    <input type="text" name="fileName" id="digital-title" required class="bl-form-input"
+                           placeholder="Nhập tên tài liệu..." readonly>
+                </div>
+
+                <!-- File upload -->
+                <div class="bl-form-group">
+                    <div class="bl-form-label">File (PDF / EPUB) *</div>
+                    <input type="file" name="file" id="digital-file" required class="bl-form-input"
+                           accept=".pdf,.epub">
+                </div>
+
+                <div class="bl-form-row">
+
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Loại file</div>
+                        <input type="text" class="bl-form-input" readonly name="fileType" id="fileType">
+                    </div>
+
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Trạng thái</div>
+                        <select name="status" class="bl-form-input">
+                            <option value="1">Hiện</option>
+                            <option value="0">Ẩn</option>
+                        </select>
+                    </div>
+
+                </div>
+                <!-- BUTTON -->
+                <div style="display:flex;gap:10px;margin-top:15px;">
+                    <button class="bl-btn bl-btn-primary" id="digital-submit-btn" style="flex:1;justify-content:center;padding:12px;">
+                        ✓ Lưu tài liệu
+                    </button>
+                    <button class="bl-btn bl-btn-secondary" type="button"
+                            onclick="closeModal('edit-digitalbook-modal')">
+                        Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="pdfModal" class="bl-modal-overlay" onclick="closePdfModal()">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+
+        <div class="bl-modal-header">
+            <h1 style="text-align:center;">Tài liệu online</h1>
+            <button class="bl-modal-close" onclick="closeModal('pdfModal')">✕</button>
+        </div>
+
+        <div class="bl-modal-body">
+            <iframe id="pdfFrame"
+                    style="width:640px;height:800px;border:none;"></iframe>
+        </div>
+    </div>
+
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:replace="layout/script :: script"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script>
+    window.onload = function () {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get("view");
+
+    if (view === "digital") {
+        setView("list");
+    } else {
+        setView("grid");
+    }
+};
+function deleteDigital(element) {
+    const cId = element.dataset.iddigital;
+    const title = element.dataset.titled
+    if (confirm("Bạn có chắc chắn muốn xóa tệp tài liệu sách " + title + " này?")) {
+        window.location.href = "/qltv/quan-ly/digital/delete?id=" + cId;
+    }
+}
+
+function deleteBookCopy(element) {
+    const cId = element.dataset.id;
+    const status = element.dataset.status;
+
+    if (status === "borrowed") {
+        alert("Sách đang được mượn, không thể xóa!");
+        return;
+    }
+
+    if (status === "reserved") {
+        alert("Sách đang được đặt trước, không thể xóa!");
+        return;
+    }
+
+    if (confirm("Bạn có chắc chắn muốn xóa sách " + cId + " này?")) {
+        window.location.href =
+            "/qltv/quan-ly/book-copys/delete?id=" + cId;
+    }
+}
+
+const checkAll = document.getElementById("checkAll");
+    const rowChecks = document.querySelectorAll(".row-check");
+    const editBtn = document.getElementById("books-edit");
+
+    function updateButtonState() {
+        const anyChecked = [...rowChecks].some(c => c.checked);
+        if (anyChecked) {
+            editBtn.classList.add("active");
+            editBtn.disabled = false;
+        } else {
+            editBtn.classList.remove("active");
+            editBtn.disabled = true;
+        }
+    }
+    checkAll.addEventListener("change", function () {
+        rowChecks.forEach(c => c.checked = this.checked);
+        updateButtonState();
+    });
+    rowChecks.forEach(c => {
+        c.addEventListener("change", function () {
+            updateButtonState();
+            if (![...rowChecks].every(c => c.checked)) {
+                checkAll.checked = false;
+            }
+            if ([...rowChecks].every(c => c.checked)) {
+                checkAll.checked = true;
+            }
+        });
+    });
+    function getSelectedIds() {
+    return Array.from(document.querySelectorAll(".row-check:checked"))
+        .map(cb => cb.value);
+}
+function openEditMulti() {
+    const ids = getSelectedIds();
+    if (ids.length === 0) return;
+    console.log(document.getElementById("ids-input"));
+
+    document.getElementById("ids-input").value = ids.join(",");
+
+    document.getElementById("edit-bookcopy-modal").classList.add('bl-open');
+}
+    function openEditSingle(el) {
+    document.getElementById("ids-input").value = el.dataset.id;
+    document.querySelector("[name='shelfLocation']").value = el.dataset.vt || "";
+    document.querySelector("[name='bookCondition']").value = el.dataset.tt || "";
+    document.getElementById('edit-bookcopy-modal').classList.add('bl-open');
+}
+
+function openAddBookDigital() {
+    document.getElementById("digital-id").value = "";
+    document.getElementById("digital-title").value = "";
+    document.getElementById("digital-file").value = "";
+    document.getElementById("fileType").value = "PDF";
+    document.querySelector("[name='status']").value = "1";
+    document.getElementById("digital-file").required = true;
+    document.querySelector("#edit-digitalbook-modal .bl-modal-book-title")
+                            .innerText = "Thêm tài liệu";
+    document.getElementById('edit-digitalbook-modal').classList.add('bl-open');
+    }
+function openEditDigital(btn) {
+
+    document.getElementById("digital-id").value = btn.dataset.id;
+    document.getElementById("digital-title").value = btn.dataset.name;
+    document.getElementById("fileType").value = btn.dataset.type;
+    document.querySelector("[name='status']").value = btn.dataset.status;
+    document.getElementById("digital-file").required = false;
+    document.querySelector("#edit-digitalbook-modal .bl-modal-book-title")
+                        .innerText = "Cập nhật tài liệu";
+    document.getElementById("digital-submit-btn").innerText =
+    "✓ Cập nhật tài liệu";
+    document.getElementById('edit-digitalbook-modal')
+        .classList.add('bl-open');
+}
+
+    document.getElementById("digital-file").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+    const allowedTypes = [
+        "application/pdf",
+        "application/epub+zip"
+    ];
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    document.getElementById("fileType").value = ext.toUpperCase();
+    const fileName = file.name.replace(/\.[^/.]+$/, "");
+    document.getElementById("digital-title").value = fileName;
+
+    // 🔥 3. set file type
+    document.querySelector("[name='fileType']").value = ext.toUpperCase();
+});
+
+    function openFile(btn) {
+    const url = btn.dataset.url;
+    const viewerUrl = "https://mozilla.github.io/pdf.js/web/viewer.html?file="
+                      + encodeURIComponent(url);
+    document.getElementById("pdfFrame").src = viewerUrl;
+    document.getElementById("pdfModal").classList.add("bl-open");
+}
+</script>
 </body>
 </html>
+

@@ -21,10 +21,10 @@ function confirmRemindAll(){
 }
 
 function printBorrowList(){
-    document.getElementById("print-date").textContent = new Date().toLocaleDateString("vi-VN");
-    document.body.classList.add("print-borrow");
+    document.getElementById("print-date").textContent = "Ngày in:" + new Date().toLocaleDateString("vi-VN");
+    document.body.classList.add("print-area");
     window.print();
-    document.body.classList.remove("print-borrow");
+    document.body.classList.remove("print-area");
 }
 
 function findReader(){
@@ -43,7 +43,7 @@ function findReader(){
                 }
                 document.getElementById("reader-card").style.display = "flex";
                 document.getElementById("reader-name").textContent = card.name;
-                document.getElementById("reader-info").textContent =`Mã: ${card.id} · Còn hạn đến ${card.expiryDate}`;
+                document.getElementById("reader-info").textContent =`Mã: ${card.id} · Còn hạn đến ${new Date(card.expiryDate).toLocaleDateString("vi-VN")}`;
                 document.getElementById("reader-status").textContent =card.status
                     ? "Đủ điều kiện mượn" : "Thẻ đã hết hạn";
                 return fetch(`/qltv/quan-ly/borrow/current?cardId=${cardId}`);})
@@ -254,49 +254,11 @@ document.getElementById("borrow-form").addEventListener("submit", function (e) {
     });
 });
 
-window.addEventListener("load", function () {
-    const slipId = document.getElementById("borrow-slip-hidden")?.textContent?.trim();
-    if (!slipId) return;
-    const shouldPrint = confirm("Tạo phiếu mượn thành công. \nBạn có muốn in phiếu không?");
-    if (!shouldPrint) return;
-    document.getElementById("print-slip-id").textContent = slipId;
-    document.getElementById("print-reader-name").textContent =
-    document.getElementById("borrow-reader-hidden").textContent;
-    document.getElementById("print-borrow-date").textContent =
-    document.getElementById("borrow-date-hidden").textContent;
-    document.getElementById("print-due-date").textContent =
-    document.getElementById("borrow-due-hidden").textContent;
 
-    // TABLE
-    const rows = document.querySelectorAll("#borrow-books-hidden div");
-
-    const table = document.getElementById("print-book-list");
-
-    table.innerHTML = "";
-    rows.forEach(row => {
-        const stt = row.querySelector(".stt").textContent;
-        const title = row.querySelector(".title").textContent;
-        const cate = row.querySelector(".cate").textContent;
-        const tg = row.querySelector(".tg").textContent;
-        const id = row.querySelector(".id").textContent;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${stt}</td>
-            <td>${id}</td>
-            <td>${title}</td>
-            <td>${cate}</td>
-            <td>${tg}</td>
-        `;
-        table.appendChild(tr);
-    });
-    document.getElementById("print-qr").src =`/qltv/quan-ly/qr/${slipId}`;
-    const area = document.getElementById("borrow-print-area");
-    area.style.display = "block";
-    setTimeout(() => {window.print(); area.style.display = "none";}, 400);
-});
 
 let overdueFine = 0;
 let bookPrice = 0;
+let lightDamageFine = 0;
 let returnReader = "";
 let returnBookNames = [];
 function findReturnBook() {
@@ -331,6 +293,7 @@ function findReturnBook() {
             returnBooks = data.details.map(d => d.title);
 
             overdueFine = data.fine || 0;
+            lightDamageFine = data.lightDamageFine || 0;
             returnCard.style.display = "block";
             returnCard.innerHTML = "";
             data.details.forEach((d, index) => {
@@ -390,10 +353,10 @@ function updateFine(index){
     const price = Number(document.getElementById(`price-${index}`).value);
     let fine = 0;
     if(select.value === "light"){
-        fine = 10000;
+        fine = lightDamageFine;
     }
     else if(select.value === "heavy"){
-        fine = 30000;
+        fine = price/2;
     }
     else if(select.value === "lost"){
         fine = price;
@@ -455,4 +418,95 @@ function printReceipt(){
         window.print();
         area.style.display = "none";
         document.body.classList.remove("print-receipt");
+}
+
+async function printBorrowSlip(btn) {
+
+    const slipId = btn.dataset.slip;
+
+    const res = await fetch(`/qltv/quan-ly/borrow-slip/${slipId}`);
+    const data = await res.json();
+
+    let rows = "";
+
+    data.books.forEach((book, index) => {
+        rows += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${book.bookId}</td>
+                <td>${book.title}</td>
+                <td>${book.author}</td>
+                <td>${book.category}</td>
+            </tr>
+        `;
+    });
+
+    const printWindow = window.open("", "_blank");
+
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Phiếu mượn sách</title>
+            <style>
+                body{
+                    font-family: Arial,sans-serif;
+                    padding:20px;
+                }
+                table{
+                    width:100%;
+                    border-collapse:collapse;
+                }
+                th,td{
+                    border:1px solid #000;
+                    padding:8px;
+                }
+                h2{
+                    text-align:center;
+                }
+                .qr{
+                    text-align:center;
+                    margin-top:20px;
+                }
+            </style>
+        </head>
+        <body>
+
+            <h2>PHIẾU MƯỢN SÁCH</h2>
+
+            <p><b>Mã phiếu:</b> ${data.slipId}</p>
+            <p><b>Độc giả:</b> ${data.readerName}</p>
+            <p><b>Ngày mượn:</b> ${data.borrowDate}</p>
+            <p><b>Hạn trả:</b> ${data.dueDate}</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Mã bản sách</th>
+                        <th>Tên sách</th>
+                        <th>Tác giả</th>
+                        <th>Thể loại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+
+            <p>Vui lòng cầm phiếu này khi đến trả sách</p>
+
+            <div class="qr">
+                <img src="/qltv/quan-ly/qr/${slipId}" width="250">
+            </div>
+
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 1000);
 }

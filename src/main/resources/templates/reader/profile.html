@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="reader/layout/reader-head :: reader-head">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════ -->
+<div th:replace="reader/layout/reader-sidebar :: reader-sidebar"></div>
+
+<!-- ══════════════════════════════════════════
+     APP BODY
+══════════════════════════════════════════ -->
+<div class="app-body">
+    <!-- TOPBAR -->
+    <div th:replace="reader/layout/reader-header :: reader-header"></div>
+
+    <div class="content-wrap">
+        <!-- MAIN SCROLL -->
+        <div class="main-scroll" id="mainScroll">
+
+            <!-- ════ PAGE: HOME ════ -->
+            <div id="page-home">
+
+                <div id="page-profile" style="display:block">
+                    <div class="page-hdr">
+                        <div class="page-title">Tài khoản của tôi</div>
+                        <div class="page-sub">Thông tin thẻ thư viện và thống kê hoạt động</div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-card-content">
+                            <div class="profile-avatar"><span>TV</span></div>
+                            <div class="profile-name" th:text="${reader.name}">Nguyễn Thảo Vy</div>
+                            <div class="profile-id" th:text="'Mã độc giả: ' + ${reader.cards[0].id} + '
+                            · Thẻ hiệu lực đến ' + ${#temporals.format(reader.cards[0].expiryDate, 'dd/MM/yyyy')}">Mã
+                                độc giả: DG000123 · Thẻ hiệu lực đến 31/12/2026
+                            </div>
+                            <div class="profile-meta-row">
+                                <div class="profile-meta-item">
+                                    <div class="label">Hạng thành viên</div>
+                                    <div class="val" th:text="${
+                                        reader.cards[0].totalBorrow >= 100 ? '👑 Kim Cương' :
+                                        reader.cards[0].totalBorrow >= 60 ? '💎 Bạch Kim' :
+                                        reader.cards[0].totalBorrow >= 30 ? '🥇 Vàng' :
+                                        reader.cards[0].totalBorrow >= 10 ? '🥈 Bạc' :
+                                        '🥉 Đồng'
+                                     }">🥈 Hạng Bạc
+                                    </div>
+                                </div>
+                                <div class="profile-meta-item">
+                                    <div class="label">Điểm tích lũy</div>
+                                    <div class="val">320 điểm</div>
+                                </div>
+                                <div class="profile-meta-item">
+                                    <div class="label">Tổng sách đã mượn</div>
+                                    <div class="val" th:text="${reader.cards[0].totalBorrow}">18 cuốn</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background:var(--blue-lt)"><i class="ti ti-books"
+                                                                                        style="color:var(--blue)"></i>
+                            </div>
+                            <div>
+                                <div class="stat-val" th:text="${reader.cards[0].totalBorrow}">18</div>
+                                <div class="stat-lbl">Đã mượn</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background:var(--green-lt)">
+                                <i class="ti ti-check" style="color:var(--green)"></i>
+                            </div>
+                            <div>
+                                <div class="stat-val" th:text="${countBorrowReturn}">16</div>
+                                <div class="stat-lbl">Đã đọc xong</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background:var(--amber-lt)"><i class="ti ti-star"
+                                                                                         style="color:var(--amber)"></i>
+                            </div>
+                            <div>
+                                <div class="stat-val">320</div>
+                                <div class="stat-lbl">Điểm tích lũy</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background:var(--red-lt)"><i class="ti ti-alert-triangle"
+                                                                                       style="color:var(--red)"></i>
+                            </div>
+                            <div>
+                                <div class="stat-val" th:text="${reader.cards[0].overdueCount ?: 0}">1</div>
+                                <div class="stat-lbl">Lần trả trễ</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:20px">
+                        <form id="profileForm" th:action="@{/home/profile}" method="post" th:object="${re}">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                            <div style="font-size:15px;font-weight:700;color:var(--ink)">Thông tin cá nhân</div>
+                            <div class="profile-actions">
+                                <button type="button" class="btn-renew" id="btnEdit">
+                                    <i class="ti ti-edit" style="margin-top: 4px;"></i> Chỉnh sửa
+                                </button>
+
+                                <button type="submit" class="btn-renew" id="btnSave" style="display:none">
+                                    <i class="ti ti-device-floppy" style="margin: 4px;"></i> Lưu
+                                </button>
+
+                                <button type="button" class="btn-renew" id="btnCancel" style="display:none">
+                                    <i class="ti ti-x" style="margin: 4px;"></i> Hủy
+                                </button>
+                            </div>
+                        </div>
+                            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <strong>Thành công!</strong> <span th:text="${success}"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-x-circle me-2"></i>
+                                <strong>Thất bại!</strong> <span th:text="${error}"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            <div class="info-grid">
+
+                                <div class="info-item">
+                                    <input type="hidden" name="id" th:value="${reader.id}">
+                                    <div class="info-label">Họ và tên</div>
+                                    <input class="info-input" name="name" th:value="${reader.name}" type="text" readonly>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Ngày sinh</div>
+                                    <input class="info-input" name="birthDate" type="date" th:value="${reader.birthDate}" readonly>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Email</div>
+                                    <input class="info-input" name="email" type="email" th:value="${reader.email}" readonly>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Số điện thoại</div>
+                                    <input class="info-input" name="phone" type="text" th:value="${reader.phone}" readonly>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Địa chỉ</div>
+                                    <input class="info-input" name=address type="text" th:value="${reader.address}" readonly>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Giới tính</div>
+
+                                    <div class="info-val">
+                                        <label>
+                                            <input type="radio" name="gender" value="Nam"
+                                                   th:checked="${reader.gender == 'Nam'}"
+                                                   disabled>
+                                            Nam
+                                        </label>
+
+                                        <label style="margin-left:15px">
+                                            <input type="radio" name="gender" value="Nữ"
+                                                   th:checked="${reader.gender == 'Nữ'}"
+                                                   disabled>
+                                            Nữ
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div><!-- /main-scroll -->
+
+        </div><!-- /content-wrap -->
+    </div><!-- /app-body -->
+</div>
+<!-- ══ NOTIFICATION PANEL ══ -->
+<div class="chat-widget" th:replace="reader/layout/reader-chat :: reader-chat"></div>
+<!-- ══ READER OVERLAY ══ -->
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="reader/layout/reader-sc :: reader-script"></div>
+<script>
+    const btnEdit = document.getElementById("btnEdit");
+    const btnSave = document.getElementById("btnSave");
+    const btnCancel = document.getElementById("btnCancel");
+
+    const inputs = document.querySelectorAll(".info-input");
+    const radios = document.querySelectorAll('input[type="radio"]');
+
+    // Lưu giá trị gốc
+    const originalValues = {};
+    inputs.forEach(input => {
+        originalValues[input.name] = input.value;
+    });
+
+    btnEdit.addEventListener("click", () => {
+        inputs.forEach(input => input.readOnly = false);
+        radios.forEach(radio => radio.disabled = false);
+
+        btnEdit.style.display = "none";
+        btnSave.style.display = "inline-flex";
+        btnCancel.style.display = "inline-flex";
+    });
+
+    btnCancel.addEventListener("click", () => {
+
+        // Trả dữ liệu về ban đầu
+        inputs.forEach(input => {
+            input.value = originalValues[input.name];
+            input.readOnly = true;
+        });
+
+        radios.forEach(radio => {
+            radio.disabled = true;
+        });
+
+        btnEdit.style.display = "inline-flex";
+        btnSave.style.display = "none";
+        btnCancel.style.display = "none";
+    });
+</script>
+</body>
+</html>

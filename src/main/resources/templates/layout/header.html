@@ -10,6 +10,12 @@
     <div class="topbar-actions">
         <div class="icon-btn">🔔<div class="notif-dot"></div></div>
         <div class="icon-btn">📥</div>
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rust));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;cursor:pointer;">NV</div>
+        <a onclick="toggleUserMenu()" style="width:36px;height:36px;border-radius:50%;
+        background:linear-gradient(135deg,var(--gold),var(--rust));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;cursor:pointer; text-decoration: none;">NV</a>
+        <div id="userDropdown" class="user-dropdown">
+            <a th:href="@{/logout}" class="action-btn" >
+                 Đăng xuất
+            </a>
+        </div>
     </div>
 </header>

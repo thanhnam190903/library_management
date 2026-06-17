@@ -27,7 +27,9 @@ public class BorrowSlip {
     LocalDate oldDueDate;
     @Column(name = "renewed")
     Boolean renewed = false;
-    boolean status;
+    @Column(name = "requested_renew_days")
+    Integer renewDays;
+    Integer statusRenewed;
     @ManyToOne
     @JoinColumn(name = "card_id")
     LibraryCard libraryCard;

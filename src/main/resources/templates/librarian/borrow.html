@@ -2,7 +2,7 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head th:replace="layout/head :: head">
 </head>
-<body>
+<body th:data-tab="${activeTab}">
 
 <!-- ════════ SIDEBAR ════════ -->
 <aside th:replace="layout/aside :: aside"></aside>
@@ -10,17 +10,23 @@
 <!-- ════════ MAIN ════════ -->
 <div class="bl-main">
     <header th:replace="layout/header :: header"></header>
-    <div class="bl-content" >
+    <div class="bl-content">
         <!-- ══════ PAGE: BORROW ══════ -->
         <div class="bl-page" id="page-borrow" style="display:block;">
             <div class="circulation-tabs">
-                <button class="circ-tab active" id="tab-borrow-btn" onclick="showCircTab('borrow-tab')">↗ Cho mượn</button>
+                <button class="circ-tab active" id="tab-borrow-btn" onclick="showCircTab('borrow-tab')">↗ Cho mượn
+                </button>
                 <button class="circ-tab" id="tab-return-btn" onclick="showCircTab('return-tab')">↙ Trả sách</button>
-                <button class="circ-tab" id="tab-overdue-btn" onclick="showCircTab('overdue-tab')">⚠️ Quá hạn (<span th:text="${overdueCount}"></span>)</button>
+                <button class="circ-tab" id="tab-renewed-btn" onclick="showCircTab('renewed-tab')">🔄 Gia hạn (<span
+                        th:text="${countPendingRenew}"></span>)
+                </button>
+                <button class="circ-tab" id="tab-overdue-btn" onclick="showCircTab('overdue-tab')">⚠️ Quá hạn (<span
+                        th:text="${overdueCount}"></span>)
+                </button>
                 <button class="circ-tab" id="tab-history-btn" onclick="showCircTab('history-tab')">📋 Lịch sử</button>
             </div>
 
-            <div class="circ-panel active" id="borrow-tab" >
+            <div class="circ-panel active" id="borrow-tab">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
                     <div>
                         <div class="circ-form-card">
@@ -30,15 +36,21 @@
                             <div class="bl-form-group">
                                 <div class="bl-form-label">Mã thẻ hội viên hoặc CMND</div>
                                 <div class="scan-input">
-                                    <input class="bl-form-input" id="card-id" placeholder="Quét thẻ hoặc nhập mã..." value="TL-1042">
+                                    <input class="bl-form-input" id="card-id" placeholder="Quét thẻ hoặc nhập mã..."
+                                           value="TL-1042">
+                                    <button onclick="startScan('card-id')" class="bl-btn bl-btn-primary">
+                                        📷
+                                    </button>
                                     <button class="bl-btn bl-btn-primary" onclick="findReader()">Tìm</button>
                                 </div>
                             </div>
                             <div class="confirm-card" id="reader-card" style="display:none;">
                                 <div class="confirm-icon">👤</div>
                                 <div>
-                                    <div class="confirm-title" id="reader-name" >Trần Thị Lan</div>
-                                    <div class="confirm-sub" id="reader-info">Mã: #1042 · Hội viên Vàng · Còn hạn đến 31/12/2026</div>
+                                    <div class="confirm-title" id="reader-name">Trần Thị Lan</div>
+                                    <div class="confirm-sub" id="reader-info">Mã: #1042 · Hội viên Vàng · Còn hạn đến
+                                        31/12/2026
+                                    </div>
                                     <div style="margin-top:6px;">
                                         <span class="bl-badge bl-badge-available" id="reader-status"></span>
                                     </div>
@@ -52,7 +64,11 @@
                             <div class="bl-form-group">
                                 <div class="bl-form-label">Mã sách hoặc ISBN</div>
                                 <div class="scan-input">
-                                    <input class="bl-form-input"  id="book-id" placeholder="Quét mã vạch hoặc tìm tên sách...">
+                                    <input class="bl-form-input" id="book-id"
+                                           placeholder="Quét mã vạch hoặc tìm tên sách...">
+                                    <button onclick="startScan('book-id')" class="bl-btn bl-btn-primary">
+                                        📷
+                                    </button>
                                     <button class="bl-btn bl-btn-secondary" onclick="findBook()">Tìm</button>
                                 </div>
                             </div>
@@ -64,23 +80,27 @@
                                 <span class="step-chip">3</span> Xác nhận &amp; Ngày hạn
                                 <div class="text-danger" id="error-input"></div>
                             </div>
-                            <form id="borrow-form" th:action="@{/quan-ly/borrowing}" method="post" >
+                            <form id="borrow-form" th:action="@{/quan-ly/borrowing}" method="post">
                                 <div class="bl-form-row" style="margin-bottom:16px;">
                                     <div class="bl-form-group" style="margin-bottom:0;">
                                         <input type="hidden" name="cardId" id="hidden-card-id">
                                         <input type="hidden" name="bookIds" id="selected-books">
-                                        <div class="bl-form-label" >Ngày mượn</div>
+                                        <div class="bl-form-label">Ngày mượn</div>
                                         <input class="bl-form-input" id="borrow-date" type="date" name="borrowDate">
-                                    </div><div class="bl-form-group" style="margin-bottom:0;">
-                                    <div class="bl-form-label">Ngày hẹn trả</div>
-                                    <input class="bl-form-input" id="return-date" type="date" name="dueDate">
-                                </div>
+                                    </div>
+                                    <div class="bl-form-group" style="margin-bottom:0;">
+                                        <div class="bl-form-label">Ngày hẹn trả</div>
+                                        <input class="bl-form-input" id="return-date" type="date" name="dueDate">
+                                    </div>
                                 </div>
                                 <div class="bl-form-group">
                                     <div class="bl-form-label">Ghi chú</div>
-                                    <input class="bl-form-input" placeholder="Ghi chú thêm (tình trạng sách, ghi chú đặc biệt...)">
+                                    <input class="bl-form-input"
+                                           placeholder="Ghi chú thêm (tình trạng sách, ghi chú đặc biệt...)">
                                 </div>
-                                <button class="bl-btn bl-btn-forest" style="width:100%;justify-content:center;padding:12px;">✓ Xác nhận cho mượn</button>
+                                <button class="bl-btn bl-btn-forest"
+                                        style="width:100%;justify-content:center;padding:12px;">✓ Xác nhận cho mượn
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -92,12 +112,12 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                             <div class="bl-panel-header">
-                                <div class="bl-panel-title" id="borrow-count">Đang mượn </div>
+                                <div class="bl-panel-title" id="borrow-count">Đang mượn</div>
                                 <span class="bl-badge bl-badge-borrowed" id="borrow-limit">Tối đa: </span>
                             </div>
                             <div class="borrow-list-item w-100" id="borrow-list">
                                 <span style="margin-left: 10rem;">Không có bản ghi nào</span>
-                                <div class="borrow-book-icon" ></div>
+                                <div class="borrow-book-icon"></div>
                                 <div class="borrow-info">
                                     <div class="borrow-title-text"></div>
                                     <div class="borrow-meta"></div>
@@ -117,9 +137,12 @@
                         <div class="circ-form-card">
                             <div class="circ-form-title"><span class="step-chip">1</span> Quét mã sách / thẻ trả</div>
                             <div class="bl-form-group">
-                                <div class="bl-form-label">Mã phiếu mượn </div>
+                                <div class="bl-form-label">Mã phiếu mượn</div>
                                 <div class="scan-input">
                                     <input class="bl-form-input" placeholder="Nhập hoặc quét mã..." id="return-keyword">
+                                    <button onclick="startScan('return-keyword')" class="bl-btn bl-btn-primary">
+                                        📷
+                                    </button>
                                     <button class="bl-btn bl-btn-primary" onclick="findReturnBook()">Tra cứu</button>
                                 </div>
                             </div>
@@ -129,36 +152,73 @@
                                 <span class="step-chip">2</span> Thông tin phiếu mượn
                                 <span style="text-align:end;" id="errorId"></span>
                             </div>
-                            <div class="overdue-alert" id="overdue-alert" style="display: none;">⚠️ Sách quá hạn 4 ngày — Phí phạt: 20,000đ</div>
-                            <form id="form-borrow" th:action="@{/quan-ly/return-book}" method="post" style="margin-top:20px;">
-                            <div class="" style="display:none;" id="return-card" ></div>
+                            <div class="overdue-alert" id="overdue-alert" style="display: none;">⚠️ Sách quá hạn 4 ngày
+                                — Phí phạt: 20,000đ
+                            </div>
+                            <form id="form-borrow" th:action="@{/quan-ly/return-book}" method="post"
+                                  style="margin-top:20px;">
+                                <div class="" style="display:none;" id="return-card"></div>
                                 <div class="" style="margin-top:15px;">
                                     <div class="bl-form-group">
                                         <div class="bl-form-label">Tổng phí phạt (VNĐ)</div>
                                         <input class="bl-form-input" id="total-fine" readonly value="0"
-                                                style="font-family:'DM Mono',monospace;font-weight:700;">
+                                               style="font-family:'DM Mono',monospace;font-weight:700;">
                                     </div>
                                 </div>
                                 <div style="display:flex;gap:10px;">
-                                    <button type="button" class="bl-btn bl-btn-forest" style="flex:1;justify-content:center;" onclick="confirmReturn()">✓ Xác nhận trả sách</button>
+                                    <button type="button" class="bl-btn bl-btn-forest"
+                                            style="flex:1;justify-content:center;" onclick="confirmReturn()">✓ Xác nhận
+                                        trả sách
+                                    </button>
                                 </div>
                             </form>
 
                         </div>
                     </div>
                     <div>
+                        <div class="bl-panel" style="height: 183px;">
+                            <table class="bl-data-table">
+                                <thead>
+                                <tr>
+                                    <th>Lỗi phạt</th>
+                                    <th>Phí phạt</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="rule : ${libraryRule}">
+                                    <td style="font-weight:500;color:var(--mist);"
+                                        th:text="${rule.ruleKey == 'OVERDUE_FINE_PER_DAY'
+                                        ? 'Phạt quá hạn'
+                                        : 'Phạt hỏng nhẹ'}"></td>
+                                    <td style="color:var(--mist);"
+                                        th:text="${#numbers.formatDecimal(rule.ruleValue, 0, 'COMMA', 0, 'POINT')}">
+                                    </td>
+                                    <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);">
+                                        <button class="action-btn"
+                                                th:data-id="${rule.id}"
+                                                th:data-rulevalue="${rule.ruleValue}"
+                                                onclick="openUpdateRule(this)">Sửa
+                                        </button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
                         <div class="bl-panel">
                             <div class="bl-panel-header">
                                 <div class="bl-panel-title">Trả sách hôm nay</div>
-                                <span class="bl-badge bl-badge-available" th:text="${countReturnedToday + ' lượt'}"></span>
+                                <span class="bl-badge bl-badge-available"
+                                      th:text="${countReturnedToday + ' lượt'}"></span>
                             </div>
                             <table class="bl-data-table">
                                 <thead>
                                 <tr>
                                     <th>Sách</th>
                                     <th>Độc giả</th>
-                                    <th>Trạng thái</th
-                                    ><th>Giờ</th>
+                                    <th>Giờ</th>
+                                    <th>Trạng thái</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -169,39 +229,139 @@
                                 </tr>
                                 <tr th:each="borrow : ${returnedToday}">
                                     <td style="font-weight:500;" th:text="${borrow.bookCopy.bookTitle.title}"></td>
-                                    <td style="color:var(--mist);" th:text="${borrow.borrowSlip.libraryCard.reader.name}">Lê Minh Tú</td>
+                                    <td style="color:var(--mist);"
+                                        th:text="${borrow.borrowSlip.libraryCard.reader.name}">Lê Minh Tú
+                                    </td>
+                                    <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);"
+                                        th:text="${#temporals.format(borrow.returnHour, 'HH:mm')}">09:02
+                                    </td>
                                     <td>
                                         <span th:if="${borrow.returnDate <= borrow.borrowSlip.dueDate}" class="bl-badge bl-badge-available">
                                             Đúng hạn
                                         </span>
-                                        <span th:if="${borrow.returnDate > borrow.borrowSlip.dueDate}" class="bl-badge bl-badge-overdue"
+                                        <span th:if="${borrow.returnDate > borrow.borrowSlip.dueDate}"
+                                              class="bl-badge bl-badge-overdue"
                                               th:text="'Quá ' + ${T(java.time.temporal.ChronoUnit).DAYS.between(
                                               borrow.borrowSlip.dueDate,borrow.returnDate)} + ' ngày'">
                                         </span>
                                     </td>
-                                    <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);" th:text="${borrow.returnHour}">09:02</td>
+
                                 </tr>
                                 </tbody>
                             </table>
                         </div>
+
                     </div>
+                </div>
+            </div>
+            <div id="reader" style="margin-top: -25em;"></div>
+
+            <div class="circ-panel" id="renewed-tab">
+                <div class="bl-panel">
+                    <div th:if="${succe}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Thành công!</strong> <span th:text="${succe}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <strong>Lỗi!</strong> <span th:text="${error}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <table class="bl-data-table">
+                        <thead>
+                        <tr>
+                            <th>Tên sách</th>
+                            <th>Độc giả</th>
+                            <th>Ngày mượn</th>
+                            <th>Hạn trả cũ</th>
+                            <th>Hạn trả</th>
+                            <th>Số ngày gia hạn</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(renewedBorrow)}">
+                            <td colspan="7" style="text-align:center; padding:20px;">
+                                Không có phiếu mượn nào gia hạn
+                            </td>
+                        </tr>
+                        <tr th:each="borrow : ${renewedBorrow}">
+                            <td style="font-family:'DM Mono',monospace;font-size:11px"
+                                th:text="${borrow.bookCopy.bookTitle.title}"></td>
+                            <td style="font-weight:500;" th:text="${borrow.borrowSlip.libraryCard.reader.name}">Atomic
+                                Habits
+                            </td>
+                            <td th:text="${#temporals.format(borrow.borrowSlip.borrowDate,'dd/MM')}">Nguyễn Thu Hà</td>
+                            <td style="color:var(--mist);font-size:12px;"
+                                th:text="${borrow.borrowSlip.oldDueDate != null ?
+                                  #temporals.format(borrow.borrowSlip.oldDueDate,'dd/MM')
+                                  : '__'}">07/03
+                            </td>
+                            <td style="font-size:12px;"
+                                th:text="${#temporals.format(borrow.borrowSlip.dueDate,'dd/MM')}">24/03
+                            </td>
+                            <td style="font-size:12px;color:var(--forest);"
+                                th:text="${borrow.borrowSlip.renewDays}">
+                                24/03 ✓
+                            </td>
+                            <td>
+                                <span th:if="${borrow.borrowSlip.statusRenewed == 0}"
+                                      class="bl-badge bl-badge-borrowed">
+                                    Chờ xử lý
+                                </span>
+                                <span th:if="${borrow.borrowSlip.statusRenewed == 1}"
+                                      class="bl-badge bl-badge-available">
+                                    Đã gia hạn
+                                </span>
+                                <span th:if="${borrow.borrowSlip.statusRenewed == 2}"
+                                      class="bl-badge bl-badge-overdue">
+                                    Từ chối
+                                </span>
+                            </td>
+                            <td th:if="${borrow.borrowSlip.statusRenewed == 0}">
+                                <button class="action-btn" th:data-slip="${borrow.borrowSlip.id}"
+                                        th:data-reader="@{borrow.borrowSlip.libraryCard.reader.name}"
+                                        th:data-book="@{borrow.bookCopy.bookTitle.title}"
+                                        onclick="approveRenew(this)">Xác nhận
+                                </button>
+
+                                <button class="action-btn" th:data-slip="${borrow.borrowSlip.id}"
+                                        th:data-reader="@{borrow.borrowSlip.libraryCard.reader.name}"
+                                        th:data-book="@{borrow.bookCopy.bookTitle.title}"
+                                        onclick="rejectRenew(this)">Từ chối
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             <div class="circ-panel" id="overdue-tab">
-                <div class="overdue-alert" style="margin-bottom:20px;">⚠️ Có 7 phiếu mượn quá hạn. Hệ thống đã tự động gửi thông báo email cho 5 trường hợp.</div>
+
                 <div class="bl-panel">
                     <div class="bl-panel-header">
                         <div class="bl-panel-title">Danh sách sách quá hạn</div>
                         <div style="display:flex;gap:8px;">
-                            <button class="bl-btn bl-btn-secondary" onclick="confirmRemindAll()">📧 Gửi thông báo tất cả</button>
+                            <button class="bl-btn bl-btn-secondary" onclick="confirmRemindAll()">📧 Gửi thông báo tất
+                                cả
+                            </button>
                             <button class="bl-btn bl-btn-primary" onclick="printBorrowList()">🖨️ In danh sách</button>
                         </div>
                     </div>
-                    <div id="print-area">
+                    <div class="overdue-alert" th:if="${todayOverdueMail > 0}" style="margin-bottom:12px;">
+                        ⚠️ Hôm nay đã gửi
+                        <strong th:text="${todayOverdueMail}">0</strong>
+                        email thông báo quá hạn.
+                    </div>
+                    <div id="print-area" class="print-area">
                         <div class="print-title">DANH SÁCH TRẢ SÁCH HÔM NAY</div>
                         <div class="print-subtitle">Ngày in:<span id="print-date"></span></div>
-                        <table class="bl-data-table" >
+
+                        <table class="bl-data-table">
                             <thead>
                             <tr>
                                 <th>Sách</th>
@@ -214,9 +374,16 @@
                             </tr>
                             </thead>
                             <tbody>
+                            <tr th:if="${#lists.isEmpty(overdueBooks)}">
+                                <td colspan="7" style="text-align:center; padding:20px;">
+                                    Không có phiếu mượn nào quá hạn
+                                </td>
+                            </tr>
                             <tr th:each="borrow : ${overdueBooks}">
                                 <td>
-                                    <div style="font-weight:500;" th:text="${borrow.bookCopy.bookTitle.title}">Tư Duy Nhanh Và Chậm</div>
+                                    <div style="font-weight:500;" th:text="${borrow.bookCopy.bookTitle.title}">Tư Duy
+                                        Nhanh Và Chậm
+                                    </div>
                                 </td>
                                 <td>
                                     <div style="display:flex;align-items:center;gap:8px;">
@@ -238,13 +405,15 @@
                                 </span>
                                 </td>
                                 <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rust);"
-                                    th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(borrow.borrowSlip.dueDate,
-                                T(java.time.LocalDate).now()) * 5000} + 'đ'"></td>
+                                    th:text="${#numbers.formatDecimal(T(java.time.temporal.ChronoUnit).DAYS.between(
+                                    borrow.borrowSlip.dueDate,T(java.time.LocalDate).now()) * overdueRate,0, 0)} + 'đ'">
+                                </td>
                                 <td>
                                     <button class="action-btn" th:data-id="${borrow.id}"
                                             th:data-name="${borrow.borrowSlip.libraryCard.reader.name}"
-                                            onclick="confirmRemind(this)">Nhắc nhở</button>
-                                    <button class="action-btn">Nhận trả</button>
+                                            onclick="confirmRemind(this)">Nhắc nhở
+                                    </button>
+                                    <button th:data-id="${borrow.borrowSlip.id}" onclick="goToReturnTab(this)" class="action-btn">Nhận trả</button>
                                 </td>
                             </tr>
                             </tbody>
@@ -253,17 +422,26 @@
                             Hệ thống quản lý thư viện
                         </div>
                     </div>
-
                 </div>
             </div>
 
             <div class="circ-panel" id="history-tab">
                 <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
-                    <div class="bl-search-bar" style="flex:1;min-width:200px;"><span style="color:var(--mist);">🔍</span><input type="text" placeholder="Tìm theo độc giả, sách, mã phiếu..."></div>
-                    <input class="bl-filter-select" type="date" value="2026-03-01">
-                    <input class="bl-filter-select" type="date" value="2026-03-25">
-                    <select class="bl-filter-select"><option>Tất cả</option><option>Đang mượn</option><option>Đã trả</option><option>Quá hạn</option></select>
-                    <button class="bl-btn bl-btn-secondary">📥 Xuất Excel</button>
+                    <form th:action="@{/quan-ly/borrowing}" method="get" style="display: contents;">
+                        <div class="bl-search-bar" style="flex:1;min-width:200px;"><span
+                                style="color:var(--mist);">🔍</span>
+                            <input type="hidden" name="tab" value="history-tab">
+                            <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm theo độc giả, sách...">
+                        </div>
+                        <select class="bl-filter-select" name="filter">
+                            <option value="">Tất cả</option>
+                            <option value="borrowing">Đang mượn</option>
+                            <option value="returned">Đã trả</option>
+                            <option value="overdue">Quá hạn</option>
+                        </select>
+                        <button type="submit" class="bl-btn bl-btn-secondary">Tìm</button>
+                    </form>
+                    <button class="bl-btn bl-btn-secondary"  onclick="window.location.href='/qltv/quan-ly/borrowing/export-excel'">📥 Xuất Excel</button>
                 </div>
                 <div class="bl-panel">
                     <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -277,7 +455,13 @@
                         <strong>Lỗi!</strong> <span th:text="${error}"></span>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
+                    <div class="overdue-alert" th:if="${todayReminderMail > 0}" style="margin-bottom:12px;">
+                        📧 Hôm nay đã gửi
+                        <strong th:text="${todayReminderMail}">0</strong>
+                        email nhắc sắp đến hạn trả sách.
+                    </div>
                     <table class="bl-data-table">
+
                         <thead>
                         <tr>
                             <th>Mã phiếu</th>
@@ -287,40 +471,117 @@
                             <th>Hạn trả</th>
                             <th>Ngày trả</th>
                             <th>Trạng thái</th>
+                            <th></th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="borrow : ${borrowTitle}">
-                            <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);" th:text="${borrow.borrowSlip.id}"></td>
+                        <tr th:if="${#lists.isEmpty(borrowTitle.content)}">
+                            <td colspan="7" style="text-align:center; padding:20px;">
+                                Không có phiếu mượn nào
+                            </td>
+                        </tr>
+                        <tr th:each="borrow : ${borrowTitle.content}">
+                            <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);"
+                                th:text="${borrow.borrowSlip.id}"></td>
                             <td style="font-weight:500;" th:text="${borrow.bookCopy.bookTitle.title}">Atomic Habits</td>
                             <td th:text="${borrow.borrowSlip.libraryCard.reader.name}">Nguyễn Thu Hà</td>
                             <td style="color:var(--mist);font-size:12px;"
-                                th:text="${#temporals.format(borrow.borrowSlip.borrowDate,'dd/MM')}">07/03</td>
-                            <td style="font-size:12px;" th:text="${#temporals.format(borrow.borrowSlip.dueDate,'dd/MM')}">24/03</td>
+                                th:text="${#temporals.format(borrow.borrowSlip.borrowDate,'dd/MM')}">07/03
+                            </td>
+                            <td style="font-size:12px;"
+                                th:text="${#temporals.format(borrow.borrowSlip.dueDate,'dd/MM')}">24/03
+                            </td>
                             <td style="font-size:12px;color:var(--forest);"
-                                th:text="${borrow.returnDate != null ? #temporals.format(borrow.returnDate,'dd/MM') + ' ✓' : '--'}">24/03 ✓</td>
+                                th:text="${borrow.returnDate != null ? #temporals.format(borrow.returnDate,'dd/MM') + ' ✓' : '--'}">
+                                24/03 ✓
+                            </td>
                             <td>
                                 <span th:if="${borrow.status == 0}" class="bl-badge bl-badge-available">Đã trả</span>
                                 <span th:if="${borrow.status == 1 and
-                                borrow.borrowSlip.dueDate.isBefore( T(java.time.LocalDate).now())}" class="bl-badge bl-badge-overdue">Quá hạn</span>
+                                borrow.borrowSlip.dueDate.isBefore( T(java.time.LocalDate).now())}"
+                                      class="bl-badge bl-badge-overdue">Quá hạn</span>
                                 <span th:if="${borrow.status == 1 and
-                                 !borrow.borrowSlip.dueDate.isBefore(T(java.time.LocalDate).now())}" class="bl-badge bl-badge-borrowed">
+                                 !borrow.borrowSlip.dueDate.isBefore(T(java.time.LocalDate).now())}"
+                                      class="bl-badge bl-badge-borrowed">
                                     Đang mượn
                                 </span>
                             </td>
+                            <td>
+                                <button class="action-btn" th:if="${borrow.createdAt != null and T(java.time.Duration).between(
+                                borrow.createdAt,T(java.time.LocalDateTime).now()).toMinutes() < 3}"
+                                        th:data-slip="${borrow.borrowSlip.id}"
+                                        onclick="printBorrowSlip(this)">In phiếu mượn
+                                </button>
+                            </td>
                         </tr>
-                        <tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">BRW-26032402</td><td style="font-weight:500;">Nhà Giả Kim</td><td>Lê Minh Tú</td><td style="color:var(--mist);font-size:12px;">10/03</td><td style="font-size:12px;">24/03</td><td style="font-size:12px;color:var(--forest);">24/03 ✓</td><td><span class="bl-badge bl-badge-available">Đã trả</span></td></tr>
-                        <tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">BRW-26030191</td><td style="font-weight:500;">Tư Duy Nhanh Và Chậm</td><td>Phạm Hoàng Nam</td><td style="color:var(--mist);font-size:12px;">20/02</td><td style="font-size:12px;color:var(--rust);">06/03</td><td style="font-size:12px;color:var(--mist);">—</td><td><span class="bl-badge bl-badge-overdue">Quá hạn</span></td></tr>
-                        <tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">BRW-26030145</td><td style="font-weight:500;">Đắc Nhân Tâm</td><td>Trần Thị Lan</td><td style="color:var(--mist);font-size:12px;">01/03</td><td style="font-size:12px;">15/03</td><td style="font-size:12px;color:var(--mist);">—</td><td><span class="bl-badge bl-badge-borrowed">Đang mượn</span></td></tr>
-                        <tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mist);">BRW-26030089</td><td style="font-weight:500;">Sapiens</td><td>Vũ Đình Khoa</td><td style="color:var(--mist);font-size:12px;">24/03</td><td style="font-size:12px;">07/04</td><td style="font-size:12px;color:var(--mist);">—</td><td><span class="bl-badge bl-badge-borrowed">Đang mượn</span></td></tr>
+
                         </tbody>
                     </table>
-                    <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;"><div style="font-size:13px;color:var(--mist);">Hiển thị 5 / 312 kết quả</div><div style="display:flex;gap:6px;"><button class="action-btn">‹ Trước</button><button class="action-btn" style="border-color:var(--gold);color:var(--gold);">1</button><button class="action-btn">2</button><button class="action-btn">3</button><button class="action-btn">Sau ›</button></div></div>
+                    <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                        <div style="font-size:13px;color:var(--mist);"
+                             th:text="'Hiển thị ' + ${borrowTitle.numberOfElements}
+                                          + ' / ' + ${totalElements} + ' lịch sử'">Hiển thị 6 / 1,584 lịch sử</div>
+                        <div style="display:flex;gap:6px;">
+
+                            <a class="action-btn"
+                               th:if="${borrowTitle.hasPrevious()}"
+                               th:href="@{/quan-ly/borrowing(
+                                tab='history-tab',
+                                page=${borrowTitle.number-1},
+                                keyword=${keyword},
+                                filter=${filter})}">
+                                ‹ Trước
+                            </a>
+                            <span class="action-btn"
+                                  style="border-color:var(--gold);color:var(--gold);"
+                                  th:text="${borrowTitle.number + 1}">
+                            </span>
+                            <a class="action-btn"
+                               th:if="${borrowTitle.hasNext()}"
+                               th:href="@{/quan-ly/borrowing(
+                                tab='history-tab',
+                                page=${borrowTitle.number+1},
+                                keyword=${keyword},
+                                filter=${filter})}">
+                                Sau ›
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div >
+        </div>
 
     </div><!-- /content -->
+</div>
+
+<div class="bl-modal-overlay" id="update-rule-modal" onclick="closeModal('update-rule-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()" style="width: 345px;">
+        <div class="bl-modal-header">
+            <div style="margin-left: 54px;">
+                <div class="bl-modal-book-title">Thay đổi phí phạt</div>
+            </div>
+            <button class="bl-modal-close" onclick="closeModal('update-rule-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <form th:action="@{/quan-ly/update-rule}" method="post">
+                <div class="bl-form-group">
+                    <div class="bl-form-label">Phí phạt</div>
+                    <input type="hidden" id="rule-id" name="rule-id">
+                    <input type="text" id="rule-value" name="ruleValue" class="bl-form-input"
+                           placeholder="Phí phạt...">
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Thay
+                        đổi
+                    </button>
+                    <button type="button" class="bl-btn bl-btn-secondary" onclick="closeModal('update-rule-modal')">
+                        Hủy
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
 </div>
 
 <div th:if="${brs != null}" style="display:none">
@@ -344,37 +605,61 @@
     <p>Người trả:<span id="receipt-reader"></span></p>
     <p>Ngày trả:<span id="receipt-date"></span></p>
     <p>Phí phạt:<span id="receipt-fine"></span>đ</p>
-    <p>Sách:<div id="receipt-book"></div></p>
-</div>
-<div id="borrow-print-area" style="display: none;">
-    <h2 style="text-align:center;">PHIẾU MƯỢN SÁCH</h2>
-    <p><b>Mã phiếu:</b><span id="print-slip-id"></span></p>
-    <p><b>Độc giả:</b><span id="print-reader-name"></span></p>
-    <p><b>Ngày mượn:</b><span id="print-borrow-date"></span></p>
-    <p><b>Hạn trả:</b><span id="print-due-date"></span></p>
-    <table class="table">
-        <thead>
-        <tr>
-            <th>STT</th>
-            <th>Mã bản sách</th>
-            <th>Tên sách</th>
-            <th>Tác giả</th>
-            <th>Thể loại</th>
-        </tr>
-        </thead>
-        <tbody id="print-book-list">
-        </tbody>
-    </table>
-    <p>Vui lòng cầm phiếu này khi đến trả sách</p>
-    <div style="text-align:center;margin-top:20px;">
-        <img id="print-qr" width="250" height="250">
-    </div>
-
+    <p>Sách:
+    <div id="receipt-book"></div>
+    </p>
 </div>
 
+<div class="toast" id="toast"></div>
+<script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:replace="layout/script :: script"></script>
 <script th:src="@{/assets/borrow.js}"></script>
+<script th:if="${s}">
+    showToast("Thay đổi phí phạt thành công!");
+</script>
+<script>
+    function goToReturnTab(btn) {
+    const borrowSlipId = btn.dataset.id;
+    showCircTab('return-tab');
+    document.getElementById("return-keyword").value = borrowSlipId;
+    findReturnBook();
+}
+    function openUpdateRule(btn) {
+        document.getElementById("rule-id").value = btn.dataset.id;
+        document.getElementById("rule-value").value = parseInt(btn.dataset.rulevalue);
+        document.getElementById('update-rule-modal').classList.add('bl-open');
+    }
+
+    function approveRenew(btn) {
+    const slipId = btn.dataset.slip;
+    const reader = btn.dataset.reader;
+    const book = btn.dataset.book;
+    const ok = confirm(`Xác nhận gia hạn?\n\n` +`Độc giả: ${reader}\n` +`Sách: ${book}`);
+    if (ok) {
+        window.location.href =
+            `/qltv/quan-ly/renew-approve/${slipId}`;
+    }
+}
+
+function rejectRenew(btn) {
+    const slipId = btn.dataset.slip;
+    const reader = btn.dataset.reader;
+    const book = btn.dataset.book;
+    const ok = confirm(`Từ chối yêu cầu gia hạn?\n\n` +`Độc giả: ${reader}\n` +`Sách: ${book}`);
+    if (ok) {
+        window.location.href =`/qltv/quan-ly/renew-reject/${slipId}`;
+    }
+}
+
+    window.addEventListener("load", function () {
+    const tab = document.body.dataset.tab;
+
+    if (tab) {
+        showCircTab(tab);
+    }
+});
+</script>
 <script>
 </script>
 </body>
