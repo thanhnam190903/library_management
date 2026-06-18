@@ -352,7 +352,34 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="pdfModal">
+    <div class="modal-box" style="width:950px;height: 800px;position: sticky;">
+        <div class="modal-actions" style="justify-content: center;gap: 10px;">
+            <button class="btn-cancel" onclick="startAudio()">🔊 Đọc sách</button>
+            <button class="btn-cancel" onclick="prevPage()">⏮ Trang trước</button>
+            <button class="btn-cancel" onclick="pauseAudio()">⏸ Tạm dừng</button>
+            <button class="btn-cancel" onclick="resumeAudio()">▶ Tiếp tục</button>
+            <button class="btn-cancel" onclick="nextPage()">⏭ Trang sau</button>
+            <button class="btn-cancel" onclick="stopAudio()">⏹ Dừng</button>
+            <button class="btn-cancel" onclick="closeBook()">Đóng</button>
+        </div>
+        <div style="margin-top:12px;margin-left: 30px;">
+            <input type="number" id="goto-page" min="1" placeholder="Số trang"
+                   style="width:100px;padding:8px;border:1px solid #ccc;border-radius:6px;">
+            <button class="btn-cancel" style="background-color: green;color: white;" onclick="gotoPage()">📖 Đi tới</button>
+            <div id="audio-status" style="text-align:center;margin-top: -30px;font-weight:600;color:#333;font-size:15px;">
+                Chưa đọc
+            </div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px;width: 950px;height: 800px;">
+            <iframe id="pdfFrame" style="width:950px;height: 800px;" src="">
+            </iframe>
+            <div id="pdf-toolbar-mask" >
+            </div>
+        </div>
 
+    </div>
+</div>
 
 <div class="chat-widget" th:replace="reader/layout/reader-chat :: reader-chat"></div>
 <!-- ══ READER OVERLAY ══ -->

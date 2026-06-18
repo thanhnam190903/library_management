@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="layout/head :: head">
 
 </head>
@@ -71,6 +71,7 @@
                                         <span th:case="'2'">Truyện</span>
                                         <span th:case="'3'">Lịch sử</span>
                                         <span th:case="'4'">Tâm lý học</span>
+                                        <span th:case="'5'">Khoa học & công nghệ</span>
                                         <span th:case="0">---</span>
 
                                     </div>
@@ -91,7 +92,7 @@
                                         th:data-status="${c.status}"
                                         onclick="openCateMember(this)">Sửa
                                 </button>
-                                <button class="action-btn" th:data-id="${c.id}" onclick="confirmDelete(this)">Xóa
+                                <button sec:authorize="hasRole('ADMIN')" class="action-btn" th:data-id="${c.id}" onclick="confirmDelete(this)">Xóa
                                 </button>
                             </td>
                         </tr>
@@ -146,6 +147,7 @@
                             <option value="2">Truyện</option>
                             <option value="3">Lịch sử</option>
                             <option value="4">Tâm lý học</option>
+                            <option value="5">Khoa học & công nghệ</option>
                             <option value="0">Không có chủ đề</option>
                         </select>
                     </div>

@@ -63,15 +63,11 @@ public class SearchBookController {
         }
         boolean finalCardStatus = cardStatus;
         return bookTitleRepository
-                .searchBooks(keyword, category, availability, format, PageRequest.of(0, 10))
+                .searchBooks(keyword, category, availability, format, PageRequest.of(0, 12))
                 .stream()
                 .map(b -> {
-
                     Map<String, Object> m = new HashMap<>();
-
-                    long availableCopies =
-                            bookCopyRepository.countAvailableBooks(b.getId());
-
+                    long availableCopies = bookCopyRepository.countAvailableBooks(b.getId());
                     m.put("id", b.getId());
                     m.put("title", b.getTitle());
                     m.put("coverImage", b.getCoverImage());
@@ -80,7 +76,6 @@ public class SearchBookController {
                     m.put("cardStatus", finalCardStatus);
                     m.put("hasBookCopy",b.getCopies() != null && !b.getCopies().isEmpty());
                     m.put("hasDigital",b.getDigitalBooks() != null && !b.getDigitalBooks().isEmpty());
-
                     return m;
                 })
                 .collect(Collectors.toList());

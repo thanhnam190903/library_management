@@ -19,6 +19,7 @@ public class Publisher {
     @Column(name = "publisher_name")
     String publisherName;
     String address;
+    Boolean deleted = false;
     @OneToMany(mappedBy = "publisher")
     List<BookTitle> bookTitles;
 }

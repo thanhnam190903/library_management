@@ -44,7 +44,7 @@ public class BookController {
                             @RequestParam(defaultValue = "") String categoryId,
                             @RequestParam(defaultValue = "0") int page,Model model){
 
-        Pageable pageable = PageRequest.of(page, 6, Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(page, 6, Sort.by("createdAt").descending());
         Page<BookTitle> booksPage = bookTitleRepository.searchBooks(keyword, categoryId, pageable);
         List<BookTitle> books = booksPage.getContent();
         Map<String, Long> availableMap = new HashMap<>();
@@ -144,7 +144,7 @@ public class BookController {
             for (int i = 0; i < quantity; i++) {
                 BookCopy bookCopy = BookCopy.builder()
                         .id(idGeneratorService.generate("BOOK_COPY", "BKC"))
-                        .barcode("BC" + String.format("%03d", i + 1))
+                        .barcode(idGeneratorService.generate("BOOK_COPY","BK"))
                         .bookTitle(bookTitle)
                         .circulationStatus("available")
                         .status(true)

@@ -246,7 +246,7 @@
                     <label for="l-rem">Ghi nhớ đăng nhập</label>
                 </div>
 
-                <button class="lx-btn" onclick="doLogin()">
+                <button class="lx-btn" >
                     <i class="ti ti-login" style="font-size:14px"></i>
                     <span>Đăng nhập</span>
                 </button>
@@ -264,135 +264,143 @@
                 <i class="ti ti-alert-circle" style="font-size:14px;flex-shrink:0"></i>
                 <span id="rerr-txt"></span>
             </div>
-            <div class="lx-ok" id="rok">
-                <i class="ti ti-circle-check" style="font-size:14px;flex-shrink:0"></i>
-                <span>Đăng ký thành công! Kiểm tra email để xác nhận.</span>
+            <div th:if="${registerError}"
+                 style="color:red"
+                 th:text="${registerError}">
             </div>
-
-            <div class="lx-row2">
-                <div class="lx-field">
-                    <div class="lx-label">Họ và tên</div>
-                    <div class="lx-iw">
-                        <i class="ti ti-user lx-ico"></i>
-                        <input class="lx-input" id="r-ln" type="text" placeholder="Nhập họ tên"/>
+            <form th:action="@{/home/register}" method="post">
+                <div class="lx-row2">
+                    <div class="lx-field">
+                        <div class="lx-label">Họ và tên</div>
+                        <div class="lx-iw">
+                            <i class="ti ti-user lx-ico"></i>
+                            <input class="lx-input" name="fullName" id="r-ln" type="text" placeholder="Nhập họ tên"/>
+                        </div>
+                    </div>
+                    <div class="lx-field">
+                        <div class="lx-label">Giới tính</div>
+                        <div class="lx-iw" style="margin-top: 14px;">
+                            <input class="" name="gender" type="radio" value="Nam"/>Nam
+                            <input class="" name="gender" type="radio" value="Nữ" style="margin-left: 4px;"/>Nữ
+                        </div>
                     </div>
                 </div>
-                <div class="lx-field">
-                    <div class="lx-label">Giới tính</div>
-                    <div class="lx-iw" style="margin-top: 14px;">
-                        <input class="" name="gender" type="radio" value="Nam"/>Nam
-                        <input class="" name="gender" type="radio" value="Nữ" style="margin-left: 4px;"/>Nữ
+
+                <div class="lx-row2">
+                    <div class="lx-field">
+                        <div class="lx-label">Email</div>
+                        <div class="lx-iw">
+                            <i class="ti ti-mail lx-ico"></i>
+                            <input class="lx-input" name="email" id="r-em" type="email" placeholder="email@example.com" autocomplete="email"/>
+                        </div>
+                    </div>
+                    <div class="lx-field">
+                        <div class="lx-label">Địa chỉ</div>
+                        <div class="lx-iw">
+                            <i class="ti ti-map-pin lx-ico"></i>
+                            <input class="lx-input" name="diaChi" type="text" placeholder="Nhập địa chỉ..." />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="lx-row2">
-                <div class="lx-field">
-                    <div class="lx-label">Email</div>
-                    <div class="lx-iw">
-                        <i class="ti ti-mail lx-ico"></i>
-                        <input class="lx-input" id="r-em" type="email" placeholder="email@example.com" autocomplete="email"/>
+                <div class="lx-row2">
+                    <div class="lx-field">
+                        <div class="lx-label">Ngày sinh</div>
+                        <div class="lx-iw">
+                            <i class="ti ti-mail lx-ico"></i>
+                            <input class="lx-input" name="ngaySinh" type="date" />
+                        </div>
+                    </div>
+                    <div class="lx-field">
+                        <div class="lx-label">Số điện thoại</div>
+                        <div class="lx-iw">
+                            <i class="ti ti-map-pin lx-ico"></i>
+                            <input class="lx-input" name="sdt" type="text" placeholder="Nhập số điện thoại..." />
+                        </div>
                     </div>
                 </div>
-                <div class="lx-field">
-                    <div class="lx-label">Địa chỉ</div>
-                    <div class="lx-iw">
-                        <i class="ti ti-map-pin lx-ico"></i>
-                        <input class="lx-input" type="text" placeholder="Nhập địa chỉ..." />
-                    </div>
-                </div>
-            </div>
 
-            <div class="lx-row2">
-                <div class="lx-field">
-                    <div class="lx-label">Ngày sinh</div>
-                    <div class="lx-iw">
-                        <i class="ti ti-mail lx-ico"></i>
-                        <input class="lx-input" type="date" />
-                    </div>
-                </div>
-                <div class="lx-field">
-                    <div class="lx-label">Số điện thoại</div>
-                    <div class="lx-iw">
-                        <i class="ti ti-map-pin lx-ico"></i>
-                        <input class="lx-input" type="text" placeholder="Nhập số điện thoại..." />
-                    </div>
-                </div>
-            </div>
+                <div class="lx-row2">
 
-            <div class="lx-row2">
+                    <!-- Mật khẩu -->
+                    <div class="lx-field">
+                        <div class="lx-label">Mật khẩu</div>
+                        <div class="lx-iw">
+                            <i class="ti ti-lock lx-ico"></i>
+                            <input class="lx-input"
+                                   id="password"
+                                   name="password"
+                                   type="password"
+                                   placeholder="Tối thiểu 8 ký tự"
+                                   style="padding-right:33px"
+                                   oninput="chkPw(this.value);checkPasswordMatch()"
+                                   autocomplete="new-password"/>
 
-                <!-- Mật khẩu -->
-                <div class="lx-field">
-                    <div class="lx-label">Mật khẩu</div>
-                    <div class="lx-iw">
-                        <i class="ti ti-lock lx-ico"></i>
-                        <input class="lx-input"
-                               id="password"
-                               type="password"
-                               placeholder="Tối thiểu 8 ký tự"
-                               style="padding-right:33px"
-                               oninput="chkPw(this.value);checkPasswordMatch()"
-                               autocomplete="new-password"/>
-
-                        <button type="button"
-                                class="lx-eye"
-                                onclick="tp('password','eye1')">
-                            <i class="ti ti-eye" id="eye1"></i>
-                        </button>
-                    </div>
-                    <div class="lx-sbars" id="sbars">
-                        <div class="lx-sbar"></div>
-                        <div class="lx-sbar"></div>
-                        <div class="lx-sbar"></div>
-                        <div class="lx-sbar"></div>
-                    </div>
-                    <div class="lx-slbl" id="slbl"></div>
-                </div>
-
-                <!-- Nhập lại mật khẩu -->
-                <div class="lx-field">
-                    <div class="lx-label">Nhập lại mật khẩu</div>
-                    <div class="lx-iw">
-                        <i class="ti ti-lock lx-ico"></i>
-                        <input class="lx-input"
-                               id="confirmPassword"
-                               type="password"
-                               placeholder="Nhập lại mật khẩu"
-                               style="padding-right:33px"
-                               oninput="checkPasswordMatch()"
-                               autocomplete="new-password"/>
-
-                        <button type="button"
-                                class="lx-eye"
-                                onclick="tp('confirmPassword','eye2')">
-                            <i class="ti ti-eye" id="eye2"></i>
-                        </button>
+                            <button type="button"
+                                    class="lx-eye"
+                                    onclick="tp('password','eye1')">
+                                <i class="ti ti-eye" id="eye1"></i>
+                            </button>
+                        </div>
+                        <div class="lx-sbars" id="sbars">
+                            <div class="lx-sbar"></div>
+                            <div class="lx-sbar"></div>
+                            <div class="lx-sbar"></div>
+                            <div class="lx-sbar"></div>
+                        </div>
+                        <div class="lx-slbl" id="slbl"></div>
                     </div>
 
-                    <small id="passwordError"
-                           style="display:none;color:#dc3545">
-                        Mật khẩu nhập lại không khớp
-                    </small>
+                    <!-- Nhập lại mật khẩu -->
+                    <div class="lx-field">
+                        <div class="lx-label">Nhập lại mật khẩu</div>
+                        <div class="lx-iw">
+                            <i class="ti ti-lock lx-ico"></i>
+                            <input class="lx-input"
+                                   id="confirmPassword"
+                                   type="password"
+                                   placeholder="Nhập lại mật khẩu"
+                                   style="padding-right:33px"
+                                   oninput="checkPasswordMatch()"
+                                   autocomplete="new-password"/>
+
+                            <button type="button"
+                                    class="lx-eye"
+                                    onclick="tp('confirmPassword','eye2')">
+                                <i class="ti ti-eye" id="eye2"></i>
+                            </button>
+                        </div>
+
+                        <small id="passwordError"
+                               style="display:none;color:#dc3545">
+                            Mật khẩu nhập lại không khớp
+                        </small>
+                    </div>
+
                 </div>
 
-            </div>
+                <div class="lx-agree">
+                    Bằng cách đăng ký, bạn đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a> của thư viện.
+                </div>
 
-            <div class="lx-agree">
-                Bằng cách đăng ký, bạn đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a> của thư viện.
-            </div>
-
-            <button class="lx-btn" id="registerBtn" type="submit" disabled>
-                <i class="ti ti-user-plus" style="font-size:14px"></i>
-                <span>Tạo tài khoản</span>
-            </button>
+                <button class="lx-btn" id="registerBtn" type="submit">
+                    <i class="ti ti-user-plus" style="font-size:14px"></i>
+                    <span>Tạo tài khoản</span>
+                </button>
+            </form>
 
             <div class="lx-hint">Đã có tài khoản? <a onclick="show('login')">Đăng nhập</a></div>
         </div>
 
     </div>
 </div>
+<script th:inline="javascript">
+    let showRegister = [[${showRegister != null}]];
 
+    if(showRegister){
+        show('register');
+    }
+</script>
 <script>
     function show(id) {
       document.querySelectorAll('.lx-panel').forEach(function(p) { p.classList.remove('active'); });
@@ -428,13 +436,6 @@
       if (e.key === 'Enter') doLogin();
     });
 
-    function doLogin() {
-      var u = document.getElementById('l-user').value.trim();
-      var p = document.getElementById('l-pass').value;
-      if (!u) { showErr('lerr', 'Vui lòng nhập email hoặc tên đăng nhập.'); return; }
-      if (!p) { showErr('lerr', 'Vui lòng nhập mật khẩu.'); return; }
-      // TODO: gọi API đăng nhập
-    }
     function checkPasswordMatch() {
 
         const password = document.getElementById("password").value;

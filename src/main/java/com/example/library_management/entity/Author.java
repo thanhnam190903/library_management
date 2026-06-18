@@ -18,6 +18,7 @@ public class Author {
     String id;
     @Column(name = "author_name")
     String authorName;
+    Boolean deleted = false;
     @OneToMany(mappedBy = "author")
     List<BookTitle> bookTitles;
 }

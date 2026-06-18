@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns="http://www.w3.org/1999/html">
 <head th:replace="layout/head :: head">
 </head>
 <body>
@@ -92,7 +92,7 @@
                                 </span>
                             </td>
                             <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mist);"
-                                th:text="${b.isbn != null ? b.isbn : '---'}">
+                                th:text="${#strings.isEmpty(b.isbn) ? '___' : b.isbn}">
                                 978-604-1-22345-6
                             </td>
                             <td>
@@ -101,25 +101,25 @@
                                 12/15
                             </span>
                             </td>
-                            <td>
-                                <span th:if="${b.digitalBooks != null and !b.digitalBooks.isEmpty()}"
+                            <td >
+                                <span style="padding: 0;" th:if="${b.digitalBooks != null and !b.digitalBooks.isEmpty()}"
                                       class="bl-badge bl-badge-available">
                                     E-Book
                                 </span>
-                                <span th:if="${b.quantity != null and availableMap[b.id] == 0}"
+                                <span style="padding: 0;" th:if="${b.quantity != null and availableMap[b.id] == 0}"
                                       class="bl-badge bl-badge-overdue">
                                     Hết sách
                                 </span>
-                                <span th:if="${b.quantity != null and availableMap[b.id] == b.quantity}"
+                                <span style="padding: 0;" th:if="${b.quantity != null and availableMap[b.id] == b.quantity}"
                                       class="bl-badge bl-badge-available">
                                     Còn sách
                                 </span>
-                                <span th:if="${b.quantity != null and availableMap[b.id] > 0 and availableMap[b.id] < b.quantity}"
+                                <span style="padding: 0;" th:if="${b.quantity != null and availableMap[b.id] > 0 and availableMap[b.id] < b.quantity}"
                                       class="bl-badge bl-badge-borrowed">
                                     Đang mượn
                                 </span>
                             </td>
-                            <td>
+                            <td style="display: flex;gap: 5px;">
                                 <a class="action-btn" onclick="event.stopPropagation()"
                                    th:href="@{/quan-ly/books-management(id=${b.id})}">Xem</a>
                                 <button class="action-btn" th:data-id="${b.id}"
@@ -147,16 +147,28 @@
                              th:text="'Hiển thị ' + ${books.numberOfElements}
                                           + ' / ' + ${totalElements} + ' đầu sách'">Hiển thị 6 / 1,584 hội viên</div>
                         <div style="display:flex;gap:6px;">
-                            <a th:if="${currentPage > 0}" class="action-btn"
-                               th:href="@{/quan-ly/books(page=${currentPage - 1}, keyword=${keyword}, status=${status})}">‹
-                            </a>
-                            <a class="action-btn" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:text="${i + 1}"
-                               th:href="@{/quan-ly/books(page=${i}, keyword=${keyword}, status=${status})}"
-                               th:classappend="${i == currentPage} ? 'active' : ''">
-                            </a>
-                            <a class="action-btn" th:if="${currentPage < totalPages - 1}"
-                               th:href="@{/quan-ly/books(page=${currentPage + 1}, keyword=${keyword}, status=${status})}">›
-                            </a>
+                            <th:block th:with="
+                                    start=${currentPage > 1 ? currentPage - 1 : 0},
+                                    end=${currentPage < totalPages - 2 ? currentPage + 1 : totalPages - 1}">
+                                <a th:if="${currentPage > 0}"
+                                   class="action-btn"
+                                   th:href="@{/quan-ly/books(page=${currentPage - 1}, keyword=${keyword}, status=${status})}">
+                                    ‹
+                                </a>
+
+                                <a class="action-btn"
+                                   th:each="i : ${#numbers.sequence(start,end)}"
+                                   th:text="${i + 1}"
+                                   th:href="@{/quan-ly/books(page=${i}, keyword=${keyword}, status=${status})}"
+                                   th:classappend="${i == currentPage} ? 'active' : ''">
+                                </a>
+
+                                <a th:if="${currentPage < totalPages - 1}"
+                                   class="action-btn"
+                                   th:href="@{/quan-ly/books(page=${currentPage + 1}, keyword=${keyword}, status=${status})}">
+                                    ›
+                                </a>
+                            </th:block>
                         </div>
                     </div>
                 </div>
@@ -220,7 +232,7 @@
                 <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;"
                         onclick="closeModal('book-modal');goPage('borrow');showCircTab('borrow-tab')">↗ Tạo phiếu mượn
                 </button>
-                <button class="bl-btn bl-btn-danger" onclick="confirmDelete()">🗑️ Xóa</button>
+                <button class="bl-btn bl-btn-danger" sec:authorize="hasRole('ADMIN')" onclick="confirmDelete()">🗑️ Xóa</button>
             </div>
         </div>
     </div>
@@ -287,6 +299,7 @@
                             <option value="2">Truyện</option>
                             <option value="3">Lịch sử</option>
                             <option value="4">Tâm lý học</option>
+                            <option value="5">Khoa học & công nghệ</option>
                             <option value="0">Không có chủ đề</option>
                         </select>
                     </div>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="layout/head :: head">
+</head>
+<body>
+
+<!-- ════════ SIDEBAR ════════ -->
+<aside th:replace="layout/aside :: aside"></aside>
+
+<!-- ════════ MAIN ════════ -->
+<div class="bl-main">
+    <header th:replace="layout/header :: header"></header>
+
+    <div class="bl-content">
+        <!-- ══════ PAGE: BOOKS ══════ -->
+        <div class="bl-page active" id="page-users">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                <form method="get" th:action="@{/quan-ly/author}" style="display: contents;">
+                    <div class="bl-search-bar" style="flex:1;min-width:220px;">
+                        <span style="color:var(--mist);">🔍</span>
+                        <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên tác giả...">
+                    </div>
+                    <button type="submit" class="bl-btn bl-btn-secondary">Tìm</button>
+                </form>
+                <button type="button" class="bl-btn bl-btn-primary" onclick="openAddauthor()">➕ Thêm mới</button>
+            </div>
+
+            <div id="books-list-view">
+                <div class="bl-panel">
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Thành công!</strong> <span th:text="${success}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <table class="bl-data-table">
+                        <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(listUser)}">
+                            <td colspan="7" style="text-align:center; padding:20px; color:var(--mist);">
+                                Không có dữ liệu
+                            </td>
+                        </tr>
+                        <tr th:each="u,stat : ${listUser.content}">
+                            <td th:text="${stat.index + 1}"></td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="font-weight:500;" th:text="${u.authorName}"></div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <button class="action-btn btn-edit"
+                                        th:data-id="${u.id}"
+                                        th:data-name="${u.authorName}"
+                                        onclick="openUpdateAuthor(this)">Sửa
+                                </button>
+                                <button class="action-btn" sec:authorize="hasRole('ADMIN')" th:data-id="${u.id}" onclick="confirmDelete(this)">Xóa
+                                </button>
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                    <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                        <div style="font-size:13px;color:var(--mist);"
+                             th:text="'Hiển thị ' + ${listUser.numberOfElements}
+                                          + ' / ' + ${totalElements} + ' tác giả'">Hiển thị 6 / 1,584 hội viên</div>
+                        <div style="display:flex;gap:6px;">
+                            <a class="action-btn" th:if="${currentPage > 0}"
+                               th:href="@{/quan-ly/author(page=${currentPage - 1}, keyword=${keyword})}">‹
+                            </a>
+                            <a class="action-btn" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? 'active' : ''"
+                               th:href="@{/quan-ly/author(page=${i}, keyword=${keyword})}">
+                            </a>
+                            <a class="action-btn" th:if="${currentPage < totalPages - 1}"
+                               th:href="@{/quan-ly/author(page=${currentPage + 1}, keyword=${keyword})}">›
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ════════ MODALS ════════ -->
+<div class="bl-modal-overlay" id="add-author-modal" onclick="closeModal('add-author-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
+            <div>
+                <div class="bl-modal-book-title">Thêm mới tác giả</div>
+            </div>
+            <button class="bl-modal-close" onclick="closeModal('add-author-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <form th:action="@{/quan-ly/author}" th:object="${author}" method="post">
+                <div class="bl-form-row">
+                    <div style="color:red" th:if="${error}" th:text="${error}">
+                    </div>
+                </div>
+                    <div class="bl-form-group">
+                        <div class="bl-form-label">Tên tác giả*</div>
+                        <input class="bl-form-input" th:field="*{authorName}" placeholder="Nhập tên tác giả...">
+                    </div>
+
+                <div style="display:flex;gap:10px;">
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">✓ Thêm mới
+                    </button>
+                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('add-author-modal')">Hủy
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<div class="bl-modal-overlay" id="update-author-modal" onclick="closeModal('update-author-modal')">
+    <div class="bl-modal" onclick="event.stopPropagation()">
+        <div class="bl-modal-header">
+            <div class="bl-modal-book-icon" style="background:#e8f0fb;font-size:28px;">👤</div>
+            <div>
+                <div class="bl-modal-book-title">Cập nhật thông tin tác giả</div>
+            </div>
+            <button class="bl-modal-close" onclick="closeModal('update-author-modal')">✕</button>
+        </div>
+        <div class="bl-modal-body">
+            <form th:action="@{/quan-ly/author}" method="post">
+                <div class="bl-form-group">
+                    <input type="hidden" name="id" id="edit-id">
+                    <div class="bl-form-label">Tên tác giả*</div>
+                    <input class="bl-form-input" id="edit-name" name="authorName" placeholder="Nhập tên tác giả...">
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                    <button class="bl-btn bl-btn-primary" style="flex:1;justify-content:center;padding:12px;">Cập nhật
+                    </button>
+                    <button class="bl-btn bl-btn-secondary" type="button" onclick="closeModal('update-author-modal')">
+                        Hủy
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:replace="layout/script :: script"></script>
+<script>
+    function confirmDelete(element) {
+    const userId = element.dataset.id;
+    if (confirm("Bạn có chắc chắn muốn xóa tác giả " + userId + " này?")) {
+        window.location.href = "/qltv/quan-ly/author?id=" + userId;
+    }
+}
+function openAddauthor(){
+    document.getElementById('add-author-modal').classList.add('bl-open');
+}
+
+    function openUpdateAuthor(btn) {
+    document.getElementById("edit-id").value = btn.dataset.id;
+        document.getElementById("edit-name").value = btn.dataset.name;
+        document.getElementById('update-author-modal').classList.add('bl-open');
+    }
+</script>
+</body>
+</html>

@@ -30,7 +30,7 @@
             if (!keyword || !keyword.trim()) return;
             keyword = keyword.trim();
             sessionStorage.setItem("keyword", keyword);
-            if (!window.location.pathname.includes("/search")) {
+            if (!window.location.pathname.includes("/home/search")) {
                 window.location.href = "/qltv/home/search";
                 return;
             }

@@ -17,7 +17,7 @@
     <a class="bl-nav-item" id="nav-stats" th:href="@{/quan-ly/statistics}" th:classappend="${activePage == 'report-sta'} ? 'active' : ''">
         <span class="bl-nav-icon">📊</span>Thống kê &amp; Báo cáo</a>
 </div>
-<div class="bl-sidebar-section">
+<div class="bl-sidebar-section" sec:authorize="hasRole('ADMIN')">
     <div class="section-label">Người dùng</div>
     <a class="bl-nav-item" id="nav-user" th:href="@{/quan-ly/users}" th:classappend="${activePage == 'user'} ? 'active' : ''">
         <span class="bl-nav-icon">👥</span>Quản lý người dùng
@@ -27,6 +27,12 @@
     <div class="section-label">Kho sách</div>
     <a class="bl-nav-item" th:href="@{/quan-ly/categories}" th:classappend="${activePage == 'category'} ? 'active' : ''">
         <span class="bl-nav-icon">🏷️</span>Thể loại
+    </a>
+    <a class="bl-nav-item"  th:href="@{/quan-ly/author}" style="display: none;" th:classappend="${activePage == 'authors'} ? 'active' : ''">
+        <span class="bl-nav-icon">👥</span>Quản lý tác giả
+    </a>
+    <a class="bl-nav-item"  th:href="@{/quan-ly/publisher}" style="display: none;" th:classappend="${activePage == 'publishers'} ? 'active' : ''">
+        <span class="bl-nav-icon">👥</span>Quản lý nhà xuất bản
     </a>
     <a class="bl-nav-item menu-toggle" id="nav-books" th:href="@{/quan-ly/books}" th:classappend="${activePage == 'books'} ? 'active' : ''">
         <span class="bl-nav-icon">📚</span> Danh mục sách

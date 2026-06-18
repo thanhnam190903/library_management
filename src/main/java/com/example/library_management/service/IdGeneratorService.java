@@ -17,27 +17,21 @@ public class IdGeneratorService {
     @Transactional
     public String generate(String name, String prefix) {
 
-        String date = LocalDate.now()
-                .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         Integer value;
-
         List<Integer> result = jdbcTemplate.query(
                 "SELECT current_value FROM id_sequences WHERE name = ? AND date_key = ? FOR UPDATE",
                 (rs, rowNum) -> rs.getInt("current_value"),
                 name, date
         );
-
         if (result.isEmpty()) {
             value = 1;
-
             jdbcTemplate.update(
                     "INSERT INTO id_sequences(name, date_key, current_value) VALUES (?, ?, ?)",
                     name, date, value
             );
         } else {
             value = result.get(0) + 1;
-
             jdbcTemplate.update(
                     "UPDATE id_sequences SET current_value = ? WHERE name = ? AND date_key = ?",
                     value, name, date

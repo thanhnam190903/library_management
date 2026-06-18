@@ -18,5 +18,9 @@
         <a class="btn-confirm" id="" sec:authorize="isAuthenticated()" th:href="@{/logout}">
             Đăng xuất
         </a>
+        <a class="btn-confirm" sec:authorize="!isAuthenticated()" th:href="@{/login}">
+            Đăng Nhập
+        </a>
+
     </div>
 </div>

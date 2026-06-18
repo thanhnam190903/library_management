@@ -49,8 +49,8 @@
                                     </div>
                                 </div>
                                 <div class="profile-meta-item">
-                                    <div class="label">Điểm tích lũy</div>
-                                    <div class="val">320 điểm</div>
+                                    <div class="label">Được mượn tối đa</div>
+                                    <div class="val" th:text="${reader.cards[0].maxBooksAllowed}">320 điểm</div>
                                 </div>
                                 <div class="profile-meta-item">
                                     <div class="label">Tổng sách đã mượn</div>
@@ -83,13 +83,14 @@
                                                                                          style="color:var(--amber)"></i>
                             </div>
                             <div>
-                                <div class="stat-val">320</div>
-                                <div class="stat-lbl">Điểm tích lũy</div>
+                                <div class="stat-val" th:text="${reader.cards[0].maxBooksAllowed}">320</div>
+                                <div class="stat-lbl">Được mượn tối đa</div>
                             </div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-icon" style="background:var(--red-lt)"><i class="ti ti-alert-triangle"
-                                                                                       style="color:var(--red)"></i>
+                            <div class="stat-icon" style="background:var(--red-lt)">
+                                <i class="ti ti-alert-triangle"
+                                style="color:var(--red)"></i>
                             </div>
                             <div>
                                 <div class="stat-val" th:text="${reader.cards[0].overdueCount ?: 0}">1</div>
