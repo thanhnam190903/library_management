@@ -181,8 +181,6 @@ public class BookController {
 
                 int total = newQuantity - oldQuantity;
                 long countBKC = bookCopyRepository.countByBookTitleId(oldBook.getId());
-                String categoryCode =
-                        getCategoryCode(oldBook.getCategory().getCategoryName());
                 for (int i = 1; i <= total; i++) {
 
                     BookCopy bookCopy = BookCopy.builder()
@@ -299,7 +297,7 @@ public class BookController {
             attributes.addFlashAttribute("success", "Cập nhật tài liệu thành công!");
         }
         digitalBookRepository.save(book);
-//        audioService.generateAudio(book.getId());
+        audioService.generateAudio(book.getId());
         return "redirect:/quan-ly/books-management?id=" + bookTittleId + "&view=digital";
     }
 

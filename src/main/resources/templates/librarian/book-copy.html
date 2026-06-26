@@ -203,7 +203,7 @@
                                 12/15
                             </span>
                             <td>
-                                <button class="action-btn" th:data-url="${b.fileUrl}" onclick="openFile(this)">Xem
+                                <button class="action-btn" th:data-url="${b.fileUrl}" th:data-audio="${b.audioUrl}" onclick="openFile(this)">Xem
                                 </button>
                                 <button class="action-btn"
                                         th:data-id="${b.id}"
@@ -341,6 +341,9 @@
         </div>
 
         <div class="bl-modal-body">
+            <div id="audioContainer" style="margin-bottom:15px;display:none;">
+                <audio id="audioPlayer" controls style="width:100%;"></audio>
+            </div>
             <iframe id="pdfFrame"
                     style="width:640px;height:800px;border:none;"></iframe>
         </div>
@@ -484,10 +487,35 @@ function openEditDigital(btn) {
 
     function openFile(btn) {
     const url = btn.dataset.url;
-    const viewerUrl = "https://mozilla.github.io/pdf.js/web/viewer.html?file="
-                      + encodeURIComponent(url);
+    const audioUrl = btn.dataset.audio;
+
+    const viewerUrl =
+        "https://mozilla.github.io/pdf.js/web/viewer.html?file="
+        + encodeURIComponent(url);
+
     document.getElementById("pdfFrame").src = viewerUrl;
+
+    const audioContainer = document.getElementById("audioContainer");
+    const audioPlayer = document.getElementById("audioPlayer");
+
+    if (audioUrl && audioUrl.trim() !== "") {
+        audioPlayer.src = audioUrl;
+        audioContainer.style.display = "block";
+    } else {
+        audioPlayer.pause();
+        audioPlayer.removeAttribute("src");
+        audioPlayer.load();
+        audioContainer.style.display = "none";
+    }
+
     document.getElementById("pdfModal").classList.add("bl-open");
+}
+    function closePdfModal() {
+    const audioPlayer = document.getElementById("audioPlayer");
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+
+    document.getElementById("pdfModal").classList.remove("bl-open");
 }
 </script>
 </body>

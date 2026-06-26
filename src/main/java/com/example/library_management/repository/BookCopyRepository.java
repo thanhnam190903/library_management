@@ -56,4 +56,7 @@ public interface BookCopyRepository extends JpaRepository<BookCopy,String> {
             " AND b.status = true AND deleted = false")
     List<BookCopy> findAvailableBooks(@Param("keyword") String keyword);
 
+    @Query(" SELECT COUNT(b) FROM BookCopy b ")
+    long countBookCopy();
+
 }

@@ -49,7 +49,7 @@ public class HistoryController {
                                         || d.getReturnDate().isEqual(d.getBorrowSlip().getDueDate()))
                 )
                 .toList();
-        List<BorrowDetail> renewedList = borrowDetailRepository.findByCardIdAndRenewedTrue("00002");
+        List<BorrowDetail> renewedList = borrowDetailRepository.findByCardIdAndRenewedTrue(reader.getCards().get(0).getId());
         data.put("detailsAll", details);
         data.put("lateList", lateList);
         data.put("returnedList", returnedList);

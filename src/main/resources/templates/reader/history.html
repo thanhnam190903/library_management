@@ -172,9 +172,9 @@
                               <td>
                                 <span class="status-pill"
                                       th:classappend="${h.borrowSlip.statusRenewed == null} ? ' pill-pending' :
-                                      (${h.borrowSlip.statusRenewed == 0} ? ' pill-ok' : ' pill-pending')"
+                                      (${h.borrowSlip.statusRenewed == 1} ? ' pill-ok' : ' pill-pending')"
                                       th:text="${h.borrowSlip.statusRenewed == null} ? '___' :
-                                      (${h.borrowSlip.statusRenewed == 0} ? 'Đã gia hạn' : 'Chờ xử lý')">
+                                      (${h.borrowSlip.statusRenewed == 1} ? 'Đã gia hạn' : 'Chờ xử lý')">
                                 </span>
                               </td>
                           </tr>

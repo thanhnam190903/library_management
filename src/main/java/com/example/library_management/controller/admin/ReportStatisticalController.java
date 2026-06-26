@@ -154,7 +154,7 @@ public class ReportStatisticalController {
 
         // ── Top 10 sách được mượn nhiều nhất ─────────────────────────────
         List<BookDTO> topBooks = borrowDetailRepo
-                .findTopBorrowedBooks(dateFrom, dateTo, PageRequest.of(0, 10))
+                .findTopBorrowedBooks(dateFrom, dateTo, PageRequest.of(0, 5))
                 .stream()
                 .filter(r -> r.length >= 6)   // ← thêm dòng này
                 .map(r -> new BookDTO(
